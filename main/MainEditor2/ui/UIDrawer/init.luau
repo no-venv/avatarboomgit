@@ -1,0 +1,158 @@
+--!strict
+type void = nil;
+local Editor = script:FindFirstAncestor("MainEditor2")
+local components = require(Editor.ui.components)
+local singletons = require(Editor.singletons)
+local shared = require(Editor.shared)
+local ui_lib = components.lune_ui
+local styling = ui_lib.styling
+local scrolling_frame = ui_lib.scrolling_frame
+local iconbutton = ui_lib.iconbutton
+local UDIM_UI_CLOSED = UDim2.new(1,0,0,0)
+local UDIM_UI_OPENED = UDim2.new(1,0,.8,0)
+local input_catcher = Instance.new("TextButton")
+input_catcher.Size = UDim2.new(1,0,1,0)
+input_catcher.Transparency = 1
+input_catcher.TextTransparency = 1
+input_catcher.AutoButtonColor = false
+input_catcher.ZIndex = 0
+return function(parent : Instance)
+	--
+	local set_filter = require(script.ViewSetFilter)()
+	local import_rig = require(script.ViewImportRig)()
+	local edit_rig = require(script.EditRig.Init)()
+	local view_asset = require(script.ViewAssetInfo)()
+	local accessory_mod = require(script.ViewAccessoryModification)()
+	local set_themes = require(script.ViewThemes)()
+	--
+	local outer_container = ui_lib.empty_frame()
+	outer_container.Size = UDIM_UI_CLOSED
+	outer_container.AnchorPoint = Vector2.new(0,1)
+	outer_container.Position = UDim2.new(0,0,1,0)
+	input_catcher:Clone().Parent = outer_container
+	local drawer_container = ui_lib.empty_frame(outer_container)
+	drawer_container.BackgroundTransparency = 0
+	drawer_container.BackgroundColor3 = Color3.new(1,1,1)
+	--drawer_container.AnchorPoint = Vector2.new(0,1)
+	drawer_container.ZIndex = 3
+	--drawer_container.Position = UDim2.new(0,0,1,0)
+	drawer_container.ClipsDescendants = true
+	drawer_container.Size = UDim2.new(1,0,1,0)
+	ui_lib.theme_manager:add_custom_gui_instance(drawer_container,"Background")
+	styling.padding(drawer_container)
+	styling.corner(drawer_container)
+	styling.stroke(drawer_container)
+	do
+		local drawer_container_flex = Instance.new("UIListLayout")
+		drawer_container_flex.Padding = UDim.new(0,8)
+		drawer_container_flex.VerticalFlex = Enum.UIFlexAlignment.Fill
+		drawer_container_flex.Parent = drawer_container
+	end
+	--
+	local drawer_topbar = ui_lib.empty_frame()
+	drawer_topbar.Size = UDim2.new(1,0,0,32)
+	do
+		local topbar_flex = Instance.new("UIListLayout")
+		topbar_flex.Padding = UDim.new(0,8)
+		topbar_flex.FillDirection = Enum.FillDirection.Horizontal
+		topbar_flex.SortOrder = Enum.SortOrder.LayoutOrder
+		topbar_flex.HorizontalFlex = Enum.UIFlexAlignment.Fill
+		topbar_flex.Parent = drawer_topbar
+	end
+	
+	drawer_topbar.Parent = drawer_container
+
+	local drawer_view_container = ui_lib.empty_frame(drawer_container)
+	local visible_state = false
+	local to_hide = {set_filter,import_rig,edit_rig,set_themes,}
+	local tab,topbar,tab_func = ui_lib.tab({
+		set_filter;
+		import_rig;
+		edit_rig;
+		set_themes;
+		view_asset;
+		accessory_mod;
+	},"",drawer_view_container,drawer_topbar)
+	topbar:FindFirstChildWhichIsA("UIListLayout").HorizontalAlignment = Enum.HorizontalAlignment.Left
+	local popout_toggle = false
+	iconbutton{
+		id = 83221475888424;
+		theme_enabled = true;
+		on_click = function()
+			if not shared.plugin.plugin then
+				return
+			end
+			popout_toggle = not popout_toggle
+			singletons.event_bus.pop_out_drawer.emit {
+				bool = popout_toggle
+			}
+		end,
+		parent = drawer_topbar
+	}	
+	singletons.event_bus.pop_out_drawer.connect(function(parm): nil 
+		popout_toggle = parm.bool
+		outer_container.Size = popout_toggle and UDim2.new(1,0,1,0) or UDIM_UI_OPENED
+		return		
+	end)
+	iconbutton {
+		id = 95107155761501;
+		theme_enabled = true;
+		on_click = function()
+			singletons.event_bus.drawer_open.emit({
+				bool = false
+			})	
+		end,
+		parent = drawer_topbar
+	}
+	
+	local function show_drawer(bool)
+		if bool == nil then
+			visible_state = not visible_state
+		else
+			visible_state = bool
+		end
+		if popout_toggle then
+			return
+		end
+		outer_container.Size = visible_state and UDIM_UI_OPENED or UDIM_UI_CLOSED
+	end
+	local function change_tab_button_visiblity(state : boolean)
+		for _,views in to_hide do
+			tab_func.hide_button(views.Name,state)
+		end
+		tab_func.hide_button(view_asset.Name,not state)
+	end
+
+	singletons.event_bus.accessory_modification_ready.connect(function(parm)
+		if not parm.bool and tab_func.get_current_view() == accessory_mod.Name then
+			tab_func.toggle(view_asset.Name,true)
+		end
+		tab_func.hide_button(accessory_mod.Name, not parm.bool)
+		return
+	end)
+	singletons.event_bus.avatar_item_selected.connect(function(): nil 	
+		--singletons.event_bus.drawer_open.emit({bool = true})
+		tab_func.toggle(view_asset.Name,true)
+		tab_func.hide_button(accessory_mod.Name,true)
+		change_tab_button_visiblity(true)
+		show_drawer(true)
+		return
+	end)
+	singletons.event_bus.drawer_open.connect(function(parm): nil 
+		local current_view = tab_func.get_current_view()
+		local view_asset_view = current_view == view_asset.Name
+		local edit_view = current_view == accessory_mod.Name
+		if view_asset_view or edit_view then
+			tab_func.toggle(set_filter.Name,true)
+		end
+		change_tab_button_visiblity(false)
+		tab_func.hide_button(accessory_mod.Name,true)
+		show_drawer(parm.bool)
+		return
+	end)
+	
+	tab_func.toggle("Set Filter",true)
+	outer_container.Parent = parent
+	print("UI Drawer loaded")
+	return outer_container
+end
