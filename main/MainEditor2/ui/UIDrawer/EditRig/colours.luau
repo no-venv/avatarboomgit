@@ -1,7 +1,6 @@
 --!strict
-local Editor = script:FindFirstAncestor("MainEditor2")
-local components = require(Editor.ui.components)
-local singletons = require(Editor.singletons)
+local components = require("../../components")
+local singletons = require("../../../singletons")
 local humanoid_editor = singletons.humanoid_description
 local colour_wheel = components.colour_wheel
 local skin_brick_colour = components.skin_brick_colour

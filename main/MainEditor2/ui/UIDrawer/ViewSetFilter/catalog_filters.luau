@@ -1,3 +1,4 @@
+--!nonstrict
 type Struct = {
 	{
 		catagory : string;
@@ -10,9 +11,6 @@ type Struct = {
 			}
 		}
 	}
-}
-local filters2 = {
-
 }
 local filters : Struct = {
 	

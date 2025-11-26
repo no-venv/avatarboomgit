@@ -1,12 +1,10 @@
 --!strict
 type void = nil;
-local Editor = script:FindFirstAncestor("MainEditor2")
-local components = require(Editor.ui.components)
-local singletons = require(Editor.singletons)
-local shared = require(Editor.shared)
+local components = require("./components")
+local singletons = require("../singletons")
+local shared = require("../shared")
 local ui_lib = components.lune_ui
 local styling = ui_lib.styling
-local scrolling_frame = ui_lib.scrolling_frame
 local iconbutton = ui_lib.iconbutton
 local UDIM_UI_CLOSED = UDim2.new(1,0,0,0)
 local UDIM_UI_OPENED = UDim2.new(1,0,.8,0)
@@ -18,12 +16,12 @@ input_catcher.AutoButtonColor = false
 input_catcher.ZIndex = 0
 return function(parent : Instance)
 	--
-	local set_filter = require(script.ViewSetFilter)()
-	local import_rig = require(script.ViewImportRig)()
-	local edit_rig = require(script.EditRig.Init)()
-	local view_asset = require(script.ViewAssetInfo)()
-	local accessory_mod = require(script.ViewAccessoryModification)()
-	local set_themes = require(script.ViewThemes)()
+	local set_filter = require("@self/ViewSetFilter")()
+	local import_rig = require("@self/ViewImportRig")()
+	local edit_rig = require("@self/EditRig/Init")()
+	local view_asset = require("@self/ViewAssetInfo")()
+	local accessory_mod = require("@self/ViewAccessoryModification")()
+	local set_themes = require("@self/ViewThemes")()
 	--
 	local outer_container = ui_lib.empty_frame()
 	outer_container.Size = UDIM_UI_CLOSED
@@ -72,8 +70,8 @@ return function(parent : Instance)
 		set_themes;
 		view_asset;
 		accessory_mod;
-	},"",drawer_view_container,drawer_topbar)
-	topbar:FindFirstChildWhichIsA("UIListLayout").HorizontalAlignment = Enum.HorizontalAlignment.Left
+	},"",drawer_view_container,drawer_topbar);
+	(topbar:FindFirstChildWhichIsA("UIListLayout")::UIListLayout).HorizontalAlignment = Enum.HorizontalAlignment.Left
 	local popout_toggle = false
 	iconbutton{
 		id = 83221475888424;
@@ -105,7 +103,7 @@ return function(parent : Instance)
 		parent = drawer_topbar
 	}
 	
-	local function show_drawer(bool)
+	local function show_drawer(bool : boolean?)
 		if bool == nil then
 			visible_state = not visible_state
 		else

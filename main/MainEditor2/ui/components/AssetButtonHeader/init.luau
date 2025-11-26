@@ -4,8 +4,8 @@
 -- sepeate from AssetButton and is meant to be used with it, to avoid coupling of course
 -- and to avoid having to majoirly rewrite some parts of the code
 export type buttons_enabled_args = {
-	["Favourite"]: boolean,
-	["Remove"]: boolean,
+	["Favourite"]: boolean?,
+	["Remove"]: boolean?,
 }
 local Editor = script:FindFirstAncestor("MainEditor2")
 local lune = require("@self/../lune_ui")
