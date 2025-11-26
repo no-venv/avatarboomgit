@@ -1,6 +1,5 @@
-local UI = script:FindFirstAncestor("MainEditor2")
-local singletons = require(UI.singletons)
-local components = require(UI.ui.components)
+local singletons = require("../../singletons")
+local components = require("../components")
 local lune = components.lune_ui
 local empty_frame = lune.empty_frame
 local styling = lune.styling
@@ -9,11 +8,10 @@ local iconbutton = lune.iconbutton
 local textbutton = lune.textbutton
 local floating_menu = lune.float_menu
 local textbox = lune.textbox
-local utils = require(UI.utils)
 local function state()
 	local first = false
-	local consumed : string = nil
-	return function(state : string)
+	local consumed: string = nil
+	return function(state: string)
 		if consumed ~= state then
 			consumed = state
 			first = false
@@ -27,21 +25,19 @@ local function state()
 end
 --
 local container = empty_frame()
-container.Size = UDim2.new(1,0,0,48)
-container.BackgroundTransparency =0
+container.Size = UDim2.new(1, 0, 0, 48)
+container.BackgroundTransparency = 0
 container.ZIndex = 10
 do
 	local gradient_background = Instance.new("UIGradient")
 	gradient_background.Rotation = 90
-	gradient_background.Transparency = NumberSequence.new(
-		{
-			NumberSequenceKeypoint.new(0,0);
-			NumberSequenceKeypoint.new(0.8,1);
-			NumberSequenceKeypoint.new(1,1)
-		}
-	)
+	gradient_background.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0),
+		NumberSequenceKeypoint.new(0.8, 1),
+		NumberSequenceKeypoint.new(1, 1),
+	})
 	gradient_background.Parent = container
-	theme_manager:add_custom_gui_instance(gradient_background,"Foreground")
+	theme_manager:add_custom_gui_instance(gradient_background, "Foreground")
 	styling.corner(container)
 	styling.padding(container)
 	local flex = Instance.new("UIListLayout")
@@ -52,29 +48,29 @@ do
 end
 
 local button_container_layout = Instance.new("UIListLayout")
-button_container_layout.Padding = UDim.new(0,8)
+button_container_layout.Padding = UDim.new(0, 8)
 button_container_layout.FillDirection = Enum.FillDirection.Horizontal
 button_container_layout.SortOrder = Enum.SortOrder.LayoutOrder
 local button_container = empty_frame()
-button_container.Size = UDim2.new(.5,0,1,0)
+button_container.Size = UDim2.new(0.5, 0, 1, 0)
 --
-return function(parent : Instance?)
+return function(parent: Instance?)
 	local state = state()
 	local dropdown_state = false
 	local topbar_container = container:Clone()
 	local left_button_container = button_container:Clone()
 	left_button_container.Parent = topbar_container
-	local search = textbox("search or paste ID here",topbar_container)
-	search.Size = UDim2.new(1,0,1,0)
+	local search = textbox("search or paste ID here", topbar_container)
+	search.Size = UDim2.new(1, 0, 1, 0)
 	search.ClearTextOnFocus = false
-	search.FocusLost:Connect(function(enterPressed: boolean, inputThatCausedFocusLoss: InputObject) 
+	search.FocusLost:Connect(function(enterPressed: boolean, inputThatCausedFocusLoss: InputObject)
 		if not enterPressed then
 			return
-		end	
+		end
 		local query = search.Text
 
 		singletons.event_bus.catalog_search.emit({
-			query = query
+			query = query,
 		})
 	end)
 	do
@@ -93,18 +89,18 @@ return function(parent : Instance?)
 		right_layout.HorizontalAlignment = Enum.HorizontalAlignment.Right
 		right_layout.Parent = right_button_container
 	end
-	local dropdown_button = iconbutton {
-		id = 134883261664446;
-		parent = left_button_container;
-		theme_enabled = true;
+	local dropdown_button = iconbutton({
+		id = 134883261664446,
+		parent = left_button_container,
+		theme_enabled = true,
 		on_click = function()
 			dropdown_state = not dropdown_state
 			singletons.event_bus.drawer_open.emit({
-				bool = dropdown_state
+				bool = dropdown_state,
 			})
 		end,
-	}
-	
+	})
+
 	--local save_progress : TextButton
 	--local save_menu : Frame
 	--save_progress = iconbutton {
@@ -117,10 +113,10 @@ return function(parent : Instance?)
 	--			return
 	--		end
 	--		local pos = save_progress.AbsolutePosition
-	--		save_menu = floating_menu(170,pos.X - 8,pos.Y,function() 
-	--			textbutton("View Saved Progress",nil,function() 
+	--		save_menu = floating_menu(170,pos.X - 8,pos.Y,function()
+	--			textbutton("View Saved Progress",nil,function()
 
-	--			end)	
+	--			end)
 	--			textbutton("Save Progress",nil,function()
 
 	--			end)
@@ -128,45 +124,45 @@ return function(parent : Instance?)
 	--	end,
 	--}
 	--94356110802200
-	local favourites_button = iconbutton {
-		id = 106335234167054;
-		parent = right_button_container;
-		theme_enabled = true;
+	local favourites_button = iconbutton({
+		id = 106335234167054,
+		parent = right_button_container,
+		theme_enabled = true,
 		on_click = function()
 			singletons.event_bus.catalog_show_overlay.emit({
-				overlay = state("Favourites")
+				overlay = state("Favourites"),
 			})
 		end,
-	}
-	local wearing_button = iconbutton {
-		id = 112085719237258;
-		parent = right_button_container;
-		theme_enabled = true;
+	})
+	local wearing_button = iconbutton({
+		id = 112085719237258,
+		parent = right_button_container,
+		theme_enabled = true,
 		on_click = function()
 			singletons.event_bus.catalog_show_overlay.emit({
-				overlay = state("Wearing")
+				overlay = state("Wearing"),
 			})
 		end,
-	}
-	singletons.event_bus.drawer_open.connect(function(parm): nil 
+	})
+	singletons.event_bus.drawer_open.connect(function(parm): nil
 		if not parm.bool then
 			dropdown_state = false
 		end
-		
-		theme_manager:force_highlight(dropdown_button,parm.bool)
+
+		theme_manager:force_highlight(dropdown_button, parm.bool)
 		--ui_lib.theme_manager:force_highlight(topbar.LeftButtons.Dropdown,parm.bool)
 		return
 	end)
-	singletons.event_bus.avatar_item_selected.connect(function(parm): nil 
-		theme_manager:force_highlight(dropdown_button,false)
+	singletons.event_bus.avatar_item_selected.connect(function(parm): nil
+		theme_manager:force_highlight(dropdown_button, false)
 		--ui_lib.theme_manager:force_highlight(topbar.LeftButtons.Dropdown,false)
 		dropdown_state = false
-		return		
+		return
 	end)
-	
-	singletons.event_bus.catalog_show_overlay.connect(function(parm): nil 
-		theme_manager:force_highlight(favourites_button,parm.overlay=="Favourites")
-		theme_manager:force_highlight(wearing_button,parm.overlay=="Wearing")
+
+	singletons.event_bus.catalog_show_overlay.connect(function(parm): nil
+		theme_manager:force_highlight(favourites_button, parm.overlay == "Favourites")
+		theme_manager:force_highlight(wearing_button, parm.overlay == "Wearing")
 		--ui_lib.theme_manager:force_highlight(topbar.RightButtons.Favourites,parm.overlay=="Favourites")
 		--ui_lib.theme_manager:force_highlight(topbar.RightButtons.ViewWearing,parm.overlay=="Wearing")
 		if parm.overlay == "None" then
@@ -174,7 +170,7 @@ return function(parent : Instance?)
 		end
 		return
 	end)
-	
+
 	topbar_container.Parent = parent
 	return container
 end

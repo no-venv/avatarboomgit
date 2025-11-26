@@ -1,60 +1,56 @@
 --!strict
-local Editor = script:FindFirstAncestor("MainEditor2") 
-local components = require(Editor.ui.components)
-local EventFrames = components.event_frames
+local components = require("../components")
+local singletons = require("../../singletons")
 local asset_button = components.asset_button
 local asset_button_header = components.asset_button_header
 local lune = components.lune_ui
 local empty_frame = lune.empty_frame
 local scrolling_frame = lune.scrolling_frame
 local styling = lune.styling
-local singletons = require(Editor.singletons)
 local event_bus = singletons.event_bus
 local humanoid_editor = singletons.humanoid_description
-local CatalogFetcher = singletons.catalog_fetcher
 
-return function(parent : Instance?)
+return function(parent: Instance?)
 	local container = empty_frame(parent)
-	local current_view_wearing : Frame? = nil;
+	local current_view_wearing: Frame? = nil
 	local is_enabled = false
 	local function update()
 		if not is_enabled or not humanoid_editor:is_init() then
 			return
 		end
-		local view_wearing_instance = scrolling_frame(container,"Grid")
-		styling.padding(view_wearing_instance)
-			.PaddingTop = UDim.new(0,50)
+		local view_wearing_instance = scrolling_frame(container, "Grid")
+		styling.padding(view_wearing_instance).PaddingTop = UDim.new(0, 50)
 		view_wearing_instance.Name = "ViewWearing"
-		
+
 		if current_view_wearing then
 			current_view_wearing:Destroy()
 		end
 
 		local wearing_ids = singletons.wearing_cache.get_wearing()
 
-		for _,asset in wearing_ids do
-			local button = asset_button {
-				price = asset.Price;
-				asset_id = asset.Id;
-				asset_type = asset.ItemType;
-				parent = view_wearing_instance;
+		for _, asset in wearing_ids do
+			local button = asset_button({
+				price = asset.Price,
+				asset_id = asset.Id,
+				asset_type = asset.ItemType,
+				parent = view_wearing_instance,
 				on_click = function()
 					event_bus.avatar_item_selected.emit({
-						asset_info = asset
-					})	
+						asset_info = asset,
+					})
 				end,
-			}
-			asset_button_header(asset,{["Favourite"]=true,["Remove"]=true},button)
+			})
+			asset_button_header(asset, { ["Favourite"] = true, ["Remove"] = true }, button)
 		end
 
 		current_view_wearing = view_wearing_instance
 		return
 	end
-	
+
 	humanoid_editor.humanoid_changed.Event:Connect(update)
-	humanoid_editor.id_added.Event:Connect(update)	
+	humanoid_editor.id_added.Event:Connect(update)
 	humanoid_editor.id_removed.Event:Connect(update)
-	event_bus.catalog_show_overlay.connect(function(parm): nil 
+	event_bus.catalog_show_overlay.connect(function(parm): nil
 		is_enabled = parm.overlay == "Wearing"
 		if is_enabled then
 			update()

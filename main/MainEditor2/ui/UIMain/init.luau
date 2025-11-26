@@ -1,5 +1,5 @@
-local singletons = require(script.Parent.Parent.singletons)
-local components = require(script.Parent.components)
+local singletons = require("../singletons")
+local components = require("@self/../components")
 local lune = components.lune_ui
 local styling = lune.styling
 local theme_manager = lune.theme_manager
@@ -18,12 +18,12 @@ return function(parent : Instance)
 		inner_container.Visible = not parm.bool
 		return
 	end)
-	require(script.CatalogResult)(inner_container)
-	require(script.TopbarButtons)(inner_container)
-	require(script.ViewWearing)(inner_container)
-	require(script.ViewFavourites)(inner_container)
-	require(script.UpdateChecker)()
-	require(script.SelectRigOverlay)(mainframe)
+	require("@self/CatalogResult")(inner_container)
+	require("@self/TopbarButtons")(inner_container)
+	require("@self/ViewWearing")(inner_container)
+	require("@self/ViewFavourites")(inner_container)
+	require("@self/UpdateChecker")()
+	require("@self/SelectRigOverlay")(mainframe)
 	lune.lune_overlay.Parent = inner_container
 	mainframe.Parent = parent
 	print("UI Main Loaded")
