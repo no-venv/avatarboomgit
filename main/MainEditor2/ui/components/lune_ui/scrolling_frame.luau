@@ -1,5 +1,5 @@
-local styling = require(script.Parent.styling_components)
-local utils = require(script.Parent.utils)
+local styling = require("./styling_components")
+local utils = require("./utils")
 local scrolling_frame = Instance.new("ScrollingFrame")
 scrolling_frame.Size = UDim2.new(1,0,1,0)
 scrolling_frame.BackgroundTransparency = 1

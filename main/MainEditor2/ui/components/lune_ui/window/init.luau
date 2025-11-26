@@ -1,4 +1,4 @@
 return {
-	base = require(script.base);
-	option = require(script.option)
+	base = require("@self/base");
+	option = require("@self/option")
 }

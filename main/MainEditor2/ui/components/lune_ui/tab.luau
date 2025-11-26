@@ -1,11 +1,12 @@
+type void = nil;
 type TabImpl = {
 	toggle : (target_view : string, bool :boolean) -> void;
 	hide_button : (target_view : string, bool :boolean) -> void;
 	get_current_view : () -> string;
 	on_view_change : (view : string) -> void;
 }
-local textbutton = require(script.Parent.textbutton)
-local theme_manager = require(script.Parent.theme_manager)
+local textbutton = require("./textbutton")
+local theme_manager = require("./theme_manager")
 return function(views : {Frame},default_view : string,parent : Instance?,tab_bar_parent : Instance?) : (Frame,ScrollingFrame,TabImpl)
 	local container = Instance.new("Frame")
 	container.Size = UDim2.new(1,0,1,0)

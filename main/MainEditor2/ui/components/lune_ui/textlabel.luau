@@ -1,6 +1,6 @@
-local theme_manager = require(script.Parent.theme_manager)
-local styling = require(script.Parent.styling_components)
-local utils = require(script.Parent.utils)
+local theme_manager = require("./theme_manager")
+local styling = require("./styling_components")
+local utils = require("./utils")
 local textlabel = Instance.new("TextLabel")
 textlabel.AutomaticSize = Enum.AutomaticSize.XY
 textlabel.BackgroundTransparency = 1

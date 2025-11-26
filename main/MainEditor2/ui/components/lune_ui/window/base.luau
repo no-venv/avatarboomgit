@@ -1,11 +1,9 @@
-local lune = script.Parent.Parent
-local lune_overlay = require(lune.lune_overlay)
-local empty_frame = require(lune.empty_frame)
-local textlabel = require(lune.textlabel)
-local iconbutton = require(lune.iconbutton)
-local div = require(lune.divider)
-local styling = require(lune.styling_components)
-local theme_manager = require(lune.theme_manager)
+local lune_overlay = require("../lune_overlay")
+local empty_frame = require("../empty_frame")
+local textlabel = require("../textlabel")
+local iconbutton = require("../iconbutton")
+local styling = require("../styling_components")
+local theme_manager = require("../theme_manager")
 return function(title : number, size : Vector2?, view : Frame, important : boolean?)
 
 	local container = empty_frame()

@@ -1,2 +1,2 @@
-local empty_frame = require(script.Parent.empty_frame)
+local empty_frame = require("./empty_frame")
 return empty_frame()

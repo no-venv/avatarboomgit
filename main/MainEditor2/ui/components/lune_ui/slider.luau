@@ -1,11 +1,13 @@
-local textbutton = require(script.Parent.textbutton)
-local theme_manager = require(script.Parent.theme_manager)
-local styling = require(script.Parent.styling_components)
-local utils = require(script.Parent.utils)
+type void = nil
 type SliderImpl = {
 	set : (value : number) -> void;
 	reset : () -> void;
 }
+local textbutton = require("./textbutton")
+local theme_manager = require("./theme_manager")
+local styling = require("./styling_components")
+local utils = require("./utils")
+
 return function(default_value :number,parent : Instance?,update_func: (value : number) -> void) : (TextButton,SliderImpl)
 	local button = textbutton("",parent)
 	button.Size = UDim2.new(0,128,0,32)

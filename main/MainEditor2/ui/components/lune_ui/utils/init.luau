@@ -1,4 +1,4 @@
 return {
-	normalize_mouse = require(script.normalize_mouse);
-	prop_scope = require(script.prop_scope)
+	normalize_mouse = require("@self/normalize_mouse");
+	prop_scope = require("@self/prop_scope")
 }

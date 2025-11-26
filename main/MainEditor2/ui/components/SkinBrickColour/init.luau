@@ -1,4 +1,4 @@
-local skin_colour_json = require(script.skin_colour_json)()
+local skin_colour_json = require("@self/skin_colour_json")()
 return function(parent : Instance)
 	local scrolling_frame = Instance.new("ScrollingFrame")
 	scrolling_frame.Size = UDim2.new(1,0,1,0)

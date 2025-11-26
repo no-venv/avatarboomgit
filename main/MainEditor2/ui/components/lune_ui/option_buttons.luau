@@ -1,7 +1,7 @@
-local empty_frame = require(script.Parent.empty_frame)
-local textbutton = require(script.Parent.textbutton)
-local theme_manager = require(script.Parent.theme_manager)
-local utils = require(script.Parent.utils)
+local empty_frame = require("./empty_frame")
+local textbutton = require("./textbutton")
+local theme_manager = require("./theme_manager")
+local utils = require("./utils")
 return function(parent : Instance?,options : {string},value_chosen : (value : string) -> nil)
 	local container = empty_frame()
 	container.AutomaticSize = Enum.AutomaticSize.Y
