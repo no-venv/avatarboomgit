@@ -60,7 +60,6 @@ return function(arg : arg) : TextButton
 	asset_button.Size = UDim2.new(1,0,1,0)
 	shadow_clone.Parent = container
 	container.Parent = parent
-	--lune.theme_manager:disable_highlight_hover(asset_button,true)
 	asset_button.Destroying:Connect(function() 
 		container:Destroy()	
 	end)

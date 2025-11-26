@@ -1,5 +1,5 @@
 -- Intended for cloning frames when an event happens
-local lune = require(script.Parent.lune_ui)
+local lune = require("@self/../lune_ui")
 local TweenService = game:GetService("TweenService")
 local empty_frame = lune.empty_frame
 local textlabel = lune.textlabel

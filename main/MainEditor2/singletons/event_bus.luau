@@ -1,8 +1,8 @@
 --!strict
 -- Event Bus for the views
-local CatalogFetcher = require(script.Parent.CatalogFetcher)
-local utils = require(script.Parent.Parent.utils)
-local event_real = require(script.Parent.Parent.utils.TypedBindables)
+local CatalogFetcher = require("../singletons/CatalogFetcher")
+local utils = require("../utils")
+local event_real = utils.TypedBindables
 type Events = {
 	catalog_search : {
 		query : string,

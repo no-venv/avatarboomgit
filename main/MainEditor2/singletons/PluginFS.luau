@@ -1,8 +1,6 @@
 --!strict
 type void = nil;
-local Editor = script:FindFirstAncestor("MainEditor2")
-local shared = require(Editor.shared.Plugin)
-local plugin = shared.plugin
+local plugin = require("../shared/Plugin").plugin
 type Impl = {
 	get : (key : string) -> any;
 	save : (key : string, data : any) -> void;

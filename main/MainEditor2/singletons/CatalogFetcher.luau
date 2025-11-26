@@ -2,48 +2,45 @@
 --[[
 	Fetches the Catalog and returns an `AssetArray`
 ]]
+local AvatarEditorService = game:GetService("AvatarEditorService")
 export type AssetType = {
-	Id : number,
-	AssetType : string,
-	ItemType : "Asset" |"Bundle",
-	Name : string,
-	Description : string,
-	ProductId : number,
-	CreatorName : string,
-	Price : number,
+	Id: number,
+	AssetType: string,
+	ItemType: "Asset" | "Bundle",
+	Name: string,
+	Description: string,
+	ProductId: number,
+	CreatorName: string,
+	Price: number,
 }
 export type AssetArray = {
-	[number] : AssetType
+	[number]: AssetType,
 }
 type PageImpl = {
-	Next : (self : PageImpl) -> AssetArray?
+	Next: (self: PageImpl) -> AssetArray?,
 }
 type Struct = {
-	Filter : CatalogSearchParams;
-	ExportAssetType : AssetType;
+	Filter: CatalogSearchParams,
+	ExportAssetType: AssetType,
 }
 type Impl = {
-	Pages : (self : CatalogFetcher, page : Pages) -> PageImpl;
-	GetRecommendedAssets : (self : CatalogFetcher, id : number,avatar_asset_type : Enum.AvatarAssetType) -> AssetArray;
-	GetRecommendedBundles : (self : CatalogFetcher, id : number) -> AssetArray;
-	GetBatchItemDetails : (self : CatalogFetcher, id : {number}, type : Enum.AvatarItemType?) -> AssetArray;
-	Search : (self : CatalogFetcher, query : string) -> PageImpl?
+	Pages: (self: CatalogFetcher, page: Pages) -> PageImpl,
+	GetRecommendedAssets: (self: CatalogFetcher, id: number, avatar_asset_type: Enum.AvatarAssetType) -> AssetArray,
+	GetRecommendedBundles: (self: CatalogFetcher, id: number) -> AssetArray,
+	GetBatchItemDetails: (self: CatalogFetcher, id: { number }, type: Enum.AvatarItemType?) -> AssetArray,
+	Search: (self: CatalogFetcher, query: string) -> PageImpl?,
 }
-export type CatalogFetcher = Impl & Struct;
+export type CatalogFetcher = Impl & Struct
 local Avatar = {} :: CatalogFetcher
-local AvatarEditorService = game:GetService("AvatarEditorService")
-local Log = require(script.Parent.Parent.utils.Log)
-Avatar.Filter = CatalogSearchParams.new()
-Avatar.Filter.Limit = 120
-Avatar.Filter.AssetTypes = {Enum.AvatarAssetType.HairAccessory}
-function Avatar:Pages(Pages : Pages)
-
+Avatar.Filter = CatalogSearchParams.new();
+(Avatar.Filter :: any).Limit = 120
+Avatar.Filter.AssetTypes = { Enum.AvatarAssetType.HairAccessory }
+function Avatar:Pages(Pages: Pages)
 	local meta = {}
 	local Wraper = {}
 	local First = true
 
 	function meta:Next()
-
 		if First then
 			First = false
 			return Pages:GetCurrentPage()
@@ -53,60 +50,52 @@ function Avatar:Pages(Pages : Pages)
 			return {}
 		end
 
-		local Ok,_ = pcall(function()
+		local Ok, _ = pcall(function()
 			Pages:AdvanceToNextPageAsync()
-		end)	
+		end)
 
 		if Ok then
 			return Pages:GetCurrentPage()
 		end
 
 		return nil
-
 	end
 
 	return meta
-
 end
 
-function Avatar:Search(Query : string)
-
-	Log:Info(`searching with query {Query}`)
-
+function Avatar:Search(Query: string)
 	self.Filter.SearchKeyword = Query
-	local Ok,Result = pcall(function()
+	local Ok, Result = pcall(function()
 		return AvatarEditorService:SearchCatalog(self.Filter)
 	end)
 
 	if not Ok then
-		Log:Error(`couldn't search, error: {Result}`)
+		-- Log:Error(`couldn't search, error: {Result}`)
 		return nil
 	end
 
 	return Avatar:Pages(Result)
 end
 
-function Avatar:GetRecommendedAssets(Id : number,avatar_asset_type : Enum.AvatarAssetType)
+function Avatar:GetRecommendedAssets(Id: number, avatar_asset_type: Enum.AvatarAssetType)
 	--[[
 		Returns an array of recommended assets
 	]]
-	local ok,asset_array = pcall(function(...) 
-		local Recommended = AvatarEditorService:GetRecommendedAssets(avatar_asset_type,Id)
-		local asset_array : {AssetType} = {}
-
-		for _,Item in Recommended do
-			table.insert(asset_array,
-				{
-					Id = Item.Item.AssetId;
-					AssetType = avatar_asset_type.Name;
-					ItemType = "Asset";
-					Name = Item.Item.Name;
-					Description = "";
-					ProductId = Item.Product.Id;
-					CreatorName = Item.Creator.Name;
-					Price = Item.Item.Price
-				}
-			)
+	local ok, asset_array = pcall(function(...)
+		local Recommended = AvatarEditorService:GetRecommendedAssets(avatar_asset_type, Id)
+		local asset_array: { AssetType } = {}
+		for _, Item in Recommended do
+			table.insert(asset_array, {
+				Id = Item.Item.AssetId,
+				AssetType = avatar_asset_type.Name,
+				ItemType = "Asset",
+				Name = Item.Item.Name,
+				Description = "",
+				ProductId = Item.Product.Id,
+				CreatorName = Item.Creator.Name,
+				Price = Item.Item.Price,
+			})
 		end
 		return asset_array
 	end)
@@ -118,26 +107,22 @@ function Avatar:GetRecommendedAssets(Id : number,avatar_asset_type : Enum.Avatar
 	return asset_array
 end
 
-function Avatar:GetRecommendedBundles(Id : number)
-	local ok,asset_array = pcall(function(...) 
+function Avatar:GetRecommendedBundles(Id: number)
+	local ok, asset_array = pcall(function(...)
 		local Recommended = AvatarEditorService:GetRecommendedBundles(Id)
-		local asset_array : {AssetType} = {}
-
-		for _,Item in Recommended do
-			table.insert(asset_array,
-				{
-					Id = Item.Id;
-					AssetType = "";
-					ItemType = "Bundle";
-					Name = Item.Name;
-					Description = "";
-					ProductId = Item.Product.Id;
-					CreatorName = Item.Creator.Name;
-					Price = Item.Product.PriceInRobux
-				}
-			)
+		local asset_array: { AssetType } = {}
+		for _, Item in Recommended do
+			table.insert(asset_array, {
+				Id = Item.Id,
+				AssetType = "",
+				ItemType = "Bundle",
+				Name = Item.Name,
+				Description = "",
+				ProductId = Item.Product.Id,
+				CreatorName = Item.Creator.Name,
+				Price = Item.Product.PriceInRobux,
+			})
 		end
-
 		return asset_array
 	end)
 
@@ -147,10 +132,13 @@ function Avatar:GetRecommendedBundles(Id : number)
 	return asset_array
 end
 
-function Avatar:GetBatchItemDetails(ids,type )	
-	local ok,asset_array = pcall(function(...) 
-		return AvatarEditorService:GetBatchItemDetails(ids,type or Enum.AvatarItemType.Asset)
+function Avatar:GetBatchItemDetails(ids, type)
+	local ok, asset_array = pcall(function(...)
+		return AvatarEditorService:GetBatchItemDetails(ids, type or Enum.AvatarItemType.Asset)
 	end)
+	if not ok then
+		return {}
+	end
 	return asset_array
 end
 
