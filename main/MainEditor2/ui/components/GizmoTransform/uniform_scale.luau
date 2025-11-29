@@ -8,9 +8,9 @@ uniform_scale_handles.Height = 0.03
 uniform_scale_handles.InnerRadius = 2.2
 uniform_scale_handles.ZIndex = 2
 uniform_scale_handles.Visible = false
-return function(parent : Instance?,primary_part: BasePart, on_transform: (scale: Vector3) -> nil)
+return function(parent: Instance?, primary_part: BasePart, on_transform: (scale: Vector3) -> nil)
 	local new_uniform_scale_handles = uniform_scale_handles:Clone()
-    new_uniform_scale_handles.Adornee = primary_part
+	new_uniform_scale_handles.Adornee = primary_part
 	local scale_sens = 1
 	local current_camera = workspace.CurrentCamera :: Camera
 	local input_changed: RBXScriptConnection? = nil
@@ -58,13 +58,8 @@ return function(parent : Instance?,primary_part: BasePart, on_transform: (scale:
 					local mag = ((mouse_pos - primary_part_origin).Magnitude / 60)
 					local delta = mag - last_scale
 					on_transform(Vector3.new(delta, delta, delta) * scale_sens)
-					-- Update Size of Gizmo
-					local part_scale = primary_part.Size.Magnitude
-					local uniform_scale = new_uniform_scale_handles
-					uniform_scale.Height = 0.125
-					uniform_scale.Radius = part_scale * 0.5
-					uniform_scale.InnerRadius = uniform_scale.Radius * 0.8
-                    --
+
+					--
 					last_scale = mag
 				end
 			end)
@@ -75,11 +70,18 @@ return function(parent : Instance?,primary_part: BasePart, on_transform: (scale:
 		local localLook = primary_part.CFrame:VectorToObjectSpace(current_camera.CFrame.LookVector)
 		local newCF = CFrame.lookAt(Vector3.zero, localLook)
 		new_uniform_scale_handles.CFrame = newCF
+		-- Update Size of Gizmo
+		local part_scale = primary_part.Size.Magnitude
+		local uniform_scale = new_uniform_scale_handles
+		uniform_scale.Height = 0.125
+		uniform_scale.Radius = part_scale * 0.5
+		uniform_scale.InnerRadius = uniform_scale.Radius * 0.8
 	end)
+	
 	new_uniform_scale_handles.Destroying:Connect(function(...)
 		render_stepped:Disconnect()
 	end)
-    new_uniform_scale_handles.Parent = parent
+	new_uniform_scale_handles.Parent = parent
 	return new_uniform_scale_handles
 end
 
