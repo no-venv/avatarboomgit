@@ -1,7 +1,6 @@
-local Editor = script:FindFirstAncestor("MainEditor2")
 local HttpService = game:GetService("HttpService")
-local plugin_fs = require(Editor.singletons.PluginFS)
-local catalog_fetcher = require(Editor.singletons.CatalogFetcher)
+local plugin_fs = require("../singletons/PluginFS")
+local catalog_fetcher = require("../singletons/CatalogFetcher")
 local plugin_save_name = "BoomFavourties"
 type Favourites = {
 	[number] : catalog_fetcher.AssetType;
