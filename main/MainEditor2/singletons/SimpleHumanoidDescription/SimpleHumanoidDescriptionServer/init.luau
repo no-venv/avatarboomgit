@@ -1,85 +1,93 @@
 --!strict
+-- Split functions up in the future
 type Limb = "Left Arm" | "Left Leg" | "Right Arm" | "Right Leg" | "Head" | "Torso"
-type void = nil;
+type void = nil
 type BodyColours = {
-	["Left Arm"] : Color3;
-	["Left Leg"] : Color3;
-	["Right Arm"] : Color3;
-	["Right Leg"] : Color3;
-	["Head"] : Color3;
-	["Torso"] : Color3;
+	["Left Arm"]: Color3,
+	["Left Leg"]: Color3,
+	["Right Arm"]: Color3,
+	["Right Leg"]: Color3,
+	["Head"]: Color3,
+	["Torso"]: Color3,
 }
 type BodyScale = {
-	Width : number;
-	Height : number;
-	Head : number;
-	Depth : number;
-	Proportion : number;
+	Width: number,
+	Height: number,
+	Head: number,
+	Depth: number,
+	Proportion: number,
 }
 type BundleInfo = {
-	BundleType : "BodyParts" | "Shoes" | "Animations" | "DynamicHead";
-	Items : {
-		number
-	}
+	BundleType: "BodyParts" | "Shoes" | "Animations" | "DynamicHead",
+	Items: { number },
 }
 type Struct = {
-	__index : SimpleHumanoidDescription;
-	Humanoid : Humanoid;
-	BaseHumanoidDescription : HumanoidDescription;
-	humanoid_loading : BindableEvent;
-	humanoid_changed : BindableEvent;
-	id_added : BindableEvent;
-	id_removed : BindableEvent;
-	inited_humanoids : {[Humanoid]:boolean}
+	__index: SimpleHumanoidDescription,
+	Humanoid: Humanoid,
+	BaseHumanoidDescription: HumanoidDescription,
+	humanoid_loading: BindableEvent,
+	humanoid_changed: BindableEvent,
+	id_added: BindableEvent,
+	id_removed: BindableEvent,
+	inited_humanoids: { [Humanoid]: boolean },
 }
 type Impl = {
-	is_init  : (self : SimpleHumanoidDescription) -> boolean;
-	init : (self : SimpleHumanoidDescription, desc : Humanoid) -> void;
-	apply_fix : (self : SimpleHumanoidDescription) -> void;
-	add_id : (self : SimpleHumanoidDescription, id : number,asset_type : Enum.AvatarAssetType?,humanoid_desc_override : HumanoidDescription?) -> boolean;
-	remove_id : (self : SimpleHumanoidDescription, id : number) -> boolean;
-	add_bundle_id : (self : SimpleHumanoidDescription, id : number) -> boolean;
-	remove_bundle_id : (self : SimpleHumanoidDescription, id : number) -> boolean;	
+	is_init: (self: SimpleHumanoidDescription) -> boolean,
+	init: (self: SimpleHumanoidDescription, desc: Humanoid) -> void,
+	apply_fix: (self: SimpleHumanoidDescription) -> void,
+	add_id: (
+		self: SimpleHumanoidDescription,
+		id: number,
+		asset_type: Enum.AvatarAssetType?,
+		humanoid_desc_override: HumanoidDescription?
+	) -> boolean,
+	remove_id: (self: SimpleHumanoidDescription, id: number) -> boolean,
+	add_bundle_id: (self: SimpleHumanoidDescription, id: number) -> boolean,
+	remove_bundle_id: (self: SimpleHumanoidDescription, id: number) -> boolean,
 	--reset : (self : SimpleHumanoidDescription) -> void;
-	id_equipped : (self : SimpleHumanoidDescription, id :number) -> boolean;
-	get_id_accessory : (self : SimpleHumanoidDescription, id:number) -> Accessory?;
-	get_id_list : (self : SimpleHumanoidDescription,only_accessories : boolean?) -> {number};
-	get_bundle_id_list : (self : SimpleHumanoidDescription) -> {number};
-	set_body_colour : (self : SimpleHumanoidDescription, limb : Limb | "All", colour : Color3) ->  void;
-	set_body_scale : (self : SimpleHumanoidDescription, type : "Width" | "Height" | "Head" | "Depth" | "Proportion", scale : number) -> void;
-	get_body_scale : (self : SimpleHumanoidDescription) -> BodyScale;
-	get_body_colours : (self : SimpleHumanoidDescription) -> BodyColours;
-	get_humanoid_type : (self : SimpleHumanoidDescription) -> "R15" | "R6";
+	id_equipped: (self: SimpleHumanoidDescription, id: number) -> boolean,
+	get_id_accessory: (self: SimpleHumanoidDescription, id: number) -> Accessory?,
+	get_id_list: (self: SimpleHumanoidDescription, only_accessories: boolean?) -> { number },
+	get_bundle_id_list: (self: SimpleHumanoidDescription) -> { number },
+	set_body_colour: (self: SimpleHumanoidDescription, limb: Limb | "All", colour: Color3) -> void,
+	set_body_scale: (
+		self: SimpleHumanoidDescription,
+		type: "Width" | "Height" | "Head" | "Depth" | "Proportion",
+		scale: number
+	) -> void,
+	get_body_scale: (self: SimpleHumanoidDescription) -> BodyScale,
+	get_body_colours: (self: SimpleHumanoidDescription) -> BodyColours,
+	get_humanoid_type: (self: SimpleHumanoidDescription) -> "R15" | "R6",
 	--
-	set_id_transformation : (self : SimpleHumanoidDescription, id : number, type : "Pos" | "Rot" | "Scale", value : Vector3) -> void;
-	get_id_transformation : (self : SimpleHumanoidDescription, id : number, type : "Pos" | "Rot" | "Scale") -> Vector3?;
-	set_id_colour : (self : SimpleHumanoidDescription, id : number, colour :Color3) -> void;
-	get_id_colour : (self : SimpleHumanoidDescription, id : number) -> void;
-	
-	get_id_texture : (self : SimpleHumanoidDescription, id : number) -> string?;
-	set_id_texture : (self : SimpleHumanoidDescription, id : number, texture_id : number) -> string?;
-	reset_id_texture : (self : SimpleHumanoidDescription,id : number) -> void;
-	
-	get_clothing_colour : (self : SimpleHumanoidDescription, type : "Shirt" | "Pants") -> Color3?;
-	set_clothing_colour : (self : SimpleHumanoidDescription, type : "Shirt" | "Pants", colour : Color3) -> void;
-	
-	
+	set_id_transformation: (
+		self: SimpleHumanoidDescription,
+		id: number,
+		type: "Pos" | "Rot" | "Scale",
+		value: Vector3
+	) -> void,
+	get_id_transformation: (self: SimpleHumanoidDescription, id: number, type: "Pos" | "Rot" | "Scale") -> Vector3?,
+	set_id_colour: (self: SimpleHumanoidDescription, id: number, colour: Color3) -> void,
+	get_id_colour: (self: SimpleHumanoidDescription, id: number) -> void,
+
+	get_id_texture: (self: SimpleHumanoidDescription, id: number) -> string?,
+	set_id_texture: (self: SimpleHumanoidDescription, id: number, texture_id: number) -> string?,
+	reset_id_texture: (self: SimpleHumanoidDescription, id: number) -> void,
+
+	get_clothing_colour: (self: SimpleHumanoidDescription, type: "Shirt" | "Pants") -> Color3?,
+	set_clothing_colour: (self: SimpleHumanoidDescription, type: "Shirt" | "Pants", colour: Color3) -> void,
 }
 export type SimpleHumanoidDescription = Impl & Struct
 local AvatarEditorService = game:GetService("AvatarEditorService")
 local HttpService = game:GetService("HttpService")
 local AssetService = game:GetService("AssetService")
-local InsertService = game:GetService("InsertService")
 local SimpleHumanoidDescription = {} :: SimpleHumanoidDescription
 SimpleHumanoidDescription.__index = SimpleHumanoidDescription
-local avatar_asset_type_enum = Enum.AvatarAssetType
-local avatar_accessory_type_enum = Enum.AccessoryType
-local id_to_accessory_description = require(script.id_to_accessory_description)
-local id_to_accessory_mat = require(script.id_to_accessory_mat)
-local asset_type_map = require(script.asset_type_map)
-local accessory_type_map = require(script.accessory_type_map)
-local other_prop = require(script.other_prop)
-local get_accessory_mesh_id = require(script.get_accessory_mesh_id)
+local id_to_accessory_description = require("@self/id_to_accessory_description")
+local id_to_accessory_mat = require("@self/id_to_accessory_mat")
+local asset_type_map = require("@self/asset_type_map")
+local accessory_type_map = require("@self/accessory_type_map")
+local other_prop = require("@self/other_prop")
+local get_accessory_mesh_id = require("@self/get_accessory_mesh_id")
 
 function SimpleHumanoidDescription:is_init()
 	return self.Humanoid
@@ -114,21 +122,21 @@ function SimpleHumanoidDescription:apply_fix()
 	local old_shirt = humanoid_parent:FindFirstChild("Shirt") :: Shirt
 	local old_pants = humanoid_parent:FindFirstChild("Shirt") :: Shirt
 	-- save old accessories because "get_id_object" has reference to them
-	local old_accessories : {Accessory} = {}
-	for _,accessory in  self.Humanoid:GetAccessories() do
-		table.insert(old_accessories,accessory:Clone())
+	local old_accessories: { Accessory } = {}
+	for _, accessory in self.Humanoid:GetAccessories() do
+		table.insert(old_accessories, accessory:Clone())
 	end
 	-- make humanoid description behave
 	self.Humanoid:ApplyDescriptionReset(hum_desc)
 	-- fix dragging
-	for _,child in humanoid_parent:GetChildren() do
+	for _, child in humanoid_parent:GetChildren() do
 		if child:IsA("BasePart") or child:IsA("MeshPart") then
 			child.Locked = false
 		end
 	end
 	--
-	local new_accessories : {Accessory} = self.Humanoid:GetAccessories()
-	-- now i guess transfer the references to the new accessories/shirts? also clone the 
+	local new_accessories: { Accessory } = self.Humanoid:GetAccessories()
+	-- now i guess transfer the references to the new accessories/shirts? also clone the
 	-- children as well in case of modifications?
 	local new_shirt = humanoid_parent:FindFirstChild("Shirt") :: Shirt
 	local new_pants = humanoid_parent:FindFirstChild("Pants") :: Pants
@@ -139,9 +147,9 @@ function SimpleHumanoidDescription:apply_fix()
 	if old_pants then
 		new_pants.Color3 = old_shirt.Color3
 	end
-	for _,new_accessory in new_accessories do
+	for _, new_accessory in new_accessories do
 		local new_a_mesh_id = get_accessory_mesh_id(new_accessory)
-		for _,old_accessory in old_accessories do
+		for _, old_accessory in old_accessories do
 			local old_a_mesh_id = get_accessory_mesh_id(old_accessory)
 			if old_a_mesh_id == new_a_mesh_id then
 				local new_a_handle = new_accessory["Handle"]
@@ -163,23 +171,23 @@ function SimpleHumanoidDescription:get_id_list(only_accessories)
 	local ids = {}
 	local description = self.Humanoid:GetAppliedDescription()
 	local accessories = description:GetAccessories(true)
-	for _,accessory in accessories do
+	for _, accessory in accessories do
 		-- Exclude asset bundles
 		if self.Humanoid:GetAttribute(`b_asset_id_{accessory.AssetId}`) then
-			continue	
+			continue
 		end
-		table.insert(ids,accessory.AssetId)
+		table.insert(ids, accessory.AssetId)
 	end
-	
+
 	if not only_accessories then
-		for _,prop in other_prop do
+		for _, prop in other_prop do
 			local prop_id = description[prop]
 			if prop_id > 0 then
-				table.insert(ids,prop_id)
+				table.insert(ids, prop_id)
 			end
 		end
 	end
-	
+
 	return ids
 end
 
@@ -189,20 +197,20 @@ function SimpleHumanoidDescription:get_bundle_id_list()
 	end
 
 	local ids = {}
-	for bundle_header,bundle_ids : string in self.Humanoid:GetAttributes() do
+	for bundle_header, bundle_ids: string in self.Humanoid:GetAttributes() do
 		if bundle_header == "BodyPartsBundleID" then
 			continue
 		end
 		if bundle_header:match("b_asset_id") then
 			continue
 		end
-		table.insert(ids,tonumber(bundle_header)::number)
+		table.insert(ids, tonumber(bundle_header) :: number)
 	end
 	return ids
 end
 
-function SimpleHumanoidDescription:add_id(id,asset_type,humanoid_desc_override)
-	-- adds accesories 
+function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override)
+	-- adds accesories
 	if self:id_equipped(id) then
 		return true
 	end
@@ -210,15 +218,15 @@ function SimpleHumanoidDescription:add_id(id,asset_type,humanoid_desc_override)
 	local accessories = description:GetAccessories(true)
 	local AccessoryType = asset_type :: Enum.AvatarAssetType
 	if not asset_type then
-		local asset_info = AvatarEditorService:GetItemDetails(id,Enum.AvatarItemType.Asset)
+		local asset_info = AvatarEditorService:GetItemDetails(id, Enum.AvatarItemType.Asset)
 		AccessoryType = Enum.AvatarAssetType:FromName(asset_info.AssetType)
 		if not AccessoryType then
 			print(`{asset_info.AssetType} failed with Enum.AvatarAssetType:FromName`)
 			return false
-		end		
+		end
 	end
 
-	local legacy_success,error = pcall(function(...) 
+	local legacy_success, error = pcall(function(...)
 		local map = asset_type_map[AccessoryType.Name]
 		local property_type = typeof(description[map])
 		if property_type == "number" then
@@ -228,12 +236,12 @@ function SimpleHumanoidDescription:add_id(id,asset_type,humanoid_desc_override)
 		end
 	end)
 	if not legacy_success then
-		table.insert(accessories,{
-			Order = 1;
-			AssetId = id;
-			AccessoryType = accessory_type_map[AccessoryType];
+		table.insert(accessories, {
+			Order = 1,
+			AssetId = id,
+			AccessoryType = accessory_type_map[AccessoryType],
 		})
-		description:SetAccessories(accessories,true)
+		description:SetAccessories(accessories, true)
 	end
 
 	if not humanoid_desc_override then
@@ -246,15 +254,15 @@ end
 function SimpleHumanoidDescription:remove_id(id)
 	local description = self.Humanoid:GetAppliedDescription()
 	local accessories = description:GetAccessories(true)
-	for index,item in accessories do
+	for index, item in accessories do
 		if item.AssetId == id then
-			table.remove(accessories,index)
+			table.remove(accessories, index)
 			break
 		end
 	end
-	description:SetAccessories(accessories,true)
+	description:SetAccessories(accessories, true)
 
-	for _,prop in other_prop do
+	for _, prop in other_prop do
 		if description[prop] == id then
 			description[prop] = 0
 		end
@@ -264,7 +272,7 @@ function SimpleHumanoidDescription:remove_id(id)
 		accessory_cache:Destroy()
 	end
 	id_to_accessory_description.remove(id)
-	id_to_accessory_mat.remove(self.Humanoid,id)
+	id_to_accessory_mat.remove(self.Humanoid, id)
 	self.Humanoid:ApplyDescription(description)
 	self.id_removed:Fire(id)
 	return true
@@ -272,34 +280,33 @@ end
 
 function SimpleHumanoidDescription:add_bundle_id(id)
 	local bundle_details = AssetService:GetBundleDetailsAsync(id)
-	local saved_bundle_data : BundleInfo = {
-		BundleType = bundle_details.BundleType;
+	local saved_bundle_data: BundleInfo = {
+		BundleType = bundle_details.BundleType,
 		Items = (function()
-			local ids : {number} = {}
-			for _,item in bundle_details.Items do
+			local ids: { number } = {}
+			for _, item in bundle_details.Items do
 				if item.Type == "UserOutfit" then
 					continue
 				end
-				table.insert(ids,item.Id)
+				table.insert(ids, item.Id)
 			end
 			return ids
-		end)()
+		end)(),
 	}
 
-
 	local ids = {}
-	for _,item in bundle_details.Items do
+	for _, item in bundle_details.Items do
 		if item.Type == "UserOutfit" then
 			continue
 		end
-		table.insert(ids,item.Id)
+		table.insert(ids, item.Id)
 	end
 	local description = self.Humanoid:GetAppliedDescription()
-	local batch_fetch = AvatarEditorService:GetBatchItemDetails(ids,Enum.AvatarItemType.Asset)
+	local batch_fetch = AvatarEditorService:GetBatchItemDetails(ids, Enum.AvatarItemType.Asset)
 
-	for _,item in batch_fetch do
+	for _, item in batch_fetch do
 		local asset_type = Enum.AvatarAssetType:FromName(item.AssetType)
-		self:add_id(item.Id,Enum.AvatarAssetType:FromName(item.AssetType),description)
+		self:add_id(item.Id, Enum.AvatarAssetType:FromName(item.AssetType), description)
 	end
 
 	self.Humanoid:ApplyDescriptionReset(description)
@@ -308,7 +315,7 @@ function SimpleHumanoidDescription:add_bundle_id(id)
 	local save_shoes = saved_bundle_data.BundleType == "Shoes"
 	local save_body = saved_bundle_data.BundleType == "BodyParts"
 	if save_shoes or save_body then
-		self.Humanoid:SetAttribute(tostring(id),HttpService:JSONEncode(saved_bundle_data))
+		self.Humanoid:SetAttribute(tostring(id), HttpService:JSONEncode(saved_bundle_data))
 	end
 
 	return true
@@ -316,31 +323,31 @@ end
 
 function SimpleHumanoidDescription:remove_bundle_id(id)
 	local id_string = tostring(id)
-	local saved_bundle_data : BundleInfo = HttpService:JSONDecode(self.Humanoid:GetAttribute(id_string))
+	local saved_bundle_data: BundleInfo = HttpService:JSONDecode(self.Humanoid:GetAttribute(id_string))
 
 	if saved_bundle_data.BundleType == "BodyParts" then
 		local description = self.Humanoid:GetAppliedDescription()
-		description.Head = 0;
-		description.LeftArm = 0;
-		description.LeftLeg = 0;
-		description.RightArm = 0;
-		description.RightLeg = 0;
-		description.Torso = 0;
-		self.Humanoid:SetAttribute("BodyPartsBundleID",nil)
-		self.Humanoid:SetAttribute(id_string,nil)
+		description.Head = 0
+		description.LeftArm = 0
+		description.LeftLeg = 0
+		description.RightArm = 0
+		description.RightLeg = 0
+		description.Torso = 0
+		self.Humanoid:SetAttribute("BodyPartsBundleID", nil)
+		self.Humanoid:SetAttribute(id_string, nil)
 		self.Humanoid:ApplyDescription(description)
 		self.id_removed:Fire()
 		return true
 	end
 	if saved_bundle_data.BundleType == "DynamicHead" then
-		self.Humanoid:SetAttribute("DynamicHeadBundleID",nil)
+		self.Humanoid:SetAttribute("DynamicHeadBundleID", nil)
 	end
-	for _,item in saved_bundle_data.Items do
-		self.Humanoid:SetAttribute(`b_asset_id_{item}`,nil)
+	for _, item in saved_bundle_data.Items do
+		self.Humanoid:SetAttribute(`b_asset_id_{item}`, nil)
 		self:remove_id(item)
 	end
 
-	self.Humanoid:SetAttribute(id_string,nil)
+	self.Humanoid:SetAttribute(id_string, nil)
 	return true
 end
 
@@ -351,13 +358,13 @@ function SimpleHumanoidDescription:id_equipped(id)
 	local description = self.Humanoid:GetAppliedDescription()
 	local accessories = description:GetAccessories(true)
 
-	for _,prop in other_prop do
+	for _, prop in other_prop do
 		if description[prop] == id then
 			return true
-		end 
+		end
 	end
 
-	for _,item in accessories do
+	for _, item in accessories do
 		if item.AssetId == id then
 			return true
 		end
@@ -370,38 +377,38 @@ function SimpleHumanoidDescription:id_equipped(id)
 	return false
 end
 
-function SimpleHumanoidDescription:set_body_colour(limb,colour)
+function SimpleHumanoidDescription:set_body_colour(limb, colour)
 	local mapping = {
-		["Left Arm"] = "LeftArmColor";
-		["Left Leg"] = "LeftLegColor";
-		["Right Arm"] = "RightArmColor";
-		["Right Leg"] = "RightLegColor";
-		["Head"] = "HeadColor";
-		["Torso"] = "TorsoColor"
+		["Left Arm"] = "LeftArmColor",
+		["Left Leg"] = "LeftLegColor",
+		["Right Arm"] = "RightArmColor",
+		["Right Leg"] = "RightLegColor",
+		["Head"] = "HeadColor",
+		["Torso"] = "TorsoColor",
 	}
 	local description = self.Humanoid:GetAppliedDescription()
 	if limb == "All" then
-		for limb,limb_colour_mapping in mapping do
+		for limb, limb_colour_mapping in mapping do
 			description[limb_colour_mapping] = colour
 		end
-	else 
+	else
 		description[mapping[limb]] = colour
 	end
 	self.Humanoid:ApplyDescription(description)
 	return
 end
 
-function SimpleHumanoidDescription:set_body_scale(type,scale)
+function SimpleHumanoidDescription:set_body_scale(type, scale)
 	if not self:is_init() then
 		return
 	end
 	local description = self.Humanoid:GetAppliedDescription()
 	local prop = {
-		Width = "WidthScale";
-		Height = "HeightScale";
-		Head = "HeadScale";
-		Depth = "DepthScale";
-		Proportion = "ProportionScale"
+		Width = "WidthScale",
+		Height = "HeightScale",
+		Head = "HeadScale",
+		Depth = "DepthScale",
+		Proportion = "ProportionScale",
 	}
 
 	description[prop[type]] = scale
@@ -412,22 +419,22 @@ end
 function SimpleHumanoidDescription:get_body_colours()
 	local description = self.Humanoid:GetAppliedDescription()
 	return {
-		["Left Arm"] = description.LeftArmColor;
-		["Left Leg"] = description.LeftLegColor;
-		["Right Arm"] = description.RightArmColor;
-		["Right Leg"] = description.RightLegColor;
-		["Head"] = description.HeadColor;
-		["Torso"] = description.TorsoColor
+		["Left Arm"] = description.LeftArmColor,
+		["Left Leg"] = description.LeftLegColor,
+		["Right Arm"] = description.RightArmColor,
+		["Right Leg"] = description.RightLegColor,
+		["Head"] = description.HeadColor,
+		["Torso"] = description.TorsoColor,
 	}
 end
 
 function SimpleHumanoidDescription:get_body_scale()
-	local body_scale : BodyScale = {
-		Width = 1;
-		Height = 1;
-		Head = 1;
-		Depth = 1;
-		Proportion = 0;
+	local body_scale: BodyScale = {
+		Width = 1,
+		Height = 1,
+		Head = 1,
+		Depth = 1,
+		Proportion = 0,
 	}
 	if self:is_init() then
 		local description = self.Humanoid:GetAppliedDescription()
@@ -435,9 +442,9 @@ function SimpleHumanoidDescription:get_body_scale()
 		body_scale.Height = description.HeightScale
 		body_scale.Head = description.HeadScale
 		body_scale.Depth = description.DepthScale
-		body_scale.Proportion =description.ProportionScale
+		body_scale.Proportion = description.ProportionScale
 		return body_scale
-	else 
+	else
 		return body_scale
 	end
 end
@@ -446,11 +453,11 @@ function SimpleHumanoidDescription:get_humanoid_type()
 	return type :: "R15" | "R6"
 end
 
-function SimpleHumanoidDescription:set_id_transformation(id,trans_type,vec3)
+function SimpleHumanoidDescription:set_id_transformation(id, trans_type, vec3)
 	if not self:is_init() then
 		return
 	end
-	local accessory_description = id_to_accessory_description.get(self.Humanoid,id)
+	local accessory_description = id_to_accessory_description.get(self.Humanoid, id)
 	if accessory_description then
 		local is_pos = trans_type == "Pos"
 		local is_rot = trans_type == "Rot"
@@ -470,12 +477,12 @@ function SimpleHumanoidDescription:set_id_transformation(id,trans_type,vec3)
 	return
 end
 
-function SimpleHumanoidDescription:get_id_transformation(id,trans_type)
+function SimpleHumanoidDescription:get_id_transformation(id, trans_type)
 	if not self:is_init() then
 		return
 	end
-	local accessory_description = id_to_accessory_description.get(self.Humanoid,id)
-	local return_value : Vector3
+	local accessory_description = id_to_accessory_description.get(self.Humanoid, id)
+	local return_value: Vector3
 	if accessory_description then
 		local is_pos = trans_type == "Pos"
 		local is_rot = trans_type == "Rot"
@@ -493,16 +500,16 @@ function SimpleHumanoidDescription:get_id_transformation(id,trans_type)
 	return return_value
 end
 
-function SimpleHumanoidDescription:set_id_colour(id,colour)
+function SimpleHumanoidDescription:set_id_colour(id, colour)
 	if not self:is_init() then
 		return
 	end
-	local id_material = id_to_accessory_mat.get(self.Humanoid,id)
+	local id_material = id_to_accessory_mat.get(self.Humanoid, id)
 	if not id_material then
 		return
 	end
 	if id_material:IsA("SpecialMesh") then
-		id_material.VertexColor = Vector3.new(colour.R,colour.G,colour.B)
+		id_material.VertexColor = Vector3.new(colour.R, colour.G, colour.B)
 	end
 	if id_material:IsA("SurfaceAppearance") then
 		id_material.Color = colour
@@ -514,14 +521,14 @@ function SimpleHumanoidDescription:get_id_colour(id)
 	if not self:is_init() then
 		return
 	end
-	local return_value : Color3
-	local id_material = id_to_accessory_mat.get(self.Humanoid,id)
+	local return_value: Color3
+	local id_material = id_to_accessory_mat.get(self.Humanoid, id)
 	if not id_material then
 		return
 	end
 	if id_material:IsA("SpecialMesh") then
 		local vertex_colour = id_material.VertexColor
-		return_value = Color3.new(vertex_colour.X,vertex_colour.Y,vertex_colour.Z)
+		return_value = Color3.new(vertex_colour.X, vertex_colour.Y, vertex_colour.Z)
 	end
 	if id_material:IsA("SurfaceAppearance") then
 		return_value = id_material.Color
@@ -541,7 +548,7 @@ function SimpleHumanoidDescription:get_clothing_colour(type)
 	return
 end
 
-function SimpleHumanoidDescription:set_clothing_colour(type,colour)
+function SimpleHumanoidDescription:set_clothing_colour(type, colour)
 	if not self:is_init() then
 		return
 	end
@@ -557,7 +564,7 @@ function SimpleHumanoidDescription:get_id_accessory(id)
 	if not self:is_init() then
 		return
 	end
-	local accessory_description = id_to_accessory_description.get(self.Humanoid,id)
+	local accessory_description = id_to_accessory_description.get(self.Humanoid, id)
 	if not accessory_description then
 		return
 	end
@@ -568,55 +575,55 @@ function SimpleHumanoidDescription:get_id_texture(id)
 	if not self:is_init() then
 		return
 	end
-	local id_material = id_to_accessory_mat.get(self.Humanoid,id)
+	local id_material = id_to_accessory_mat.get(self.Humanoid, id)
 	if not id_material then
 		return
 	end
 	if id_material:IsA("SpecialMesh") then
 		return id_material.TextureId
-	end	
+	end
 	if id_material:IsA("SurfaceAppearance") then
 		return id_material.ColorMapContent.Uri
 	end
 	return
 end
 
-function SimpleHumanoidDescription:set_id_texture(id,texture_id)
+function SimpleHumanoidDescription:set_id_texture(id, texture_id)
 	if not self:is_init() then
 		return
 	end
-	local id_material = id_to_accessory_mat.get(self.Humanoid,id)
+	local id_material = id_to_accessory_mat.get(self.Humanoid, id)
 	if not id_material then
 		return
 	end
-	
-	local material_id : string?
+
+	local material_id: string?
 	if id_material:IsA("SpecialMesh") then
 		material_id = id_material.TextureId
-	end	
+	end
 	if id_material:IsA("SurfaceAppearance") then
 		material_id = id_material.ColorMapContent.Uri
 	end
-	
+
 	if not material_id then
 		-- usually this means something went wrong!!
 		return
 	end
-	
+
 	local rbx_asset_uri = `rbxassetid://{texture_id}`
 
 	if not id_material:GetAttribute("base_material_id") then
 		-- set the base id for reverting later!!!
-		id_material:SetAttribute("base_material_id",material_id)
+		id_material:SetAttribute("base_material_id", material_id)
 	end
-	
+
 	if id_material:IsA("SpecialMesh") then
 		id_material.TextureId = rbx_asset_uri
-	end	
+	end
 	if id_material:IsA("SurfaceAppearance") then
 		id_material.ColorMapContent = Content.fromUri(rbx_asset_uri)
 	end
-	
+
 	return
 end
 
@@ -624,11 +631,11 @@ function SimpleHumanoidDescription:reset_id_texture(id)
 	if not self:is_init() then
 		return
 	end
-	local id_material = id_to_accessory_mat.get(self.Humanoid,id)
+	local id_material = id_to_accessory_mat.get(self.Humanoid, id)
 	if not id_material then
 		return
 	end
-	local base_material_id : string = id_material:GetAttribute("base_material_id")
+	local base_material_id: string = id_material:GetAttribute("base_material_id")
 	if not base_material_id then
 		return
 	end
@@ -636,22 +643,22 @@ function SimpleHumanoidDescription:reset_id_texture(id)
 	if not texture_id then
 		return
 	end
-	self:set_id_texture(id,tonumber(texture_id))	
+	self:set_id_texture(id, tonumber(texture_id))
 	return
 end
 
 local constructor = {}
 
-function constructor:new() : SimpleHumanoidDescription
+function constructor:new(): SimpleHumanoidDescription
 	local struct = {
-		Humanoid = nil;
-		BaseHumanoidDescription = nil;
-		humanoid_changed = Instance.new("BindableEvent");
-		id_added = Instance.new("BindableEvent");
-		id_removed = Instance.new("BindableEvent");
-		inited_humanoids = {}
+		Humanoid = nil,
+		BaseHumanoidDescription = nil,
+		humanoid_changed = Instance.new("BindableEvent"),
+		id_added = Instance.new("BindableEvent"),
+		id_removed = Instance.new("BindableEvent"),
+		inited_humanoids = {},
 	}
-	return setmetatable(struct,SimpleHumanoidDescription)
+	return setmetatable(struct, SimpleHumanoidDescription)
 end
 
 return constructor

@@ -1,12 +1,12 @@
 local SelectionService = game:GetService("Selection")
-local utils = require(script.Parent.Parent.utils)
-local shared = require(script.Parent.Parent.shared)
+local utils = require("../utils")
+local shared = require("../shared")
+local shs = require("@self/SimpleHumanoidDescriptionServer"):new()
 local plugin_global = shared.plugin.plugin
 local plugin_widget = shared.plugin.widget
-local shs = require(script.SimpleHumanoidDescriptionServer):new()
 local plugin_closed = false
 local mute_event = false
-local selection_changed = SelectionService.SelectionChanged:Connect(function()	
+local selection_changed = SelectionService.SelectionChanged:Connect(function()
 	if plugin_closed then
 		return
 	end
@@ -16,7 +16,7 @@ local selection_changed = SelectionService.SelectionChanged:Connect(function()
 		return
 	end
 	local rig = selection_get[1] :: Model
-	local humanoid : Humanoid? = rig:FindFirstChild("Humanoid") 
+	local humanoid: Humanoid? = rig:FindFirstChild("Humanoid")
 	if not humanoid then
 		return
 	end
@@ -24,7 +24,7 @@ local selection_changed = SelectionService.SelectionChanged:Connect(function()
 		return
 	end
 	shs:init(humanoid)
-	SelectionService:Set({rig})
+	SelectionService:Set({ rig })
 end)
 
 if plugin_global then
