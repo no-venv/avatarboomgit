@@ -1,11 +1,8 @@
 -- caches avatar asset type
 -- gets the current wearing from `simple_humanoid_description`, caches as well
 local MAX_CACHE_SIZE = 2^16
-local catalog_fetcher = require(script.Parent.CatalogFetcher)
-local event_bus = require(script.Parent.event_bus)
-local utils = require(script.Parent.Parent.utils)
-local humanoid_editor = require(script.Parent.SimpleHumanoidDescription)
-local log = utils.Log
+local catalog_fetcher = require("./CatalogFetcher")
+local humanoid_editor = require("./SimpleHumanoidDescription")
 
 type Impl = {
 	get_wearing : () -> catalog_fetcher.AssetArray
