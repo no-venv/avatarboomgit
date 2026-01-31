@@ -1,2 +1,2 @@
 --avatarBoom Next
-return 2.03
+return 2.04
