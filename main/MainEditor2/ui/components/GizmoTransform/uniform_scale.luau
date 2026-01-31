@@ -77,9 +77,18 @@ return function(parent: Instance?, primary_part: BasePart, on_transform: (scale:
 		uniform_scale.Radius = part_scale * 0.5
 		uniform_scale.InnerRadius = uniform_scale.Radius * 0.8
 	end)
-	
+
 	new_uniform_scale_handles.Destroying:Connect(function(...)
 		render_stepped:Disconnect()
+		if input_changed then
+			input_changed:Disconnect()
+		end
+		if input_ended then
+			input_ended:Disconnect()
+		end
+		if mouse_pos_listener then
+			mouse_pos_listener:Disconnect()
+		end
 	end)
 	new_uniform_scale_handles.Parent = parent
 	return new_uniform_scale_handles
