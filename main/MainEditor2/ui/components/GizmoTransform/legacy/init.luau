@@ -1,9 +1,9 @@
 type OnTransformFunc = (type : "Move" | "Rotation" | "Scale" | "Reset", value : Vector3) -> nil
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local gizmo = require(script.Gizmo)
-local ui_lib = require(script.Parent.lune_ui)
-local shared = require(Editor.shared)
+local gizmo = require("@self/Gizmo")
+local ui_lib = require("../components/lune_ui")
+local shared = require("../../shared")
 local plugin = shared.plugin.plugin
 return function(primary_part : BasePart,on_transform : OnTransformFunc)
 	local instanced_gizmo = gizmo()
@@ -274,7 +274,7 @@ return function(primary_part : BasePart,on_transform : OnTransformFunc)
 	end
 	local part_scale = primary_part.Size.Magnitude
 	self.update_unform_scale_size()
-	instanced_gizmo.container.Parent = game.CoreGui
+	instanced_gizmo.container.Parent = (game::any).CoreGui
 	instanced_gizmo.container.Destroying:Connect(function() 
 		if plugin then
 			plugin:Activate(false)

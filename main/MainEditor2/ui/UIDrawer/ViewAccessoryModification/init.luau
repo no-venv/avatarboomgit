@@ -155,6 +155,7 @@ return function(parent: Instance?): Frame
 					if not cur_id_transform then
 						return
 					end
+
 					humanoid_editor:set_id_transformation(current_id, "Pos", cur_id_transform + value)
 					return
 				end
