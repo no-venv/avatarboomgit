@@ -1,6 +1,6 @@
 type arg = {
 	parent: Instance?,
-	id: number | string,
+	id: number | string | { number | string },
 	theme_enabled: boolean?,
 	on_click: () -> nil,
 }
@@ -10,21 +10,74 @@ local aspect_ratio = Instance.new("UIAspectRatioConstraint")
 aspect_ratio.AspectRatio = 1
 aspect_ratio.AspectType = Enum.AspectType.ScaleWithParentSize
 aspect_ratio.DominantAxis = Enum.DominantAxis.Height
-return function(arg: arg)
-	local parent = arg.parent
-	local id = arg.id
-	local theme_enabled = arg.theme_enabled
-	local func = arg.on_click
+local function new_image(id: number | string): ImageLabel
 	local image = Instance.new("ImageLabel")
 	image.Transparency = 1
 	image.AnchorPoint = Vector2.new(0.5, 0.5)
 	image.Position = UDim2.new(0.5, 0, 0.5, 0)
 	image.Size = UDim2.new(1, 0, 1, 0)
-	image.ImageContent = type(id) == "string" and Content.fromUri(id) or Content.fromAssetId(id)
+	image.ImageContent = type(id) == "string" and Content.fromUri(id) or Content.fromAssetId(id :: number)
+	return image
+end
+local image_positioning = {
+	{
+		UDim2.new(0.2, 0, 0.5, 0),
+		UDim2.new(0.45, 0, 0.45, 0),
+		-35,
+		-1,
+	},
+
+	{
+		UDim2.new(0.5, 0, 0.5, 0),
+		UDim2.new(0.6, 0, 0.6, 0),
+		0,
+		1,
+	},
+	{
+		UDim2.new(0.8, 0, 0.5, 0),
+		UDim2.new(0.45, 0, 0.45, 0),
+		35,
+		-1,
+	},
+}
+return function(arg: arg)
+	local parent = arg.parent
+	local id = arg.id
+	local theme_enabled = arg.theme_enabled
+	local func = arg.on_click
 	local clone = textbutton("", parent, func)
 	clone.AutomaticSize = Enum.AutomaticSize.None
-	image.Parent = clone
-	if theme_enabled then
+	local images_to_theme = {}
+	if type(id) == "table" then
+		if #id == 1 then
+			local image = new_image(id)
+			image.Parent = clone
+			if theme_enabled then
+				table.insert(images_to_theme, image)
+			end
+		else
+			for index, value in id do
+				local pos = image_positioning[index]
+				local image = new_image(value)
+				image.Position = pos[1]
+				image.Size = pos[2]
+				image.Rotation = pos[3]
+				image.ZIndex = pos[4]
+				image.Parent = clone
+				if theme_enabled then
+					table.insert(images_to_theme, image)
+					-- theme_manager:add_custom_gui_instance(image, "Foreground")
+				end
+			end
+		end
+	else
+		local image = new_image(id)
+		image.Parent = clone
+		if theme_enabled then
+			table.insert(images_to_theme, image)
+		end
+	end
+	for _, image in images_to_theme do
 		theme_manager:add_custom_gui_instance(image, "Foreground")
 	end
 	aspect_ratio:Clone().Parent = clone

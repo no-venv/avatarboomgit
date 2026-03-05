@@ -37,6 +37,7 @@ return function(views : {Frame},default_view : string,parent : Instance?,tab_bar
 	size_const.Parent = scrolling_frame
 	local current_view : string = nil;
 	local view_map = {}
+	local self 
 	local function toggle(target_view: string, bool : boolean)
 		if current_view then
 			local view = view_map[current_view]
@@ -47,8 +48,9 @@ return function(views : {Frame},default_view : string,parent : Instance?,tab_bar
 		view[1].Visible = true
 		theme_manager:force_highlight(view[2],true)
 		current_view = target_view
+		-- self.on_view_change(target_view)
 	end
-	local self = {
+	self = {
 		toggle = toggle,
 		on_view_change = function(view)
 			return
