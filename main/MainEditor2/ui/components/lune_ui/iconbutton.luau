@@ -50,7 +50,7 @@ return function(arg: arg)
 	local images_to_theme = {}
 	if type(id) == "table" then
 		if #id == 1 then
-			local image = new_image(id)
+			local image = new_image(id[1])
 			image.Parent = clone
 			if theme_enabled then
 				table.insert(images_to_theme, image)

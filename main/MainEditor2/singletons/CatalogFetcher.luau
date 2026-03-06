@@ -29,6 +29,7 @@ type Impl = {
 	GetRecommendedBundles: (self: CatalogFetcher, id: number) -> AssetArray,
 	GetBatchItemDetails: (self: CatalogFetcher, id: { number }, type: Enum.AvatarItemType?) -> AssetArray,
 	Search: (self: CatalogFetcher, query: string) -> PageImpl?,
+	FilterAsTable: (self: CatalogFetcher) -> {},
 }
 export type CatalogFetcher = Impl & Struct
 local Avatar = {} :: CatalogFetcher
@@ -37,7 +38,6 @@ Avatar.Filter = CatalogSearchParams.new();
 Avatar.Filter.AssetTypes = { Enum.AvatarAssetType.HairAccessory }
 function Avatar:Pages(Pages: Pages)
 	local meta = {}
-	local Wraper = {}
 	local First = true
 
 	function meta:Next()
@@ -67,7 +67,7 @@ end
 function Avatar:Search(Query: string)
 	self.Filter.SearchKeyword = Query
 	local Ok, Result = pcall(function()
-		return AvatarEditorService:SearchCatalog(self.Filter)
+		return AvatarEditorService:SearchCatalogAsync(self.Filter)
 	end)
 
 	if not Ok then
@@ -83,7 +83,7 @@ function Avatar:GetRecommendedAssets(Id: number, avatar_asset_type: Enum.AvatarA
 		Returns an array of recommended assets
 	]]
 	local ok, asset_array = pcall(function(...)
-		local Recommended = AvatarEditorService:GetRecommendedAssets(avatar_asset_type, Id)
+		local Recommended = AvatarEditorService:GetRecommendedAssetsAsync(avatar_asset_type, Id)
 		local asset_array: { AssetType } = {}
 		for _, Item in Recommended do
 			table.insert(asset_array, {
@@ -109,7 +109,7 @@ end
 
 function Avatar:GetRecommendedBundles(Id: number)
 	local ok, asset_array = pcall(function(...)
-		local Recommended = AvatarEditorService:GetRecommendedBundles(Id)
+		local Recommended = AvatarEditorService:GetRecommendedBundlesAsync(Id)
 		local asset_array: { AssetType } = {}
 		for _, Item in Recommended do
 			table.insert(asset_array, {
@@ -134,12 +134,30 @@ end
 
 function Avatar:GetBatchItemDetails(ids, type)
 	local ok, asset_array = pcall(function(...)
-		return AvatarEditorService:GetBatchItemDetails(ids, type or Enum.AvatarItemType.Asset)
+		return AvatarEditorService:GetBatchItemDetailsAsync(ids, type or Enum.AvatarItemType.Asset)
 	end)
 	if not ok then
 		return {}
 	end
 	return asset_array
+end
+
+function Avatar:FilterAsTable()
+	return {
+		AssetTypes = table.clone(Avatar.Filter.AssetTypes),
+		BundleTypes = table.clone(Avatar.Filter.BundleTypes),
+		CategoryFilter = Avatar.Filter.CategoryFilter,
+		CreatorId = Avatar.Filter.CreatorId,
+		CreatorName = Avatar.Filter.CreatorName,
+		CreatorType = Avatar.Filter.CreatorType,
+		IncludeOffSale = Avatar.Filter.IncludeOffSale,
+		Limit = Avatar.Filter.Limit,
+		MaxPrice = Avatar.Filter.MaxPrice,
+		MinPrice = Avatar.Filter.MinPrice,
+		SearchKeyword = Avatar.Filter.SearchKeyword,
+		SortAggregation = Avatar.Filter.SortAggregation,
+		SortType = Avatar.Filter.SortType,
+	}
 end
 
 return Avatar

@@ -9,7 +9,6 @@ button.TextScaled = true
 button.TextSize = 1
 button.TextWrapped = true
 styling.corner(button)
-styling.stroke(button)
 styling.font(button)
 styling.padding(button)
 return function(text: string, parent: Instance?, connect_func)
@@ -17,6 +16,7 @@ return function(text: string, parent: Instance?, connect_func)
 	if connect_func then
 		clone.MouseButton1Click:Connect(connect_func)
 	end
+	styling.stroke(clone)
 	theme_manager:add_custom_gui_instance(clone, "Foreground")
 	theme_manager:add_highlight(clone)
 	utils.prop_scope.auto_set_property(clone)

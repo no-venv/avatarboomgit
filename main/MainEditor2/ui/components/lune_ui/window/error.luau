@@ -1,0 +1,29 @@
+-- local base = require("./base")
+-- local empty_frame = require("../empty_frame")
+-- local textbox = require("../textbox")
+-- local textbutton = require("../textbutton")
+-- local styling = require("../styling_components")
+-- type PromptArgument = {
+-- 	error : string;
+--     copy_and_paste : boolean?;
+-- } & base.BaseWindowArguments
+-- return function(arg: PromptArgument)
+-- 	local window
+-- 	local container = empty_frame()
+-- 	local vbox = styling.vbox(container)
+-- 	vbox.VerticalAlignment = Enum.VerticalAlignment.Center
+-- 	vbox.HorizontalAlignment = Enum.HorizontalAlignment.Center
+--     if arg.copy_and_paste then
+
+--     else 
+
+--     end
+-- 	local pinboard_name_textbox = textbox(arg.prompt_hint_text, container)
+-- 	textbutton(arg.prompt_close_text, container, function(...)
+-- 		arg.on_prompt_result(pinboard_name_textbox.Text)
+-- 		window:Destroy()
+-- 	end)
+-- 	arg.view = container
+-- 	window = base(arg)
+-- 	return window
+-- end

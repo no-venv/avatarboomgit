@@ -52,6 +52,11 @@ return function()
 			styling.sizeconst(user_ack, Vector2.new(0, 32), Vector2.new(math.huge, 32))
 		end)
 
-		window = lune_window.base("avatarBoom has a update!", Vector2.new(320, 360), container, true)
+		window = lune_window.base({
+			title = "avatarBoom has a update!",
+			size = Vector2.new(320, 360),
+			view = container,
+			important = true,
+		})
 	end)
 end

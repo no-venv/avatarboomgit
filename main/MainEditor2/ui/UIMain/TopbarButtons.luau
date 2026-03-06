@@ -6,22 +6,27 @@ local styling = lune.styling
 local theme_manager = lune.theme_manager
 local iconbutton = lune.iconbutton
 local textbutton = lune.textbutton
-local floating_menu = lune.float_menu
 local textbox = lune.textbox
 local function state()
 	local first = false
 	local consumed: string = nil
-	return function(state: string)
+	local output = {
+		output = "None",
+	}
+	local set_state = function(state: string)
 		if consumed ~= state then
 			consumed = state
 			first = false
 		end
 		if not consumed then
+			output.output = "None"
 			return "None"
 		end
 		first = not first
-		return first and consumed or "None"
+		output.output = first and consumed or "None"
+		return output.output
 	end
+	return set_state, output
 end
 --
 local container = empty_frame()
@@ -55,12 +60,22 @@ local button_container = empty_frame()
 button_container.Size = UDim2.new(0.5, 0, 1, 0)
 --
 return function(parent: Instance?)
-	local state = state()
+	local state, state_status = state()
 	local dropdown_state = false
 	local topbar_container = container:Clone()
 	local left_button_container = button_container:Clone()
 	left_button_container.Parent = topbar_container
-	local search = textbox("search or paste ID here", topbar_container)
+	local custom_button_container = empty_frame(left_button_container)
+	custom_button_container.AutomaticSize = Enum.AutomaticSize.X
+	custom_button_container.Size = UDim2.new(0, 0, 1, 0)
+	do
+		local layout = button_container_layout:Clone()
+		layout.Parent = custom_button_container
+		layout.HorizontalFlex = Enum.UIFlexAlignment.Fill
+	end
+	local search_container = empty_frame(topbar_container)
+	search_container.Size = UDim2.new(1, 0, 1, 0)
+	local search = textbox("search or paste ID here", search_container)
 	search.Size = UDim2.new(1, 0, 1, 0)
 	search.ClearTextOnFocus = false
 	search.FocusLost:Connect(function(enterPressed: boolean, inputThatCausedFocusLoss: InputObject)
@@ -73,15 +88,10 @@ return function(parent: Instance?)
 			query = query,
 		})
 	end)
-	do
-		--local size_const = Instance.new("UISizeConstraint")
-		--size_const.MinSize = Vector2.new(200,0)
-		--size_const.MaxSize = Vector2.new(200,math.huge)
-		--size_const.Parent = search
-	end
 
 	local right_button_container = button_container:Clone()
 	right_button_container.Parent = topbar_container
+
 	do
 		local left_layout = button_container_layout:Clone()
 		left_layout.Parent = left_button_container
@@ -91,7 +101,7 @@ return function(parent: Instance?)
 	end
 	local dropdown_button = iconbutton({
 		id = 134883261664446,
-		parent = left_button_container,
+		parent = custom_button_container,
 		theme_enabled = true,
 		on_click = function()
 			dropdown_state = not dropdown_state
@@ -101,29 +111,14 @@ return function(parent: Instance?)
 		end,
 	})
 
-	--local save_progress : TextButton
-	--local save_menu : Frame
-	--save_progress = iconbutton {
-	--	id = 94356110802200;
-	--	parent = left_button_container;
-	--	theme_enabled = true;
-	--	on_click = function()
-	--		if save_menu then
-	--			save_menu:Destroy()
-	--			return
-	--		end
-	--		local pos = save_progress.AbsolutePosition
-	--		save_menu = floating_menu(170,pos.X - 8,pos.Y,function()
-	--			textbutton("View Saved Progress",nil,function()
-
-	--			end)
-	--			textbutton("Save Progress",nil,function()
-
-	--			end)
-	--		end)
-	--	end,
-	--}
-	--94356110802200
+	local catalog_button = iconbutton({
+		id = 122758973653468,
+		parent = right_button_container,
+		theme_enabled = true,
+		on_click = function()
+			singletons.event_bus.catalog_show_overlay.emit({ overlay = "None" })
+		end,
+	})
 	local favourites_button = iconbutton({
 		id = 106335234167054,
 		parent = right_button_container,
@@ -144,6 +139,84 @@ return function(parent: Instance?)
 			})
 		end,
 	})
+
+	local custom_buttons = {}
+	singletons.event_bus.topbar_register_custom_button.connect(function(parm)
+		local button = iconbutton({
+			id = parm.image,
+			parent = custom_button_container,
+			theme_enabled = true,
+			on_click = function()
+				local button = custom_buttons[parm.button_id]
+				if parm.has_state then
+					custom_buttons[parm.button_id].state = not button.state
+					theme_manager:force_highlight(button.button, button.state)
+				end
+				parm.on_click(button.state)
+			end,
+		})
+
+		button.Visible = state_status.output == parm.allowed_overlay
+		custom_buttons[parm.button_id] = {
+			button = button,
+			allowed_overlay = parm.allowed_overlay,
+			stored_visible_state = false,
+			state = false,
+			on_click = parm.on_click,
+		}
+	end)
+	singletons.event_bus.topbar_unregister_custom_button.connect(function(parm)
+		local button_ids = {}
+		if type(parm.button_id) == "string" then
+			button_ids = { parm.button_id }
+		else
+			button_ids = parm.button_id
+		end
+		for _, button_id in button_ids do
+			local button = custom_buttons[button_id]
+			button.button:Destroy()
+			custom_buttons[button_id] = nil
+		end
+	end)
+	singletons.event_bus.topbar_visibility_custom_button.connect(function(parm)
+		local button_ids = {}
+		if type(parm.button_id) == "string" then
+			button_ids = { parm.button_id }
+		else
+			button_ids = parm.button_id
+		end
+		for _, button_id in button_ids do
+			local button = custom_buttons[button_id]
+			if state_status.output == button.allowed_overlay then
+				button.button.Visible = parm.show
+			end
+			button.stored_visible_state = parm.show
+		end
+	end)
+	singletons.event_bus.topbar_set_state.connect(function(parm)
+		local button = custom_buttons[parm.button_id]
+		button.state = parm.state
+		theme_manager:force_highlight(button.button, parm.state)
+		button.on_click(parm.state)
+	end)
+
+	-- overflow check
+	local function overflow_check()
+		local left_container_right_pos = custom_button_container.AbsoluteSize.X
+			+ custom_button_container.AbsolutePosition.X
+		local search_bar_left_pos = search_container.AbsolutePosition.X
+		if left_container_right_pos > search_bar_left_pos then
+			search.Visible = false
+		else
+			search.Visible = true
+		end
+	end
+	custom_button_container:GetPropertyChangedSignal("AbsoluteSize"):Connect(function(...)
+		overflow_check()
+	end)
+	topbar_container:GetPropertyChangedSignal("AbsoluteSize"):Connect(function(...)
+		overflow_check()
+	end)
 	singletons.event_bus.drawer_open.connect(function(parm): nil
 		if not parm.bool then
 			dropdown_state = false
@@ -159,14 +232,25 @@ return function(parent: Instance?)
 		dropdown_state = false
 		return
 	end)
-
+	-- singletons.event_bus.catalog_set_search_filter.connect(function(parm)
+	-- 	creator_filter_button.Text = parm.CreatorName
+	-- 	creator_filter_button.Visible = not (parm.CreatorName == "")
+	-- end)
 	singletons.event_bus.catalog_show_overlay.connect(function(parm): nil
+		theme_manager:force_highlight(catalog_button, parm.overlay == "None")
 		theme_manager:force_highlight(favourites_button, parm.overlay == "Favourites")
 		theme_manager:force_highlight(wearing_button, parm.overlay == "Wearing")
 		--ui_lib.theme_manager:force_highlight(topbar.RightButtons.Favourites,parm.overlay=="Favourites")
 		--ui_lib.theme_manager:force_highlight(topbar.RightButtons.ViewWearing,parm.overlay=="Wearing")
 		if parm.overlay == "None" then
 			state("None")
+		end
+		for _, button in custom_buttons do
+			if button.allowed_overlay == parm.overlay then
+				button.button.Visible = button.stored_visible_state
+			else
+				button.button.Visible = false
+			end
 		end
 		return
 	end)

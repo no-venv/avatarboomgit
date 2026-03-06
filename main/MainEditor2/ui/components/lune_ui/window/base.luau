@@ -10,19 +10,22 @@ export type BaseWindowArguments = {
 	view: Frame?,
 	important: boolean?,
 	custom_embed: Frame?,
+	left_topbar: { GuiBase }?,
+	middle_topbar: GuiBase?,
+	right_topbar: { GuiBase }?,
 }
 return function(arg: BaseWindowArguments)
 	local title = arg.title
-	local size = arg.size
 	local view = arg.view
+	local size = arg.size or Vector2.new(320, 240)
 	local important = arg.important
 	local custom_embed = arg.custom_embed
 	local shadow_container = empty_frame()
 	shadow_container.BackgroundColor3 = Color3.new()
 	styling.corner(shadow_container)
+
 	local container = empty_frame(shadow_container)
-	container.ZIndex = 10
-	local size = size or Vector2.new(320, 240)
+	container.ZIndex = 1000
 	container.AnchorPoint = Vector2.new(0.5, 0.5)
 	container.Position = UDim2.new(0.5, 0, 0.5, 0)
 	container.Size = UDim2.new(
@@ -32,6 +35,13 @@ return function(arg: BaseWindowArguments)
 		size.Y > 1 and size.Y or 0
 	)
 	container.Transparency = 0
+	local input_catcher = Instance.new("TextButton")
+	input_catcher.Transparency = 1
+	input_catcher.BorderSizePixel = 0
+	input_catcher.AnchorPoint = container.AnchorPoint
+	input_catcher.Position = container.Position
+	input_catcher.Size = container.Size
+	input_catcher.Parent = shadow_container
 	styling.corner(container)
 	styling.stroke(container)
 	styling.padding(container)
@@ -43,18 +53,46 @@ return function(arg: BaseWindowArguments)
 
 	local topbar = empty_frame(container)
 	topbar.Size = UDim2.new(1, 0, 0, 32)
-	textlabel(title, topbar).Size = UDim2.new(1, 0, 1, 0)
-	local exit = iconbutton({
+
+	local hbox = styling.hbox(topbar)
+	hbox.HorizontalFlex = Enum.UIFlexAlignment.Fill
+
+	local left_topbar = empty_frame(topbar)
+	left_topbar.Size = UDim2.new(0.6,0,1,0)
+	styling.hbox(left_topbar)
+	local middle_topbar = empty_frame(topbar)
+	local right_topbar = empty_frame(topbar)
+	right_topbar.Size = UDim2.new(0.6,0,1,0)
+	styling.hbox(right_topbar).HorizontalAlignment = Enum.HorizontalAlignment.Right
+
+	if not arg.middle_topbar then
+		textlabel(title, middle_topbar).Size = UDim2.new(1, 0, 1, 0)
+	end
+	iconbutton({
 		id = 95107155761501,
 		theme_enabled = true,
 		on_click = function()
 			shadow_container:Destroy()
 		end,
-		parent = topbar,
+		parent = right_topbar,
 	})
 
-	exit.AnchorPoint = Vector2.new(1, 0)
-	exit.Position = UDim2.new(1, 0, 0, 0)
+	if arg.left_topbar then
+		for _, element in arg.left_topbar do
+			element.Parent = left_topbar
+		end
+	end
+	if arg.middle_topbar then
+		arg.middle_topbar.Parent = middle_topbar
+	end
+	if arg.right_topbar then
+		for _, element in arg.right_topbar do
+			element.Parent = right_topbar
+		end
+	end
+
+	-- exit.AnchorPoint = Vector2.new(1, 0)
+	-- exit.Position = UDim2.new(1, 0, 0, 0)
 	--styling.hbox(topbar)
 	--	.HorizontalFlex = Enum.UIFlexAlignment.Fill
 

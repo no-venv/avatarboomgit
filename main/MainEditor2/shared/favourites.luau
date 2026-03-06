@@ -1,3 +1,4 @@
+-- Legacy
 local HttpService = game:GetService("HttpService")
 local plugin_fs = require("../singletons/PluginFS")
 local catalog_fetcher = require("../singletons/CatalogFetcher")

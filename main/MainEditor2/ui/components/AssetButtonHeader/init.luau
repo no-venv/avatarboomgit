@@ -7,7 +7,6 @@ export type buttons_enabled_args = {
 	["Favourite"]: boolean?,
 	["Remove"]: boolean?,
 }
-local Editor = script:FindFirstAncestor("MainEditor2")
 local lune = require("@self/../lune_ui")
 local shared = require("../../shared")
 local singletons = require("../../singletons")
@@ -53,26 +52,29 @@ end
 return function(
 	asset_type: typeof(catalog_fetcher.ExportAssetType),
 	enabled_buttons: buttons_enabled_args,
-	parent: Instance?
+	parent: Instance?,
+	override_button_favourite: (() -> nil)?,
+	override_button_remove: (() -> nil)?
 )
 	local container = button_container_temp:Clone()
 	local favourte_button = image_button:Clone()
 	local remove_button = image_button:Clone()
 
-	favourte_button.Visible = enabled_buttons["Favourite"]
-	remove_button.Visible = enabled_buttons["Remove"]
+	favourte_button.Visible = (enabled_buttons["Favourite"]) :: boolean
+	remove_button.Visible = (enabled_buttons["Remove"]) :: boolean
 	theme_manager:add_custom_gui_instance(favourte_button, "Foreground")
 	theme_manager:add_custom_gui_instance(remove_button, "Foreground")
 
 	if enabled_buttons["Favourite"] then
 		favourte_button.MouseButton1Click:Connect(function()
-			local is_favourited = favourites.favourites[asset_type.Id]
-			if is_favourited then
-				favourites.remove_favourite(asset_type.Id)
+			if override_button_favourite then
+				override_button_favourite()
 			else
-				favourites.set_favourite(asset_type.Id, asset_type)
+				singletons.event_bus.save_pinboard.emit({
+					asset_info = { asset_type },
+				})
 			end
-			set_favourite_button_state(favourte_button, not is_favourited)
+			set_favourite_button_state(favourte_button, shared.pinboard.lookup_id(asset_type.Id))
 		end)
 	end
 
@@ -88,21 +90,25 @@ return function(
 			set_add_remove_id_state()
 		end
 		remove_button.MouseButton1Click:Connect(function()
-			if not humanoid_editor:is_init() then
-				return
-			end
-			local wearing = humanoid_editor:id_equipped(asset_type.Id)
-			if wearing then
-				if asset_type.ItemType == "Asset" then
-					humanoid_editor:remove_id(asset_type.Id)
-				else
-					humanoid_editor:remove_bundle_id(asset_type.Id)
-				end
+			if override_button_remove then
+				override_button_remove()
 			else
-				if asset_type.ItemType == "Asset" then
-					humanoid_editor:add_id(asset_type.Id)
+				if not humanoid_editor:is_init() then
+					return
+				end
+				local wearing = humanoid_editor:id_equipped(asset_type.Id)
+				if wearing then
+					if asset_type.ItemType == "Asset" then
+						humanoid_editor:remove_id(asset_type.Id)
+					else
+						humanoid_editor:remove_bundle_id(asset_type.Id)
+					end
 				else
-					humanoid_editor:add_bundle_id(asset_type.Id)
+					if asset_type.ItemType == "Asset" then
+						humanoid_editor:add_id(asset_type.Id)
+					else
+						humanoid_editor:add_bundle_id(asset_type.Id)
+					end
 				end
 			end
 			set_add_remove_id_state()
@@ -116,7 +122,7 @@ return function(
 		end)
 		set_add_remove_id_state()
 	end
-	set_favourite_button_state(favourte_button, favourites.favourites[asset_type.Id])
+	set_favourite_button_state(favourte_button, shared.pinboard.lookup_id(asset_type.Id))
 	favourte_button.Parent = container
 	remove_button.Parent = container
 	container.Parent = parent

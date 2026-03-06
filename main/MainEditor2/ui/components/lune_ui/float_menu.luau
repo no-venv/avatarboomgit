@@ -1,3 +1,4 @@
+--!deprecated
 local empty_frame = require("./empty_frame")
 local styling = require("./styling_components")
 local theme_manager = require("./theme_manager")
