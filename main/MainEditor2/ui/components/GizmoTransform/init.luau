@@ -77,6 +77,7 @@ return function(primary_part: BasePart, on_transform: OnTransformFunc)
 	end)
 	local reset_button = ui_lib.textbutton("Reset", container, function(): nil
 		on_transform("Reset", Vector3.zero)
+		gizmos.Rotation:SetAttribute("force_update_frame", true)
 		return
 	end)
 	local hide_gizmos_button = ui_lib.textbutton("Hide Gizmos", container, function(): nil
