@@ -51,7 +51,6 @@ return function(parent: Instance?, primary_part: BasePart, on_transform: (value:
 	new_rotation_handle.Destroying:Connect(function(...)
 		update:Disconnect()
 	end)
-	new_rotation_handle.Parent = parent
 	new_rotation_handle:SetAttribute("force_update_frame", false)
 	local debounce = false
 	new_rotation_handle:GetAttributeChangedSignal("force_update_frame"):Connect(function(...)
@@ -66,5 +65,6 @@ return function(parent: Instance?, primary_part: BasePart, on_transform: (value:
 		end
 		new_rotation_handle:SetAttribute("force_update_frame", false)
 	end)
+	new_rotation_handle.Parent = parent
 	return new_rotation_handle
 end
