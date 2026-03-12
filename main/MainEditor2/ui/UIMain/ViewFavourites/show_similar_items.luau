@@ -13,48 +13,43 @@ return function(parent, name: string, contents: pinboard_shared.Board)
 	local end_generate = false
 	local function generate()
 		if end_generate then
-			return
+			return false
 		end
-		for i = 1, 5 do
-			local asset = contents[cursor]
-			if not asset then
-				end_generate = true
-				return
-			end
-			task.spawn(function()
-				
-				local assets = catalog:GetRecommendedAssets(asset.Id, Enum.AvatarAssetType:FromName(asset.AssetType))
-				for _, asset in assets do
-					asset_button_header(
-						asset,
-						{ ["Favourite"] = true, ["Remove"] = true },
-						asset_button({
-							parent = similar_items_container,
-							asset_id = asset.Id,
-							asset_type = asset.ItemType,
-							price = 0,
-							on_click = function()
-								event_bus.avatar_item_selected.emit({ asset_info = asset })
-							end,
-						}),
-						function()
-							pinboard_shared.insert_pin(name, asset)
-							event_bus.save_pinboard_success.emit({})
-						end
-					)
+		local asset = contents[cursor]
+		if not asset then
+			end_generate = true
+			return false
+		end
+
+		local assets = catalog:GetRecommendedAssets(asset.Id, Enum.AvatarAssetType:FromName(asset.AssetType))
+		for _, asset in assets do
+			asset_button_header(
+				asset,
+				{ ["Favourite"] = true, ["Remove"] = true },
+				asset_button({
+					parent = similar_items_container,
+					-- asset_id = asset.Id,
+					-- asset_type = asset.ItemType,
+					-- price = 0,
+					asset = asset,
+					on_click = function()
+						event_bus.avatar_item_selected.emit({ asset_info = asset })
+					end,
+				}),
+				function()
+					if pinboard_shared.check_pin_in_board(name, asset.Id) then
+						pinboard_shared.remove_pin(name, { asset.Id })
+						return false
+					else
+						pinboard_shared.insert_pin(name, { asset })
+						return true
+					end
 				end
-			end)
-			cursor += 1
+			)
 		end
+		cursor += 1
+		return true
 	end
-	similar_items_container = scrolling_frame(
-		parent,
-		"Grid",
-		nil,
-		utils.MutexFunction(function()
-			generate()
-		end)
-	)
-	generate()
+	similar_items_container = scrolling_frame(parent, "Grid", nil, generate)
 	return similar_items_container
 end

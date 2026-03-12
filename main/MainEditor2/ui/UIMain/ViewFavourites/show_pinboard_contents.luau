@@ -30,7 +30,7 @@ return function(parent: Frame, name: string)
 		end
 		stored_buttons = {}
 		selected_buttons = {}
-		select_mode = false
+		-- select_mode = false
 		local scrolling_container = scrolling_frame(outer_container, "List", {
 			HorizontalAlignment = Enum.HorizontalAlignment.Center,
 		})
@@ -45,9 +45,10 @@ return function(parent: Frame, name: string)
 		for index, value in contents do
 			local button: TextButton
 			button = asset_button({
-				asset_id = value.Id,
-				asset_type = value.ItemType,
-				price = 0,
+				-- asset_id = value.Id,
+				-- asset_type = value.ItemType,
+				-- price = 0,
+				asset = value,
 				parent = container,
 				on_click = function()
 					if not select_mode then
@@ -82,6 +83,9 @@ return function(parent: Frame, name: string)
 				button = button,
 				header = header,
 			}
+			if select_mode then
+				header.Visible = false
+			end
 		end
 		current_view = scrolling_container
 	end
@@ -90,6 +94,7 @@ return function(parent: Frame, name: string)
 		allowed_overlay = "Favourites",
 		image = 107708197594475,
 		button_id = "pin_select",
+		tooltip = "Select Pins",
 		has_state = true,
 		on_click = function(state)
 			for _, button in stored_buttons do
@@ -109,11 +114,13 @@ return function(parent: Frame, name: string)
 			return
 		end,
 	})
+	event_bus.topbar_visibility_custom_button.emit({ button_id = "pin_select", show = true })
 
 	event_bus.topbar_register_custom_button.emit({
 		allowed_overlay = "Favourites",
 		image = 72997579114213,
 		button_id = "pin_move",
+		tooltip = "Move selected Pins",
 		on_click = function(state)
 			local to_save = {}
 			for selected in selected_buttons do
@@ -128,6 +135,7 @@ return function(parent: Frame, name: string)
 		allowed_overlay = "Favourites",
 		image = 96060799177234,
 		button_id = "pin_remove",
+		tooltip = "Remove selected Pins",
 		on_click = function(state)
 			local to_remove = {}
 			for selected in selected_buttons do
@@ -141,7 +149,6 @@ return function(parent: Frame, name: string)
 					if result == "Yes" then
 						pinboard_shared.remove_pin(name, to_remove)
 						singletons.event_bus.topbar_set_state.emit({ button_id = "pin_select", state = false })
-						singletons.event_bus.save_pinboard_success.emit({})
 					end
 				end,
 				important = true,
