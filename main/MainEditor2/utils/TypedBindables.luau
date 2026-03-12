@@ -1,7 +1,7 @@
 export type Event<T> = {
-	emit: (T) -> nil,
-	connect: ((parm: T) -> nil) -> RBXScriptConnection,
-	once: ((parm: T) -> nil) -> RBXScriptConnection,
+	emit: (T) -> any,
+	connect: ((parm: T) -> ()) -> RBXScriptConnection,
+	once: ((parm: T) -> ()) -> RBXScriptConnection,
 }
 
 return function<T>(type: T): Event<T>
@@ -16,7 +16,7 @@ return function<T>(type: T): Event<T>
 	end
 	return {
 		emit = function(...)
-			for _,func in connected do
+			for _, func in connected do
 				func(...)
 			end
 		end,
