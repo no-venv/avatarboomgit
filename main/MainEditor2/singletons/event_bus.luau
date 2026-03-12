@@ -4,6 +4,7 @@ local CatalogFetcher = require("../singletons/CatalogFetcher")
 local utils = require("../utils")
 local event_real = utils.TypedBindables
 type UiOverlay = "Wearing" | "Favourites" | "None"
+
 type Events = {
 	catalog_search: {
 		query: string,
@@ -26,7 +27,6 @@ type Events = {
 	avatar_item_selected: {
 		asset_info: typeof(CatalogFetcher.ExportAssetType),
 	},
-
 	select_rig_overlay: {
 		bool: boolean,
 	},
@@ -47,6 +47,7 @@ type Events = {
 		image: number,
 		button_id: string,
 		allowed_overlay: UiOverlay,
+		tooltip: string,
 		has_state: boolean?,
 		on_click: (state: boolean) -> any,
 	},
@@ -64,6 +65,10 @@ type Events = {
 		button_id: string,
 		state: boolean,
 	},
+	plugin_settings_updated: {
+		setting: string,
+		value: any,
+	},
 }
 local nothing_meta = {
 	__index = function()
@@ -73,23 +78,23 @@ local nothing_meta = {
 local janitor = utils.ui_labs.Environment.GetJanitor()
 local hook = false
 local event_id = 1
-local event: typeof(event_real) = function(...)
-	local captured_event = event_real(...)
-	if janitor then
-		-- janitor:Add(captured_event.raw)
-	end
-	if hook then
-		local captured_event_id = event_id
-		captured_event.connect(function(parm): nil
-			print("Event", captured_event_id)
-			print(parm)
-			return
-		end)
-	end
-	event_id += 1
-	return captured_event
-end
-
+-- local event: typeof(event_real) = function(...)
+-- 	local captured_event = event_real(...)
+-- 	if janitor then
+-- 		-- janitor:Add(captured_event.raw)
+-- 	end
+-- 	if hook then
+-- 		local captured_event_id = event_id
+-- 		captured_event.connect(function(parm): nil
+-- 			print("Event", captured_event_id)
+-- 			print(parm)
+-- 			return
+-- 		end)
+-- 	end
+-- 	event_id += 1
+-- 	return captured_event
+-- end
+local event = event_real
 local events_table = setmetatable({}, nothing_meta) :: typeof(setmetatable({} :: Events, {} :: typeof(nothing_meta)))
 
 return {
@@ -109,4 +114,5 @@ return {
 	topbar_visibility_custom_button = event(events_table.topbar_visibility_custom_button),
 	topbar_on_custom_button = event(events_table.topbar_on_custom_button),
 	topbar_set_state = event(events_table.topbar_set_state),
+	plugin_settings_updated = event(events_table.plugin_settings_updated),
 }
