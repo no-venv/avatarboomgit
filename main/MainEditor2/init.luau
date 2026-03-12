@@ -23,14 +23,10 @@ return function(parent : Instance,plugin_global : Plugin?,widget_global : DockWi
 	local utils = require("./MainEditor2/utils")
 	local shared = require("./MainEditor2/shared")
 	local singletons = require("./MainEditor2/singletons")
-	-- local container = Instance.new("Frame")
-	-- container.Size = UDim2.new(1,0,1,0)
-	-- container.Transparency = 1
 	local ui_main,ui_main_inner = require("./MainEditor2/ui/UIMain")(parent)
 	local ui_drawer = require("./MainEditor2/ui/UIDrawer")(ui_main_inner)
-	-- container.Parent = parent
 	if plugin_global then
-		local widget = plugin_global:CreateDockWidgetPluginGui(
+		local widget = plugin_global:CreateDockWidgetPluginGuiAsync(
 			"avatarBOOM drawer",
 			drawer_widget_info
 		)
