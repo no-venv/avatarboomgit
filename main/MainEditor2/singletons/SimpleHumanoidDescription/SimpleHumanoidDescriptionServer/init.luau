@@ -29,12 +29,15 @@ type Struct = {
 	humanoid_changed: BindableEvent,
 	id_added: BindableEvent,
 	id_removed: BindableEvent,
-	inited_humanoids: { [Humanoid]: boolean },
+	inited_humanoids: { [Humanoid]: {
+		mutex: boolean,
+		fully_init: boolean,
+	} },
 }
 type Impl = {
 	is_init: (self: SimpleHumanoidDescription) -> boolean,
 	init: (self: SimpleHumanoidDescription, desc: Humanoid) -> void,
-	apply_fix: (self: SimpleHumanoidDescription) -> void,
+	apply_fix: (self: SimpleHumanoidDescription) -> "Init" | "Pending",
 	add_id: (
 		self: SimpleHumanoidDescription,
 		id: number,
@@ -104,7 +107,13 @@ function SimpleHumanoidDescription:init(humanoid)
 		return
 	end
 
-	self:apply_fix()
+	if self:apply_fix() == "Pending" then
+		return
+	end
+	if self.Humanoid ~= humanoid then
+		-- mismatch
+		return
+	end
 	self.humanoid_changed:Fire()
 	return
 end
@@ -113,54 +122,74 @@ function SimpleHumanoidDescription:apply_fix()
 	-- applys fixes so that HumanoidDescription behaves
 	-- This is a fix for the accessory bug
 	-- where some wont be removed after leaving and reopening the place
-	if self.inited_humanoids[self.Humanoid] then
-		return
-	end
-	local hum_desc = self.Humanoid:GetAppliedDescription()
-	local humanoid_parent = self.Humanoid.Parent :: Instance
-	-- save old shirts
-	local old_shirt = humanoid_parent:FindFirstChild("Shirt") :: Shirt
-	local old_pants = humanoid_parent:FindFirstChild("Shirt") :: Shirt
-	-- save old accessories because "get_id_object" has reference to them
-	local old_accessories: { Accessory } = {}
-	for _, accessory in self.Humanoid:GetAccessories() do
-		table.insert(old_accessories, accessory:Clone())
-	end
-	-- make humanoid description behave
-	self.Humanoid:ApplyDescriptionReset(hum_desc)
-	-- fix dragging
-	for _, child in humanoid_parent:GetChildren() do
-		if child:IsA("BasePart") or child:IsA("MeshPart") then
-			child.Locked = false
+	local humanoid = self.Humanoid
+	local init_humanoid = self.inited_humanoids[humanoid]
+	if init_humanoid then
+		if init_humanoid.mutex then
+			return "Pending"
+		end
+		if init_humanoid.fully_init then
+			return "Init"
 		end
 	end
-	--
-	local new_accessories: { Accessory } = self.Humanoid:GetAccessories()
-	-- now i guess transfer the references to the new accessories/shirts? also clone the
-	-- children as well in case of modifications?
-	local new_shirt = humanoid_parent:FindFirstChild("Shirt") :: Shirt
-	local new_pants = humanoid_parent:FindFirstChild("Pants") :: Pants
-	--
-	if old_shirt then
-		new_shirt.Color3 = old_shirt.Color3
-	end
-	if old_pants then
-		new_pants.Color3 = old_shirt.Color3
-	end
-	for _, new_accessory in new_accessories do
-		local new_a_mesh_id = get_accessory_mesh_id(new_accessory)
-		for _, old_accessory in old_accessories do
-			local old_a_mesh_id = get_accessory_mesh_id(old_accessory)
-			if old_a_mesh_id == new_a_mesh_id then
-				local new_a_handle = new_accessory["Handle"]
-				new_a_handle:Destroy()
-				old_accessory["Handle"].Parent = new_accessory
-				break
+	self.inited_humanoids[humanoid] = {
+		mutex = true,
+		fully_init = false,
+	}
+	local ok = pcall(function()
+		local hum_desc = humanoid:GetAppliedDescription()
+		local humanoid_parent = humanoid.Parent :: Instance
+		-- save old shirts
+		local old_shirt = humanoid_parent:FindFirstChild("Shirt") :: Shirt
+		local old_pants = humanoid_parent:FindFirstChild("Pants") :: Pants
+		-- save old accessories because "get_id_object" has reference to them
+		local old_accessories: { Accessory } = {}
+		for _, accessory in humanoid:GetAccessories() do
+			table.insert(old_accessories, accessory:Clone())
+		end
+		-- make humanoid description behave
+		humanoid:ApplyDescriptionResetAsync(hum_desc)
+		-- fix dragging
+		for _, child in humanoid_parent:GetChildren() do
+			if child:IsA("BasePart") or child:IsA("MeshPart") then
+				child.Locked = false
 			end
 		end
+		--
+		local new_accessories: { Accessory } = humanoid:GetAccessories()
+		-- now i guess transfer the references to the new accessories/shirts? also clone the
+		-- children as well in case of modifications?
+		local new_shirt = humanoid_parent:FindFirstChild("Shirt") :: Shirt
+		local new_pants = humanoid_parent:FindFirstChild("Pants") :: Pants
+		--
+		if old_shirt then
+			new_shirt.Color3 = old_shirt.Color3
+		end
+		if old_pants then
+			new_pants.Color3 = old_pants.Color3
+		end
+		for _, new_accessory in new_accessories do
+			local new_a_mesh_id = get_accessory_mesh_id(new_accessory)
+			for _, old_accessory in old_accessories do
+				local old_a_mesh_id = get_accessory_mesh_id(old_accessory)
+				if old_a_mesh_id == new_a_mesh_id then
+					local new_a_handle = new_accessory["Handle"]
+					new_a_handle:Destroy()
+					old_accessory["Handle"].Parent = new_accessory
+					break
+				end
+			end
+		end
+	end)
+
+	if not ok then
+		self.inited_humanoids[humanoid] = nil
+		return "Pending"
 	end
-	self.inited_humanoids[self.Humanoid] = true
-	return
+
+	self.inited_humanoids[humanoid].mutex = false
+	self.inited_humanoids[humanoid].fully_init = true
+	return "Init"
 end
 
 function SimpleHumanoidDescription:get_id_list(only_accessories)
@@ -218,7 +247,7 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 	local accessories = description:GetAccessories(true)
 	local AccessoryType = asset_type :: Enum.AvatarAssetType
 	if not asset_type then
-		local asset_info = AvatarEditorService:GetItemDetails(id, Enum.AvatarItemType.Asset)
+		local asset_info = AvatarEditorService:GetItemDetailsAsync(id, Enum.AvatarItemType.Asset)
 		AccessoryType = Enum.AvatarAssetType:FromName(asset_info.AssetType)
 		if not AccessoryType then
 			print(`{asset_info.AssetType} failed with Enum.AvatarAssetType:FromName`)
@@ -245,7 +274,7 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 	end
 
 	if not humanoid_desc_override then
-		self.Humanoid:ApplyDescription(description)
+		self.Humanoid:ApplyDescriptionAsync(description)
 		self.id_added:Fire(id)
 	end
 	return true
@@ -273,7 +302,7 @@ function SimpleHumanoidDescription:remove_id(id)
 	end
 	id_to_accessory_description.remove(id)
 	id_to_accessory_mat.remove(self.Humanoid, id)
-	self.Humanoid:ApplyDescription(description)
+	self.Humanoid:ApplyDescriptionAsync(description)
 	self.id_removed:Fire(id)
 	return true
 end
@@ -302,14 +331,14 @@ function SimpleHumanoidDescription:add_bundle_id(id)
 		table.insert(ids, item.Id)
 	end
 	local description = self.Humanoid:GetAppliedDescription()
-	local batch_fetch = AvatarEditorService:GetBatchItemDetails(ids, Enum.AvatarItemType.Asset)
+	local batch_fetch = AvatarEditorService:GetBatchItemDetailsAsync(ids, Enum.AvatarItemType.Asset)
 
 	for _, item in batch_fetch do
 		local asset_type = Enum.AvatarAssetType:FromName(item.AssetType)
 		self:add_id(item.Id, Enum.AvatarAssetType:FromName(item.AssetType), description)
 	end
 
-	self.Humanoid:ApplyDescriptionReset(description)
+	self.Humanoid:ApplyDescriptionResetAsync(description)
 	self.id_added:Fire(id)
 
 	local save_shoes = saved_bundle_data.BundleType == "Shoes"
@@ -335,7 +364,7 @@ function SimpleHumanoidDescription:remove_bundle_id(id)
 		description.Torso = 0
 		self.Humanoid:SetAttribute("BodyPartsBundleID", nil)
 		self.Humanoid:SetAttribute(id_string, nil)
-		self.Humanoid:ApplyDescription(description)
+		self.Humanoid:ApplyDescriptionAsync(description)
 		self.id_removed:Fire()
 		return true
 	end
@@ -394,7 +423,7 @@ function SimpleHumanoidDescription:set_body_colour(limb, colour)
 	else
 		description[mapping[limb]] = colour
 	end
-	self.Humanoid:ApplyDescription(description)
+	self.Humanoid:ApplyDescriptionAsync(description)
 	return
 end
 
@@ -412,7 +441,7 @@ function SimpleHumanoidDescription:set_body_scale(type, scale)
 	}
 
 	description[prop[type]] = scale
-	self.Humanoid:ApplyDescription(description)
+	self.Humanoid:ApplyDescriptionAsync(description)
 	return
 end
 
@@ -473,7 +502,7 @@ function SimpleHumanoidDescription:set_id_transformation(id, trans_type, vec3)
 		end
 	end
 	local description = self.Humanoid:GetAppliedDescription()
-	self.Humanoid:ApplyDescription(description)
+	self.Humanoid:ApplyDescriptionAsync(description)
 	return
 end
 
