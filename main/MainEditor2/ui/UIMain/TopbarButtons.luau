@@ -110,6 +110,7 @@ return function(parent: Instance?)
 			})
 		end,
 	})
+	lune.tooltips(dropdown_button, "Show Filter & other adjustments ")
 
 	local catalog_button = iconbutton({
 		id = 122758973653468,
@@ -119,6 +120,8 @@ return function(parent: Instance?)
 			singletons.event_bus.catalog_show_overlay.emit({ overlay = "None" })
 		end,
 	})
+	lune.tooltips(catalog_button, "Catalog")
+
 	local favourites_button = iconbutton({
 		id = 106335234167054,
 		parent = right_button_container,
@@ -129,6 +132,8 @@ return function(parent: Instance?)
 			})
 		end,
 	})
+	lune.tooltips(favourites_button, "Saved Boards")
+
 	local wearing_button = iconbutton({
 		id = 112085719237258,
 		parent = right_button_container,
@@ -139,6 +144,7 @@ return function(parent: Instance?)
 			})
 		end,
 	})
+	lune.tooltips(wearing_button, "Show Wearing")
 
 	local custom_buttons = {}
 	singletons.event_bus.topbar_register_custom_button.connect(function(parm)
@@ -164,6 +170,7 @@ return function(parent: Instance?)
 			state = false,
 			on_click = parm.on_click,
 		}
+		lune.tooltips(button, parm.tooltip)
 	end)
 	singletons.event_bus.topbar_unregister_custom_button.connect(function(parm)
 		local button_ids = {}
@@ -232,10 +239,13 @@ return function(parent: Instance?)
 		dropdown_state = false
 		return
 	end)
-	-- singletons.event_bus.catalog_set_search_filter.connect(function(parm)
-	-- 	creator_filter_button.Text = parm.CreatorName
-	-- 	creator_filter_button.Visible = not (parm.CreatorName == "")
-	-- end)
+
+	singletons.event_bus.catalog_set_search_filter.connect(function(parm)
+		if not parm.SearchKeyword then
+			return
+		end
+		search.Text = parm.SearchKeyword
+	end)
 	singletons.event_bus.catalog_show_overlay.connect(function(parm): nil
 		theme_manager:force_highlight(catalog_button, parm.overlay == "None")
 		theme_manager:force_highlight(favourites_button, parm.overlay == "Favourites")
