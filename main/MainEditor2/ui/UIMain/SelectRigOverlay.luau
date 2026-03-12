@@ -20,20 +20,30 @@ return function(parent: Instance?)
 	vert_layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	vert_layout.VerticalAlignment = Enum.VerticalAlignment.Center
 	vert_layout.Parent = container
-	local avatar_boom_logo = Instance.new("ImageLabel")
-	avatar_boom_logo.ImageContent = Content.fromAssetId(109639726516588)
-	avatar_boom_logo.Size = UDim2.new(1, 0, 1, 0)
-	avatar_boom_logo.Parent = container
-	avatar_boom_logo.Transparency = 1
-	avatar_boom_logo.BorderSizePixel = 1
-	ui_lib.theme_manager:add_custom_gui_instance(avatar_boom_logo, "Foreground")
-	local ratio_const = Instance.new("UIAspectRatioConstraint")
-	ratio_const.AspectRatio = 8.32971800434
-	ratio_const.Parent = avatar_boom_logo
-	local text = ui_lib.textlabel("<b>Select a Rig or import one to use avatarBOOM!</b>", container)
+
+	do
+		local title_container = ui_lib.empty_frame(container)
+		title_container.Size = UDim2.new(1,0,0,0)
+		title_container.AutomaticSize = Enum.AutomaticSize.Y
+		ui_lib.styling.vbox(title_container)
+			.HorizontalAlignment = Enum.HorizontalAlignment.Center
+		local avatar_boom_logo = Instance.new("ImageLabel")
+		avatar_boom_logo.ImageContent = Content.fromAssetId(109639726516588)
+		avatar_boom_logo.Size = UDim2.new(.8, 0, 1, 0)
+		avatar_boom_logo.Parent = title_container
+		avatar_boom_logo.Transparency = 1
+		avatar_boom_logo.BorderSizePixel = 1
+		ui_lib.theme_manager:add_custom_gui_instance(avatar_boom_logo, "Foreground")
+		local ratio_const = Instance.new("UIAspectRatioConstraint")
+		ratio_const.AspectRatio = 8.32971800434
+		ratio_const.Parent = avatar_boom_logo
+		ui_lib.textlabel("<b>Select a Rig or import one to use avatarBOOM!</b>", title_container)
+	end
+	-- text.Size = UDim2.new(1,0,0,0)
+	-- text.AutomaticSize = Enum.AutomaticSize.Y
 	local import_rig = import_rig_component(container)
-	import_rig.AutomaticSize = Enum.AutomaticSize.Y
-	import_rig.Size = UDim2.new(1, 0, 0, 0)
+	-- import_rig.AutomaticSize = Enum.AutomaticSize.Y
+	import_rig.Size = UDim2.new(1, 0, 0.8, 0)
 	import_rig.Visible = true
 	container.Transparency = 120
 	container.ZIndex = 10
