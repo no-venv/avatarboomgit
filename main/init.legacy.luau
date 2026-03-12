@@ -7,7 +7,7 @@ local pluginButton = toolbar:CreateButton(
 	"avatarBoom",
 	"rbxassetid://138362735192748"
 ) --Button icon
-require("./main/MainEditor2")(widget, plugin, widget)
 pluginButton.Click:Connect(function()
 	widget.Enabled = not widget.Enabled
 end)
+require("./main/MainEditor2")(widget, plugin, widget)
