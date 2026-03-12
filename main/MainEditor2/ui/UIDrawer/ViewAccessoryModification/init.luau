@@ -149,7 +149,7 @@ return function(parent: Instance?): Frame
 			if not handle_part then
 				return
 			end
-			current_gizmo_transform = gizmo_transform(handle_part, function(type, value: Vector3): nil
+			current_gizmo_transform = gizmo_transform(handle_part, function(type, value: Vector3)
 				if type == "Move" then
 					local cur_id_transform = humanoid_editor:get_id_transformation(current_id, "Pos")
 					if not cur_id_transform then
