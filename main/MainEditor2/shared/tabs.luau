@@ -35,7 +35,7 @@ local self = {
 			filter = {},
 			asset_thumbs = {},
 		})
-		plugin_fs.save(plugin_save_name, HttpService:JSONEncode(tab_data))
+		--	plugin_fs.save(plugin_save_name, HttpService:JSONEncode(tab_data))
 		return uuid
 	end,
 	update_tab = function(uuid: string, name: string, filter: {}, asset_thumbs: {})
@@ -47,7 +47,7 @@ local self = {
 				break
 			end
 		end
-		plugin_fs.save(plugin_save_name, HttpService:JSONEncode(tab_data))
+		--	plugin_fs.save(plugin_save_name, HttpService:JSONEncode(tab_data))
 	end,
 	close_tab = function(uuid: string)
 		local removed_index = 0
@@ -58,7 +58,7 @@ local self = {
 				break
 			end
 		end
-		plugin_fs.save(plugin_save_name, HttpService:JSONEncode(tab_data))
+		--	plugin_fs.save(plugin_save_name, HttpService:JSONEncode(tab_data))
 		return removed_index
 	end,
 	get_tab = function()
