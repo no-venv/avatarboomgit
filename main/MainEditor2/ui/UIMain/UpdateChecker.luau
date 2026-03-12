@@ -11,7 +11,7 @@ return function()
 	-- run on another thread to avoid blocking
 	task.spawn(function()
 		local ok, result = pcall(function(...)
-			return MarketplaceService:GetProductInfo(86431991825383)
+			return MarketplaceService:GetProductInfoAsync(86431991825383)
 		end)
 		if not ok then
 			return
