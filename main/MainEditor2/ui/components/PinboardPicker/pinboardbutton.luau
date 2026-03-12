@@ -42,7 +42,7 @@ return function(arg: arg): TextButton
 
 	asset_button.Size = container_udim
 
-	local label = textlabel(name, asset_button)
+	local label = textlabel(name, asset_button,true)
 	label.AnchorPoint = Vector2.new(0, 1)
 	label.Position = UDim2.fromScale(0, 1)
 	label.TextYAlignment = Enum.TextYAlignment.Bottom
