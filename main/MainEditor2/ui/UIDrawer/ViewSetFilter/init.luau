@@ -112,15 +112,15 @@ return function(parent: Instance?)
 		"Bestselling",
 		"Recently Published",
 	}
+	local sort_options_map = {
+		["Relevance"] = Enum.CatalogSortType.Relevance,
+		["Most Favorited"] = Enum.CatalogSortType.MostFavorited,
+		["Bestselling"] = Enum.CatalogSortType.Bestselling,
+		["Recently Published"] = Enum.CatalogSortType.RecentlyCreated,
+	}
 	local _, sort_by_option_buttons = option_buttons(advanced_filter, sorts_options, function(value: string): nil
-		local map = {
-			["Relevance"] = Enum.CatalogSortType.Relevance,
-			["Most Favorited"] = Enum.CatalogSortType.MostFavorited,
-			["Bestselling"] = Enum.CatalogSortType.Bestselling,
-			["Recently Published"] = Enum.CatalogSortType.RecentlyCreated,
-		}
 		event_bus.catalog_set_search_filter.emit({
-			SortType = map[value],
+			SortType = sort_options_map[value],
 		})
 		return
 	end)
@@ -176,7 +176,7 @@ return function(parent: Instance?)
 				})
 			end)
 			table.insert(buttons, new_button)
-			event_bus.catalog_set_search_filter.connect(function(parm): nil
+			event_bus.catalog_set_search_filter.connect(function(parm)
 				local asset_type_len = parm.AssetTypes and #parm.AssetTypes or nil
 				local bundle_type_len = parm.BundleTypes and #parm.BundleTypes or nil
 				if not asset_type_len or not bundle_type_len then
@@ -193,12 +193,23 @@ return function(parent: Instance?)
 		filter_section(catagory_name, buttons, container)
 	end
 
-	event_bus.catalog_set_search_filter.connect(function(parm): nil
+	event_bus.catalog_set_search_filter.connect(function(parm)
 		if parm.CreatorName then
 			filter_search_bar.Text = parm.CreatorName
 		end
 		if parm.SortType or parm.IncludeOffSale or parm.CreatorName then
 			advanced_filter.Visible = true
+		end
+		if parm.IncludeOffSale ~= nil then
+			unavailable_option_buttons.set(parm.IncludeOffSale and "Show" or "Hide")
+		end
+		if parm.SortType then
+			for index, value in sort_options_map do
+				if parm.SortType == value then
+					sort_by_option_buttons.set(index)
+					break
+				end
+			end
 		end
 		local asset_type_len = parm.AssetTypes and #parm.AssetTypes or nil
 		local bundle_type_len = parm.BundleTypes and #parm.BundleTypes or nil

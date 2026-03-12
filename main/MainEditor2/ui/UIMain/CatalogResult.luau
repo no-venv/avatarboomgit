@@ -13,7 +13,9 @@ local asset_button = components.asset_button
 local asset_button_header = components.asset_button_header
 local event_bus = singletons.event_bus
 local CatalogFetcher = singletons.catalog_fetcher
-local function search(tab_uuid: string, query: string, parent: Instance?, on_failure: () -> nil)
+local function search(tab_uuid: string, query: string, parent: Instance?, on_failure: () -> nil): ScrollingFrame
+	local scrolling_container = scrolling_frame(parent, "Grid")
+	styling.padding(scrolling_container).PaddingTop = UDim.new(0, 50)
 	event_bus.catalog_show_overlay.emit({ overlay = "None" })
 	local asset_id = tonumber(query)
 	local roblox_uri = query:match("catalog/(%d+)/")
@@ -25,19 +27,17 @@ local function search(tab_uuid: string, query: string, parent: Instance?, on_fai
 		if #asset_info ~= 0 then
 			shared.tabs.close_tab(tab_uuid)
 			event_bus.avatar_item_selected.emit({ asset_info = asset_info[1] })
-			return
+			return scrolling_container
 		end
 		-- bundle?
 		local asset_info = CatalogFetcher:GetBatchItemDetails({ asset_id }, Enum.AvatarItemType.Bundle)
 		if #asset_info ~= 0 then
 			shared.tabs.close_tab(tab_uuid)
 			event_bus.avatar_item_selected.emit({ asset_info = asset_info[1] })
-			return
+			return scrolling_container
 		end
 		-- probably a normal search,
 	end
-	local scrolling_container = scrolling_frame(parent, "Grid")
-	styling.padding(scrolling_container).PaddingTop = UDim.new(0, 50)
 	-- split off into another thread to avoid blocking
 	task.spawn(function()
 		local Spinner = EventFrames.spinner(scrolling_container)
@@ -72,15 +72,17 @@ local function search(tab_uuid: string, query: string, parent: Instance?, on_fai
 				Spinner.Parent = nil
 				for _, Asset in AssetArray do
 					local button = asset_button({
-						price = Asset.Price,
-						asset_id = Asset.Id,
-						asset_type = Asset.ItemType,
+						-- price = Asset.Price,
+						-- asset_id = Asset.Id,
+						-- asset_type = Asset.ItemType,
+						asset = Asset,
 						parent = scrolling_container,
-						on_click = function()
-							event_bus.avatar_item_selected.emit({
-								asset_info = Asset,
-							})
-						end,
+						-- on_click = function()
+						-- 	event_bus.avatar_item_selected.emit({
+						-- 		asset_info = Asset,
+						-- 	})
+						-- 	return
+						-- end,
 					})
 					asset_button_header(Asset, { ["Favourite"] = true, ["Remove"] = true }, button)
 				end
@@ -124,6 +126,7 @@ return function(parent: Instance?)
 	local current_tab = nil
 	local opened_tabs: {
 		[string]: {
+			ignore_search_filter: boolean,
 			uuid: string,
 			container: Frame,
 			scrolling_container: ScrollingFrame?,
@@ -146,6 +149,7 @@ return function(parent: Instance?)
 			current_tab.container.Visible = false
 		end
 		current_tab = {
+			ignore_search_filter = false,
 			uuid = uuid,
 			container = empty_frame(container),
 			scrolling_container = nil,
@@ -184,23 +188,29 @@ return function(parent: Instance?)
 		search_wrapper(parm.query)
 	end)
 
-	event_bus.catalog_set_search_filter.connect(function(parm): nil
-		for filter_option, value in parm do
+	event_bus.catalog_set_search_filter.connect(function(parm)
+		for filter_option, value in parm :: { any } do
 			CatalogFetcher.Filter[filter_option] = value
+		end
+		if current_tab then
+			if current_tab.ignore_search_filter then
+				current_tab.ignore_search_filter = false
+				return
+			end
 		end
 		search_wrapper(CatalogFetcher.Filter.SearchKeyword)
 		return
 	end)
 
-	event_bus.catalog_show_overlay.connect(function(parm): nil
+	event_bus.catalog_show_overlay.connect(function(parm)
 		container.Visible = parm.overlay == "None"
-		return
 	end)
 
 	event_bus.topbar_register_custom_button.emit({
 		allowed_overlay = "None",
 		button_id = "catalog_tab",
 		image = 108641844075033,
+		tooltip = "Tabs",
 		on_click = function()
 			components.catalog_browser_tab_popup({
 				parent = container,
@@ -210,8 +220,11 @@ return function(parent: Instance?)
 				on_click = function(tab)
 					if not switch_tab(tab.tab_uuid) then
 						-- new tab and set filters
-						event_bus.catalog_set_search_filter.emit(tab.saved_filter)
 						create_tab(tab.tab_uuid)
+						event_bus.catalog_set_search_filter.emit(tab.saved_filter)
+					else
+						opened_tabs[tab.tab_uuid].ignore_search_filter = true
+						event_bus.catalog_set_search_filter.emit(tab.saved_filter)
 					end
 					return
 				end,
@@ -246,9 +259,21 @@ return function(parent: Instance?)
 			return
 		end,
 	})
+	event_bus.topbar_register_custom_button.emit({
+		allowed_overlay = "None",
+		button_id = "catalog_auto_try",
+		image = 88915445317633,
+		tooltip = "Auto try on",
+		has_state = true,
+		on_click = function(state)
+			shared.settings.set("auto_try_on_click", state)
+			return
+		end,
+	})
 	event_bus.topbar_visibility_custom_button.emit({
-		button_id = "catalog_tab",
+		button_id = { "catalog_tab", "catalog_auto_try" },
 		show = true,
 	})
+	event_bus.topbar_set_state.emit({ button_id = "catalog_auto_try", state = shared.settings.get("auto_try_on_click") })
 	return container
 end
