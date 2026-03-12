@@ -1,4 +1,4 @@
-type OnTransformFunc = (type: "Move" | "Rotation" | "Scale" | "Reset", value: Vector3) -> nil
+type OnTransformFunc = (type: "Move" | "Rotation" | "Scale" | "Reset", value: Vector3) -> ()
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 -- local gizmo = require(script.Gizmo)
@@ -11,17 +11,23 @@ local plugin = shared.plugin.plugin
 local core_gui = (game :: any).CoreGui
 return function(primary_part: BasePart, on_transform: OnTransformFunc)
 	local current_gizmo: HandlesBase? = nil
-	local billboard_gui = Instance.new("BillboardGui")
-	billboard_gui.Active = true
-	billboard_gui.AlwaysOnTop = true
-	billboard_gui.Size = UDim2.new(0, 96, 0, 256)
+	local billboard_gui = Instance.new("ScreenGui")
+	-- billboard_gui.Active = true
+	-- billboard_gui.AlwaysOnTop = true
+	-- billboard_gui.Size = UDim2.new(0, 96, 0, 256)
 	billboard_gui.Parent = (game :: any).CoreGui
 	local container = ui_lib.empty_frame(billboard_gui)
-	local vert_layout = Instance.new("UIListLayout")
-	vert_layout.Padding = UDim.new(0, 8)
-	vert_layout.HorizontalFlex = Enum.UIFlexAlignment.Fill
-	vert_layout.SortOrder = Enum.SortOrder.LayoutOrder
-	vert_layout.Parent = container
+
+	container.Position = UDim2.new(0, 8, 0.0, 8)
+
+	-- container.AnchorPoint = Vector2.new(0, 0.)
+	container.Size = UDim2.new(1, 0, 0, 256)
+	ui_lib.styling.hbox(container)
+	-- local vert_layout = Instance.new("UIListLayout")
+	-- vert_layout.Padding = UDim.new(0, 8)
+	-- vert_layout.HorizontalFlex = Enum.UIFlexAlignment.Fill
+	-- vert_layout.SortOrder = Enum.SortOrder.LayoutOrder
+	-- vert_layout.Parent = container
 	local gizmos = {
 		Move = move(core_gui, primary_part, "Position", function(value: Vector3, scale: Vector3)
 			on_transform("Move", value)
@@ -43,7 +49,7 @@ return function(primary_part: BasePart, on_transform: OnTransformFunc)
 	}
 	local self = {
 		update_position = function()
-			billboard_gui.StudsOffsetWorldSpace = primary_part.Position + Vector3.new(2, 0, 0)
+			-- billboard_gui.StudsOffsetWorldSpace = primary_part.Position + Vector3.new(2, 0, 0)
 		end,
 		toggle = function(gizmo_type: "Move" | "Rotation" | "Scale" | "UniformScale")
 			if current_gizmo then
@@ -94,21 +100,21 @@ return function(primary_part: BasePart, on_transform: OnTransformFunc)
 		uniform_scale_button,
 	}
 
-	for _, button in buttons do
-		button.MouseEnter:Connect(function(x: number, y: number)
-			button.Transparency = 0
-		end)
-		button.MouseLeave:Connect(function(x: number, y: number)
-			button.Transparency = 0.5
-		end)
-		button.Transparency = 0.5
-	end
+	-- for _, button in buttons do
+	-- 	button.MouseEnter:Connect(function(x: number, y: number)
+	-- 		button.Transparency = 0
+	-- 	end)
+	-- 	button.MouseLeave:Connect(function(x: number, y: number)
+	-- 		button.Transparency = 0.5
+	-- 	end)
+	-- 	button.Transparency = 0.5
+	-- end
 	if plugin then
 		plugin:Activate(true)
 	end
 
 	local render_stepped = RunService.RenderStepped:Connect(function(a0: number)
-		billboard_gui.StudsOffsetWorldSpace = primary_part.Position + Vector3.new(2, 0, 0)
+		-- billboard_gui.StudsOffsetWorldSpace = primary_part.Position + Vector3.new(2, 0, 0)
 		return
 	end)
 
