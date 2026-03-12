@@ -43,11 +43,11 @@ return function(arg: Arguments)
 				end,
 			})
 
-			local label = lune.textlabel((tab_data.tab_name == "" and "New Tab") or tab_data.tab_name, asset_button)
+			local label = lune.textlabel((tab_data.tab_name == "" and "New Tab") or tab_data.tab_name, asset_button,true)
 			label.AnchorPoint = Vector2.new(0, 1)
 			label.Position = UDim2.fromScale(0, 1)
 			label.TextYAlignment = Enum.TextYAlignment.Bottom
-			lune.theme_manager:show_highlight(asset_button, tab_data.tab_uuid == arg.selected_uuid)
+			lune.theme_manager:force_highlight(asset_button, tab_data.tab_uuid == arg.selected_uuid)
 			button_header({
 				parent = asset_button,
 				left_topbar = {},
