@@ -1,6 +1,7 @@
 --!strict
 local singletons = require("../../singletons")
 local components = require("../components")
+local utils = require("../../utils")
 local catalog_fetcher = singletons.catalog_fetcher
 local event_bus = singletons.event_bus
 local asset_button = components.asset_button
@@ -22,11 +23,11 @@ local function build_asset_info_container(parent: Instance?, parm: typeof(catalo
 	vert_layout.Padding = UDim.new(0, 8)
 	vert_layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	vert_layout.Parent = asset_info_container
-	local asset_button = asset_button({
-		price = parm.Price,
-		asset_id = parm.Id,
-		asset_type = parm.ItemType,
+
+	local asset_button = components.lune_ui.iconbutton({
 		parent = asset_info_container,
+		id = utils.generate_asset_thumb({ parm }),
+		on_click = function() end,
 	})
 	asset_button.Size = UDim2.new(0, 135, 0, 135)
 	asset_button_header(parm, { ["Favourite"] = true }, asset_button)
@@ -114,9 +115,7 @@ local function build_recommended_container(parent: Instance?, asset: typeof(cata
 				break
 			end
 			local button = asset_button({
-				price = asset.Price,
-				asset_id = asset.Id,
-				asset_type = asset.ItemType,
+				asset = asset,
 				parent = container,
 				on_click = function()
 					event_bus.avatar_item_selected.emit({ asset_info = asset })
@@ -134,7 +133,7 @@ return function(parent: Instance?)
 	container.Name = "View Asset"
 	local asset_info_container: Frame? = nil
 	local recommended_container: Frame? = nil
-	event_bus.avatar_item_selected.connect(function(parm): nil
+	event_bus.avatar_item_selected.connect(function(parm)
 		if asset_info_container then
 			asset_info_container:Destroy()
 		end
