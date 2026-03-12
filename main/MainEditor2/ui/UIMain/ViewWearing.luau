@@ -12,10 +12,10 @@ local humanoid_editor = singletons.humanoid_description
 
 return function(parent: Instance?)
 	local container = empty_frame(parent)
-	local current_view_wearing: Frame? = nil
-	local is_enabled = false
+	local current_view_wearing: ScrollingFrame? = nil
+	local is_enabled = true
 	local function update()
-		if not is_enabled or not humanoid_editor:is_init() then
+		if not humanoid_editor:is_init() then
 			return
 		end
 		local view_wearing_instance = scrolling_frame(container, "Grid")
@@ -30,9 +30,7 @@ return function(parent: Instance?)
 
 		for _, asset in wearing_ids do
 			local button = asset_button({
-				price = asset.Price,
-				asset_id = asset.Id,
-				asset_type = asset.ItemType,
+				asset = asset,
 				parent = view_wearing_instance,
 				on_click = function()
 					event_bus.avatar_item_selected.emit({
@@ -50,17 +48,12 @@ return function(parent: Instance?)
 	humanoid_editor.humanoid_changed.Event:Connect(update)
 	humanoid_editor.id_added.Event:Connect(update)
 	humanoid_editor.id_removed.Event:Connect(update)
-	event_bus.catalog_show_overlay.connect(function(parm): nil
+	event_bus.catalog_show_overlay.connect(function(parm)
 		is_enabled = parm.overlay == "Wearing"
-		if is_enabled then
-			update()
-		else
-			if current_view_wearing then
-				current_view_wearing:Destroy()
-				current_view_wearing = nil
-			end
-		end
-		return
+		container.Visible = is_enabled
 	end)
+	-- tbh,just update in the background for more responsiveness
+	container.Visible = false
+	update()
 	return container
 end
