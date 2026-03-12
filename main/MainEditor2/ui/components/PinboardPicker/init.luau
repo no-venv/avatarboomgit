@@ -19,7 +19,7 @@ return function(arg: Argument)
 	vbox.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	local scrolling_container
 	local searchbox
-	lune.textlabel("<font size='32'><b>Your saved boards 🌟</b></font>", inner_container)
+	lune.textlabel("<font size='24'><b>Your saved boards 🌟</b></font>", inner_container)
 	local function generate()
 		if scrolling_container then
 			scrolling_container:Destroy()

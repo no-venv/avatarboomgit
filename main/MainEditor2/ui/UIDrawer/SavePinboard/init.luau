@@ -47,11 +47,8 @@ return function(parent: Frame?)
 					end
 					pinboard_shared.remove_pin(parm.move_src, ids)
 				end
-				for _, save in stuff_to_save do
-					pinboard_shared.insert_pin(picked.name, save)
-				end
+				pinboard_shared.insert_pin(picked.name, stuff_to_save)
 				singletons.event_bus.drawer_open.emit({ bool = false })
-				singletons.event_bus.save_pinboard_success.emit({})
 				return
 			end,
 		})

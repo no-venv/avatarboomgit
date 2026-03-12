@@ -1,6 +1,8 @@
+--!strict
 local HttpService = game:GetService("HttpService")
 local plugin_fs = require("../singletons/PluginFS")
 local catalog_fetcher = require("../singletons/CatalogFetcher")
+local event_bus = require("../singletons/event_bus")
 local plugin_save_name = "BoomPinboard"
 export type Board = { catalog_fetcher.AssetType }
 export type PinboardData = {
@@ -8,7 +10,10 @@ export type PinboardData = {
 }
 export type Pinboard = {
 	lookup: {
-		[number]: { [string]: boolean },
+		[number]: {
+			stored_boards_count: number,
+			stored_boards: {},
+		},
 	},
 	data: PinboardData,
 }
@@ -21,68 +26,110 @@ local saved_pinboard = plugin_fs.get(plugin_save_name)
 if saved_pinboard then
 	pinboard_data = HttpService:JSONDecode(saved_pinboard)
 end
-local self
-self = {
+
+local pinboard_interface = {
 	pinboard_data = pinboard_data,
-	new_pinboard = function(name: string)
-		pinboard_data.data[name] = {}
-		plugin_fs.save(plugin_save_name, HttpService:JSONEncode(pinboard_data))
-	end,
-
-	delete_pinboard = function(name: string)
-		for _, value in pinboard_data.data[name] do
-			pinboard_data.lookup[value.Id][name] = nil
-		end
-		pinboard_data.data[name] = nil
-		plugin_fs.save(plugin_save_name, HttpService:JSONEncode(pinboard_data))
-	end,
-
-	pinboard_exists = function(name: string)
-		return pinboard_data.data[name]
-	end,
-	lookup_id = function(id: number)
-		return pinboard_data.lookup[id]
-	end,
-
-	rename_pinboard = function(old: string, new: string)
-		local old_pinboard = pinboard_data.data[old]
-		self.delete_pinboard(old)
-		pinboard_data.data[new] = old_pinboard
-		plugin_fs.save(plugin_save_name, HttpService:JSONEncode(pinboard_data))
-	end,
-
-	share_pinboard = function(name: string) end,
-
-	insert_pin = function(name: string, asset_type: catalog_fetcher.AssetType)
-		local id = asset_type.Id
-		if not pinboard_data.data[name] then
-			pinboard_data.data[name] = {}
-		end
-		if not pinboard_data.lookup[id] then
-			pinboard_data.lookup[id] = {}
-		elseif pinboard_data.lookup[id][name] then
-			return
-		end
-		pinboard_data.lookup[id][name] = true
-		table.insert(pinboard_data.data[name], asset_type)
-		plugin_fs.save(plugin_save_name, HttpService:JSONEncode(pinboard_data))
-	end,
-
-	remove_pin = function(name: string, ids: { number })
-		local board = pinboard_data.data[name]
-		for index, value in board do
-			if table.find(ids, value.Id) then
-				pinboard_data.lookup[value.Id][name] = nil
-				board[index] = nil
-			end
-		end
-		local rebuilt = {}
-		for _, value in board do
-			table.insert(rebuilt, value)
-		end
-		pinboard_data.data[name] = rebuilt
-		plugin_fs.save(plugin_save_name, HttpService:JSONEncode(pinboard_data))
-	end,
 }
 
-return self
+function pinboard_interface.new_pinboard(name: string)
+	if pinboard_data.data[name] then
+		return
+	end
+	pinboard_data.data[name] = {}
+	plugin_fs.save(plugin_save_name, HttpService:JSONEncode(pinboard_data))
+end
+
+function pinboard_interface.add_pin_to_lookup(board_name: string, pin_id: number)
+	local lookup = pinboard_data.lookup
+	if not lookup[pin_id] then
+		lookup[pin_id] = {
+			stored_boards_count = 1,
+			stored_boards = { [board_name] = true },
+		}
+		return
+	end
+	lookup[pin_id].stored_boards_count += 1
+	lookup[pin_id].stored_boards[board_name] = true
+end
+
+function pinboard_interface.remove_pin_from_lookup(board_name: string, pin_id: number)
+	local lookup = pinboard_data.lookup
+	lookup[pin_id].stored_boards_count -= 1
+	if lookup[pin_id].stored_boards_count == 0 then
+		lookup[pin_id] = nil
+	else
+		lookup[pin_id].stored_boards[board_name] = nil
+	end
+end
+
+function pinboard_interface.delete_pinboard(name: string)
+	local data = pinboard_data.data
+	for _, value in data[name] do
+		pinboard_interface.remove_pin_from_lookup(name, value.Id)
+	end
+	data[name] = nil
+	plugin_fs.save(plugin_save_name, HttpService:JSONEncode(pinboard_data))
+	event_bus.save_pinboard_success.emit({})
+end
+
+function pinboard_interface.pinboard_exists(name: string)
+	return pinboard_data.data[name]
+end
+
+function pinboard_interface.check_pin_in_board(name: string, id: number)
+	local lookup = pinboard_data.lookup
+	if not lookup[id] then
+		return false
+	end
+	if not lookup[id].stored_boards[name] then
+		return false
+	end
+	return true
+end
+
+function pinboard_interface.rename_pinboard(old: string, new: string)
+	local old_pinboard = pinboard_data.data[old]
+	pinboard_interface.delete_pinboard(old)
+	for _, value in old_pinboard do
+		pinboard_interface.add_pin_to_lookup(new, value.Id)
+	end
+	pinboard_data.data[new] = old_pinboard
+	plugin_fs.save(plugin_save_name, HttpService:JSONEncode(pinboard_data))
+	event_bus.save_pinboard_success.emit({})
+end
+
+function pinboard_interface.share_pinboard(name: string) end
+
+function pinboard_interface.insert_pin(name: string, asset_type: { catalog_fetcher.AssetType })
+	local data = pinboard_data.data
+	if not data[name] then
+		data[name] = {}
+	end
+	for _, asset in asset_type do
+		if pinboard_interface.check_pin_in_board(name, asset.Id) then
+			continue
+		end
+		pinboard_interface.add_pin_to_lookup(name, asset.Id)
+		table.insert(data[name], asset)
+	end
+	plugin_fs.save(plugin_save_name, HttpService:JSONEncode(pinboard_data))
+	event_bus.save_pinboard_success.emit({})
+end
+
+function pinboard_interface.remove_pin(name: string, ids: { number })
+	local data = pinboard_data.data
+	local board = data[name]
+	local rebuilt = {}
+	for index, value in board do
+		if table.find(ids, value.Id) then
+			pinboard_interface.remove_pin_from_lookup(name, value.Id)
+			continue
+		end
+		table.insert(rebuilt, value)
+	end
+	pinboard_data.data[name] = rebuilt
+	plugin_fs.save(plugin_save_name, HttpService:JSONEncode(pinboard_data))
+	event_bus.save_pinboard_success.emit({})
+end
+
+return pinboard_interface
