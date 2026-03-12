@@ -2,6 +2,7 @@ local players = game:GetService("Players")
 local lune = require("../../components/lune_ui")
 local get_spawn_position = require("./spawn_position")
 local selectable_rig = require("./selectable_rig")
+local fix_rig = require("./fix_rig")
 return function(parent: Instance?, user_id: number)
 	local container = lune.empty_frame(parent)
 	container.Name = "Import From Friends"
@@ -18,9 +19,9 @@ return function(parent: Instance?, user_id: number)
 			local user = lune.iconbutton({
 				id = 0,
 				on_click = function()
-					local hum_desc = players:GetHumanoidDescriptionFromUserId(friend.Id)
-					local rig_model =
-						players:CreateHumanoidModelFromDescriptionAsync(hum_desc, selected_rig_type)
+					local hum_desc = players:GetHumanoidDescriptionFromUserIdAsync(friend.Id)
+					local rig_model = players:CreateHumanoidModelFromDescriptionAsync(hum_desc, selected_rig_type)
+					fix_rig(rig_model)
 					rig_model.Parent = workspace
 					rig_model:MoveTo(get_spawn_position())
 					selectable_rig(rig_model)
@@ -44,7 +45,7 @@ return function(parent: Instance?, user_id: number)
 
 	scrolling_container = lune.scrolling_frame(container, "Grid", nil, generate)
 	lune.option_buttons(container, { "R6", "R15" }, function(value: string)
-		selected_rig_type = "R6" and Enum.HumanoidRigType.R6 or Enum.HumanoidRigType.R15
+		selected_rig_type = (value == "R6") and Enum.HumanoidRigType.R6 or Enum.HumanoidRigType.R15
 		return
 	end)
 	return container

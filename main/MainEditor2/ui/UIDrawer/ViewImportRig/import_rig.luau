@@ -15,6 +15,7 @@ fem_hum_desc.Torso = 48474356
 local components = require("../../components")
 local get_spawn_position = require("./spawn_position")
 local selectable_rig = require("./selectable_rig")
+local fix_rig = require("./fix_rig")
 local Players = game:GetService("Players")
 local ui_lib = components.lune_ui
 local function load_rig(gender: "Base" | "Female", rig_type: "R6" | "R15", username: string): string
@@ -22,8 +23,9 @@ local function load_rig(gender: "Base" | "Female", rig_type: "R6" | "R15", usern
 	local spawn_position = get_spawn_position()
 	if username ~= "" then
 		local to_userid = Players:GetUserIdFromNameAsync(username)
-		local hum_desc = Players:GetHumanoidDescriptionFromUserId(to_userid)
-		local rig_model = Players:CreateHumanoidModelFromDescription(hum_desc, rig_type_enum) :: Model
+		local hum_desc = Players:GetHumanoidDescriptionFromUserIdAsync(to_userid)
+		local rig_model = Players:CreateHumanoidModelFromDescriptionAsync(hum_desc, rig_type_enum) :: Model
+		fix_rig(rig_model)
 		rig_model.Parent = workspace
 		rig_model:MoveTo(spawn_position)
 		selectable_rig(rig_model)
@@ -34,6 +36,7 @@ local function load_rig(gender: "Base" | "Female", rig_type: "R6" | "R15", usern
 		gender == "Base" and base_hum_desc or fem_hum_desc,
 		rig_type_enum
 	)
+	fix_rig(cloned_rig)
 	cloned_rig.Parent = workspace
 	cloned_rig:MoveTo(spawn_position)
 
