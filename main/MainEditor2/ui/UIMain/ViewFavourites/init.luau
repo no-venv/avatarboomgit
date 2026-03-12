@@ -52,7 +52,7 @@ return function(parent: Instance?)
 		end
 		return
 	end
-	event_bus.save_pinboard_success.connect(function(parm: {}): nil
+	event_bus.save_pinboard_success.connect(function(parm: {})
 		if view_func.get_current_view() == "Home" then
 			update()
 		else
@@ -61,7 +61,7 @@ return function(parent: Instance?)
 		return
 	end)
 
-	event_bus.catalog_show_overlay.connect(function(parm): nil
+	event_bus.catalog_show_overlay.connect(function(parm)
 		is_enabled = parm.overlay == "Favourites"
 		tab_container.Visible = is_enabled
 		if is_enabled then
@@ -74,6 +74,7 @@ return function(parent: Instance?)
 		allowed_overlay = "Favourites",
 		image = 84503957682657,
 		button_id = "pin_back",
+		tooltip = "Back",
 		on_click = function()
 			if current_view_boards then
 				current_view_boards:Destroy()
