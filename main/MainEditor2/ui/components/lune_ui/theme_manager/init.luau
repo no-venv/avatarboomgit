@@ -4,10 +4,14 @@ type ThemeType = {
 	Background: Color3,
 	Foreground: Color3,
 	Hover: Color3,
-	--Green : Color3;
-	--Yellow : Color3;
 }
+
 type Struct = {
+	events: {
+		[GuiObject]: {
+			on_highlight: { (enabled: boolean) -> () },
+		},
+	},
 	current_theme: ThemeType,
 	base_theme: ThemeType,
 	_gui_highlight: {
@@ -22,13 +26,14 @@ type Struct = {
 }
 
 type Impl = {
-	set_theme: (self: Themer, theme: ModuleScript | ThemeType) -> void,
-	add_highlight: (self: Themer, gui_instance: GuiObject) -> void,
-	force_highlight: (self: Themer, gui_instance: GuiObject, bool: boolean) -> void,
-	disable_highlight_hover: (self: Themer, gui_instance: GuiObject, bool: boolean) -> void,
-	show_highlight: (self: Themer, gui_instance: GuiObject, bool: boolean) -> void,
-	compute_gui_instance_theme: (self: Themer, gui_instance: GuiObject, colour: Color3) -> void,
-	add_custom_gui_instance: (self: Themer, gui_instance: GuiObject, tag: "Foreground" | "Background") -> void,
+	set_theme: (self: Themer, theme: ModuleScript | ThemeType) -> (),
+	add_highlight: (self: Themer, gui_instance: GuiObject) -> (),
+	force_highlight: (self: Themer, gui_instance: GuiObject, bool: boolean) -> (),
+	disable_highlight_hover: (self: Themer, gui_instance: GuiObject, bool: boolean) -> (),
+	show_highlight: (self: Themer, gui_instance: GuiObject, bool: boolean) -> (),
+	on_highlight: (self: Themer, gui_instance: GuiObject, func: (enabled: boolean) -> ()) -> (),
+	compute_gui_instance_theme: (self: Themer, gui_instance: GuiObject, colour: Color3) -> (),
+	add_custom_gui_instance: (self: Themer, gui_instance: GuiObject, tag: "Foreground" | "Background") -> (),
 	get_base_theme: (self: Themer) -> ThemeType,
 }
 export type Themer = Impl & Struct
@@ -43,6 +48,7 @@ end
 local CollectionService = game:GetService("CollectionService")
 local theme_manager = {} :: Themer
 theme_manager.themes = script
+theme_manager.events = {}
 theme_manager.current_theme = require("@self/Light")
 theme_manager.base_theme = require("@self/Light")
 theme_manager._gui_highlight = {}
@@ -82,6 +88,12 @@ end
 function theme_manager:add_custom_gui_instance(gui_instance, tag)
 	gui_instance:AddTag(tag)
 	self:compute_gui_instance_theme(gui_instance, self.current_theme[tag])
+	self.events[gui_instance] = {
+		on_highlight = {},
+	}
+	gui_instance.Destroying:Connect(function(...)
+		self.events[gui_instance] = nil
+	end)
 	return
 end
 function theme_manager:set_theme(theme)
@@ -152,7 +164,14 @@ function theme_manager:show_highlight(gui_instance, bool)
 	pcall(function(...)
 		gui_instance.ImageColor3 = text_colour
 	end)
+	for _, func in self.events[gui_instance].on_highlight do
+		func(bool)
+	end
 	return
+end
+
+function theme_manager:on_highlight(gui_instance, func)
+	table.insert(self.events[gui_instance].on_highlight, func)
 end
 
 function theme_manager:disable_highlight_hover(gui_instance, bool)

@@ -2,7 +2,7 @@ type arg = {
 	parent: Instance?,
 	id: number | string | { number | string },
 	theme_enabled: boolean?,
-	on_click: () -> nil,
+	on_click: () -> (),
 }
 local textbutton = require("./textbutton")
 local theme_manager = require("./theme_manager")
@@ -47,14 +47,12 @@ return function(arg: arg)
 	local func = arg.on_click
 	local clone = textbutton("", parent, func)
 	clone.AutomaticSize = Enum.AutomaticSize.None
-	local images_to_theme = {}
+	local created_images = {}
 	if type(id) == "table" then
 		if #id == 1 then
 			local image = new_image(id[1])
 			image.Parent = clone
-			if theme_enabled then
-				table.insert(images_to_theme, image)
-			end
+			table.insert(created_images, image)
 		else
 			for index, value in id do
 				local pos = image_positioning[index]
@@ -64,22 +62,30 @@ return function(arg: arg)
 				image.Rotation = pos[3]
 				image.ZIndex = pos[4]
 				image.Parent = clone
-				if theme_enabled then
-					table.insert(images_to_theme, image)
-					-- theme_manager:add_custom_gui_instance(image, "Foreground")
-				end
+				table.insert(created_images, image)
 			end
 		end
 	else
 		local image = new_image(id)
 		image.Parent = clone
-		if theme_enabled then
-			table.insert(images_to_theme, image)
+		table.insert(created_images, image)
+	end
+
+	if theme_enabled then
+		for _, image in created_images do
+			theme_manager:add_custom_gui_instance(image, "Foreground")
+			theme_manager:add_highlight(image)
 		end
+		theme_manager:on_highlight(clone, function(enabled: boolean)
+			for _, image in created_images do
+				theme_manager:force_highlight(image, enabled)
+			end
+		end)
 	end
-	for _, image in images_to_theme do
-		theme_manager:add_custom_gui_instance(image, "Foreground")
-	end
+
 	aspect_ratio:Clone().Parent = clone
+	clone:GetAttributeChangedSignal("image"):Connect(function()
+		created_images[1].Image = clone:GetAttribute("image")
+	end)
 	return clone
 end

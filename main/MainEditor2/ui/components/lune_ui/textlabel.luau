@@ -12,13 +12,19 @@ textlabel.TextWrapped = true
 textlabel.TextColor3 = Color3.new()
 textlabel.Size = UDim2.new(0,0,0,32)
 styling.font(textlabel)
-return function(text :string, parent : Instance?)
+return function(text :string, parent : Instance?,follow_parent_highlight : boolean?)
 	local label_clone = textlabel:Clone()
 	theme_manager:add_custom_gui_instance(label_clone,"Background")
 	utils.prop_scope.auto_set_property(label_clone)
 	label_clone.Text = text
 	if parent then
 		label_clone.Parent = parent
+	end
+	if follow_parent_highlight then
+		theme_manager:add_highlight(label_clone)
+		theme_manager:on_highlight(parent, function(enabled: boolean)  
+			theme_manager:force_highlight(label_clone, enabled)
+		end)
 	end
 	return label_clone
 end

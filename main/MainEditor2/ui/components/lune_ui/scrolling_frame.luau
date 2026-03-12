@@ -9,7 +9,7 @@ scrolling_frame.CanvasSize = UDim2.new()
 scrolling_frame.ScrollBarThickness = 1
 scrolling_frame.ScrollingDirection = Enum.ScrollingDirection.Y
 
-return function(parent: Instance?, scrolling_type: ("List" | "Grid")?, override: {}?, on_reached_end: (() -> any)?)
+return function(parent: Instance?, scrolling_type: ("List" | "Grid")?, override: {}?, on_reached_end: (() -> boolean)?)
 	scrolling_type = scrolling_type or "List"
 	local clone = scrolling_frame:Clone()
 	local selected_layout: UIGridStyleLayout
@@ -29,13 +29,28 @@ return function(parent: Instance?, scrolling_type: ("List" | "Grid")?, override:
 	end
 	utils.prop_scope.auto_set_property(clone)
 	if on_reached_end then
-		local canvas_position_change = clone:GetPropertyChangedSignal("CanvasPosition")
-		canvas_position_change:Connect(function()
-			local Y = (clone.CanvasPosition.Y + clone.AbsoluteWindowSize.Y) / clone.AbsoluteCanvasSize.Y
-			if Y >= 0.90 then
-				on_reached_end()
+		local mutex = false
+		local function update_canvas()
+			if mutex then
+				return
 			end
-		end)
+			local Y = (clone.CanvasPosition.Y + clone.AbsoluteWindowSize.Y) / clone.AbsoluteCanvasSize.Y
+			if Y >= 0.90 and not mutex then
+				local TargetSize = clone.AbsoluteWindowSize.Y + clone.AbsoluteCanvasSize.Y
+				mutex = true
+				while true do
+					local should_continue = on_reached_end()
+					if (clone.AbsoluteCanvasSize.Y >= TargetSize) or not should_continue then
+						break
+					end
+				end
+				mutex = false
+			end
+		end
+		update_canvas()
+		local canvas_size_change = clone:GetPropertyChangedSignal("AbsoluteWindowSize"):Connect(update_canvas)
+		local canvas_position_change = clone:GetPropertyChangedSignal("CanvasPosition")
+		canvas_position_change:Connect(update_canvas)
 	end
 	return clone
 end
