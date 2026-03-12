@@ -6,6 +6,7 @@ local colour_wheel = components.colour_wheel
 local ui_themes = lune.theme_manager.themes
 local tab = lune.tab
 local empty_frame = lune.empty_frame
+local scrolling_frame = lune.scrolling_frame
 local option_buttons = lune.option_buttons
 local textbox = lune.textbox
 local textbutton = lune.textbutton
@@ -15,16 +16,8 @@ return function(parent: Instance?)
 	local current_theme = lune.theme_manager.current_theme
 	local container = empty_frame(parent)
 	container.Name = "Set Theme"
-	local preset_themes = empty_frame()
+	local preset_themes = scrolling_frame(nil, nil, { HorizontalFlex = Enum.UIFlexAlignment.Fill })
 	preset_themes.Name = "Preset Themes"
-	local vert_layout = Instance.new("UIListLayout")
-	vert_layout.Padding = UDim.new(0, 8)
-	vert_layout.SortOrder = Enum.SortOrder.LayoutOrder
-	vert_layout.HorizontalFlex = Enum.UIFlexAlignment.Fill
-	vert_layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-	vert_layout.VerticalAlignment = Enum.VerticalAlignment.Center
-	vert_layout.Parent = preset_themes
-
 	for _, theme: ModuleScript in ui_themes:GetChildren() do
 		if theme:IsA("ModuleScript") then
 			lune.textbutton(theme.Name, preset_themes, function(): nil
