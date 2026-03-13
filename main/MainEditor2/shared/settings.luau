@@ -9,16 +9,20 @@ export type Settings = {
 local settings_data: Settings = {
 	auto_try_on_click = false,
 }
-local saved_settings = plugin_fs.get(plugin_save_name)
-if saved_settings then
-	settings_data = HttpService:JSONDecode(saved_settings)
-end
+-- local saved_settings = plugin_fs.get(plugin_save_name)
+
+-- if saved_settings then
+-- 	settings_data = HttpService:JSONDecode(saved_settings)
+-- end
 
 return {
 	data = settings_data,
 	set = function<T>(key: keyof<Settings>, value: any)
+		if value == nil then
+			return
+		end
 		settings_data[key] = value
-		plugin_fs.save(plugin_save_name, HttpService:JSONEncode(saved_settings))
+		-- plugin_fs.save(plugin_save_name, HttpService:JSONEncode(saved_settings))
 		event_bus.plugin_settings_updated.emit({ setting = key, value = value })
 		return
 	end,
