@@ -25,6 +25,7 @@ return function(parent: Instance?)
 		if current_view_wearing then
 			current_view_wearing:Destroy()
 		end
+		current_view_wearing = view_wearing_instance
 
 		local wearing_ids = singletons.wearing_cache.get_wearing()
 
@@ -41,7 +42,6 @@ return function(parent: Instance?)
 			asset_button_header(asset, { ["Favourite"] = true, ["Remove"] = true }, button)
 		end
 
-		current_view_wearing = view_wearing_instance
 		return
 	end
 
