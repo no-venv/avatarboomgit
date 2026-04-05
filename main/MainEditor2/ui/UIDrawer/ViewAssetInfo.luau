@@ -29,6 +29,7 @@ local function build_asset_info_container(parent: Instance?, parm: typeof(catalo
 		id = utils.generate_asset_thumb({ parm }),
 		on_click = function() end,
 	})
+
 	asset_button.Size = UDim2.new(0, 135, 0, 135)
 	asset_button_header(parm, { ["Favourite"] = true }, asset_button)
 	ui_lib.property_scope({
@@ -84,9 +85,13 @@ local function build_asset_info_container(parent: Instance?, parm: typeof(catalo
 		return
 	end)
 
+	local id_added_signal = humanoid_editor.id_added.Event:Connect(update_equipped_state)
+	local id_remove_signal = humanoid_editor.id_removed.Event:Connect(update_equipped_state)
 	local humanoid_change_signal = humanoid_editor.humanoid_changed.Event:Connect(update_equipped_state)
 
 	asset_info_container.Destroying:Once(function()
+		id_added_signal:Disconnect()
+		id_remove_signal:Disconnect()
 		humanoid_change_signal:Disconnect()
 	end)
 
