@@ -119,7 +119,9 @@ return function(parent: Instance?)
 			current_theme = ui_themes:FindFirstChild(saved_theme)
 			lune.theme_manager:set_theme(current_theme)
 		else
-			lune.theme_manager:set_theme(ui_themes.Light)
+			local studio_settings = settings()
+			current_theme = studio_settings.Studio.Theme.Name == "Light" and ui_themes.Light or ui_themes["Roblox Dark"]
+			lune.theme_manager:set_theme(current_theme)
 		end
 		return
 	end)
