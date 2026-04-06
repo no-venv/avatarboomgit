@@ -1,19 +1,31 @@
+--!strict
 type void = nil
-type TabImpl = {
-	toggle: (target_view: string, bool: boolean) -> void,
-	hide_tab: (bool: boolean) -> void,
-	hide_button: (target_view: string, bool: boolean) -> void,
+export type Tab = {
+	on_tab_count: ((count: number) -> ())?,
+	on_view_change: ((view: string) -> ())?,
+	views: {
+		[string]: {
+			tab_view: GuiObject,
+			tab_button: TextButton,
+		},
+	},
+}
+export type TabImpl = {
+	toggle: (target_view: string, bool: boolean) -> (),
+	hide_tab_bar: (bool: boolean) -> (),
+	hide_tab_bar_button: (target_view: string, bool: boolean) -> (),
+	add_views: (views: { GuiObject }) -> (),
 	get_current_view: () -> string,
-	on_view_change: (view: string) -> void,
+	get_tab_count: () -> number,
 }
 local textbutton = require("./textbutton")
 local theme_manager = require("./theme_manager")
 return function(
-	views: { Frame },
+	views: { GuiObject },
 	default_view: string,
 	parent: Instance?,
 	tab_bar_parent: Instance?
-): (Frame, ScrollingFrame, TabImpl)
+): (Frame, ScrollingFrame, TabImpl & Tab)
 	local container = Instance.new("Frame")
 	container.Size = UDim2.new(1, 0, 1, 0)
 	container.Transparency = 1
@@ -42,56 +54,68 @@ return function(
 	size_const.MaxSize = Vector2.new(math.huge, 32)
 	size_const.Parent = scrolling_frame
 	local current_view: string = nil
-	local view_map = {}
-	local self
-
-	self = {
-		toggle = nil,
-		hide_tab = function(bool)
-			scrolling_frame.Visible = not bool
-		end,
-		on_view_change = function(view)
-			return
-		end,
-		hide_button = function(view, bool)
-			view_map[view][2].Visible = not bool
-		end,
-		get_current_view = function()
-			return current_view
-		end,
-	}
-
-	local function toggle(target_view: string, bool: boolean)
+	local tab_count = #views
+	-- local view_map = {}
+	local tab = {} :: Tab & TabImpl
+	tab.views = {}
+	tab.toggle = function(target_view, bool)
 		if current_view then
-			local view = view_map[current_view]
-			view[1].Visible = false
-			theme_manager:force_highlight(view[2], false)
+			local view = tab.views[current_view]
+			view.tab_view.Visible = false
+			theme_manager:force_highlight(view.tab_button, false)
 		end
-		local view = view_map[target_view]
-		view[1].Visible = true
-		theme_manager:force_highlight(view[2], true)
+		local view = tab.views[target_view]
+		view.tab_view.Visible = true
+		theme_manager:force_highlight(view.tab_button, true)
 		current_view = target_view
-		self.on_view_change(target_view)
-	end
-
-	self.toggle = toggle
-
-	for _, view_frame in views do
-		local view_name = view_frame.Name
-		local button = textbutton(view_name, scrolling_frame)
-		view_map[view_frame.Name] = {
-			view_frame,
-			button,
-		}
-		button.MouseButton1Click:Connect(function()
-			toggle(view_name, true)
-			self.on_view_change(view_name)
-		end)
-		view_frame.Visible = false
-		view_frame.Parent = container
-		if view_name == default_view then
-			toggle(view_name, true)
+		if tab.on_view_change then
+			tab.on_view_change(target_view)
 		end
 	end
-	return container, scrolling_frame, self
+	tab.hide_tab_bar = function(bool)
+		scrolling_frame.Visible = not bool
+	end
+	tab.hide_tab_bar_button = function(target_view, bool)
+		local view = tab.views[target_view]
+		if (not bool) == view.tab_button.Visible then
+			return
+		end
+		tab.views[target_view].tab_button.Visible = not bool
+		if view.tab_button.Visible then
+			tab_count += 1
+		else
+			tab_count -= 1
+		end
+		if tab.on_tab_count then
+			tab.on_tab_count(tab.get_tab_count())
+		end
+	end
+	tab.add_views = function(views)
+		for _, view_frame in views do
+			local view_name = view_frame.Name
+			local button = textbutton(view_name, scrolling_frame)
+			tab.views[view_name] = {
+				tab_view = view_frame,
+				tab_button = button,
+			}
+			button.MouseButton1Click:Connect(function()
+				tab.toggle(view_name, true)
+				-- self.on_view_change(view_name)
+			end)
+			view_frame.Visible = false
+			view_frame.Parent = container
+			if view_name == default_view then
+				tab.toggle(view_name, true)
+			end
+			tab_count += 1
+		end
+	end
+	tab.get_current_view = function()
+		return current_view
+	end
+	tab.get_tab_count = function()
+		return tab_count
+	end
+	tab.add_views(views)
+	return container, scrolling_frame, tab
 end

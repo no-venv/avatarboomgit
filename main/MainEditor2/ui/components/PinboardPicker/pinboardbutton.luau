@@ -12,6 +12,7 @@ type arg = {
 	on_share: (() -> nil)?,
 	on_remove: (() -> nil)?,
 }
+local shared = require("../../../shared")
 local lune = require("../lune_ui")
 local button_header = require("../ButtonHeader")
 local iconbutton = lune.iconbutton
@@ -50,13 +51,13 @@ return function(arg: arg): TextButton
 		parent = asset_button,
 		left_topbar = {
 			{
-				id = 111453011062900,
+				id = shared.icons.rename,
 				on_click = on_rename,
 			},
 		},
 		right_topbar = {
 			{
-				id = 96060799177234,
+				id = shared.icons.remove,
 				on_click = on_remove,
 			},
 		},
@@ -64,8 +65,3 @@ return function(arg: arg): TextButton
 
 	return asset_button
 end
-
--- 	-- if on_share then
--- 	-- 	ibutton(left_container, 103742597823204, on_share)
--- 	-- end
--- end

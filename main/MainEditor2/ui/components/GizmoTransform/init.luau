@@ -1,7 +1,5 @@
+--!strict
 type OnTransformFunc = (type: "Move" | "Rotation" | "Scale" | "Reset", value: Vector3) -> ()
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
--- local gizmo = require(script.Gizmo)
 local move = require("@self/move")
 local rotation = require("@self/rotation")
 local uniform_scale = require("@self/uniform_scale")
@@ -12,23 +10,14 @@ local core_gui = (game :: any).CoreGui
 return function(primary_part: BasePart, on_transform: OnTransformFunc)
 	local current_gizmo: HandlesBase? = nil
 	local billboard_gui = Instance.new("ScreenGui")
-	-- billboard_gui.Active = true
-	-- billboard_gui.AlwaysOnTop = true
-	-- billboard_gui.Size = UDim2.new(0, 96, 0, 256)
 	billboard_gui.Parent = (game :: any).CoreGui
+	local lune_overlay = ui_lib.empty_frame(billboard_gui)
 	local container = ui_lib.empty_frame(billboard_gui)
-
 	container.Position = UDim2.new(0, 8, 0.0, 8)
+	container.Size = UDim2.new(1, 48, 0, 256)
+	ui_lib.styling.vbox(container)
 
-	-- container.AnchorPoint = Vector2.new(0, 0.)
-	container.Size = UDim2.new(1, 0, 0, 256)
-	ui_lib.styling.hbox(container)
-	-- local vert_layout = Instance.new("UIListLayout")
-	-- vert_layout.Padding = UDim.new(0, 8)
-	-- vert_layout.HorizontalFlex = Enum.UIFlexAlignment.Fill
-	-- vert_layout.SortOrder = Enum.SortOrder.LayoutOrder
-	-- vert_layout.Parent = container
-	local gizmos = {
+	local gizmos: { [string]: any } = {
 		Move = move(core_gui, primary_part, "Position", function(value: Vector3, scale: Vector3)
 			on_transform("Move", value)
 			return
@@ -47,10 +36,8 @@ return function(primary_part: BasePart, on_transform: OnTransformFunc)
 			return
 		end),
 	}
+
 	local self = {
-		update_position = function()
-			-- billboard_gui.StudsOffsetWorldSpace = primary_part.Position + Vector3.new(2, 0, 0)
-		end,
 		toggle = function(gizmo_type: "Move" | "Rotation" | "Scale" | "UniformScale")
 			if current_gizmo then
 				current_gizmo.Visible = false
@@ -65,58 +52,89 @@ return function(primary_part: BasePart, on_transform: OnTransformFunc)
 		end,
 	}
 
-	local move_button = ui_lib.textbutton("Move", container, function(): nil
-		self.toggle("Move")
-		return
-	end)
-	local rot_button = ui_lib.textbutton("Rotation", container, function(): nil
-		self.toggle("Rotation")
-		return
-	end)
-	local scale_button = ui_lib.textbutton("Scale", container, function(): nil
-		self.toggle("Scale")
-		return
-	end)
-	local uniform_scale_button = ui_lib.textbutton("Uniform Scale", container, function(): nil
-		self.toggle("UniformScale")
-		return
-	end)
-	local reset_button = ui_lib.textbutton("Reset", container, function(): nil
-		on_transform("Reset", Vector3.zero)
-		gizmos.Rotation:SetAttribute("force_update_frame", true)
-		return
-	end)
-	local hide_gizmos_button = ui_lib.textbutton("Hide Gizmos", container, function(): nil
-		self.hide()
-		return
-	end)
+	ui_lib.tooltips(
+		ui_lib.iconbutton({
+			parent = container,
+			id = shared.icons.drag,
+			theme_enabled = true,
+			tooltip = "Move",
+			on_click = function()
+				self.toggle("Move")
+			end,
+		}),
+		"Move",
+		lune_overlay
+	)
 
-	local buttons = {
-		rot_button,
-		move_button,
-		reset_button,
-		scale_button,
-		hide_gizmos_button,
-		uniform_scale_button,
-	}
+	ui_lib.tooltips(
+		ui_lib.iconbutton({
+			parent = container,
+			id = shared.icons.rotation,
+			theme_enabled = true,
+			on_click = function()
+				self.toggle("Rotation")
+			end,
+		}),
+		"Rotation",
+		lune_overlay
+	)
 
-	-- for _, button in buttons do
-	-- 	button.MouseEnter:Connect(function(x: number, y: number)
-	-- 		button.Transparency = 0
-	-- 	end)
-	-- 	button.MouseLeave:Connect(function(x: number, y: number)
-	-- 		button.Transparency = 0.5
-	-- 	end)
-	-- 	button.Transparency = 0.5
-	-- end
+	ui_lib.tooltips(
+		ui_lib.iconbutton({
+			parent = container,
+			id = shared.icons.scale,
+			theme_enabled = true,
+			on_click = function()
+				self.toggle("Scale")
+			end,
+		}),
+		"Scale",
+		lune_overlay
+	)
+
+	ui_lib.tooltips(
+		ui_lib.iconbutton({
+			parent = container,
+			id = shared.icons.uniform_scale,
+			theme_enabled = true,
+			on_click = function()
+				self.toggle("UniformScale")
+			end,
+		}),
+		"Uniform Scale",
+		lune_overlay
+	)
+
+	ui_lib.tooltips(
+		ui_lib.iconbutton({
+			parent = container,
+			id = shared.icons.reset,
+			theme_enabled = true,
+			on_click = function()
+				on_transform("Reset", Vector3.zero)
+				gizmos.Rotation:SetAttribute("force_update_frame", true)
+			end,
+		}),
+		"Reset",
+		lune_overlay
+	)
+
+	ui_lib.tooltips(
+		ui_lib.iconbutton({
+			parent = container,
+			id = shared.icons.hide,
+			theme_enabled = true,
+			on_click = function()
+				self.hide()
+			end,
+		}),
+		"Hide Gizmos",
+		lune_overlay
+	)
+
 	if plugin then
 		plugin:Activate(true)
 	end
-
-	local render_stepped = RunService.RenderStepped:Connect(function(a0: number)
-		-- billboard_gui.StudsOffsetWorldSpace = primary_part.Position + Vector3.new(2, 0, 0)
-		return
-	end)
 
 	local gizmo_transform_instance = Instance.new("Model")
 	gizmo_transform_instance.Destroying:Connect(function(...)
@@ -126,7 +144,6 @@ return function(primary_part: BasePart, on_transform: OnTransformFunc)
 		for _, gizmo in gizmos do
 			gizmo:Destroy()
 		end
-		render_stepped:Disconnect()
 		billboard_gui:Destroy()
 		return
 	end)

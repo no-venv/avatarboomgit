@@ -8,5 +8,6 @@ return {
 	lune_ui = require("@self/lune_ui"),
 	gizmo_transform = require("@self/GizmoTransform"),
 	catalog_browser_tab_popup = require("@self/CatalogBrowserTabPopup"),
-	button_header = require("@self/ButtonHeader")
+	button_header = require("@self/ButtonHeader"),
+	pinboard_picker = require("@self/PinboardPicker")
 }

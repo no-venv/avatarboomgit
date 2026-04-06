@@ -16,7 +16,10 @@ return {
 	scrolling_frame = require("@self/scrolling_frame"),
 	collasped_view = require("@self/collasped_view"),
 	styling = require("@self/styling_components"),
+	utils = require("@self/utils"),
+	state = require("@self/state"),
 	float_menu = require("@self/float_menu"),
 	window = require("@self/window"),
 	tooltips = require("@self/tooltips"),
+	button_holder = require("@self/button_holder"),
 }

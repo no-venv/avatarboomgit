@@ -2,10 +2,13 @@ type arg = {
 	parent: Instance?,
 	id: number | string | { number | string },
 	theme_enabled: boolean?,
+	aspect_ratio: (boolean)?,
+	tooltip: string?,
 	on_click: () -> (),
 }
 local textbutton = require("./textbutton")
 local theme_manager = require("./theme_manager")
+local tooltip = require("./tooltips")
 local aspect_ratio = Instance.new("UIAspectRatioConstraint")
 aspect_ratio.AspectRatio = 1
 aspect_ratio.AspectType = Enum.AspectType.ScaleWithParentSize
@@ -82,10 +85,14 @@ return function(arg: arg)
 			end
 		end)
 	end
-
-	aspect_ratio:Clone().Parent = clone
+	if arg.aspect_ratio ~= false then
+		aspect_ratio:Clone().Parent = clone
+	end
 	clone:GetAttributeChangedSignal("image"):Connect(function()
 		created_images[1].Image = clone:GetAttribute("image")
 	end)
+	if arg.tooltip then
+		tooltip(clone, arg.tooltip)
+	end
 	return clone
 end

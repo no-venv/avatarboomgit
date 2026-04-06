@@ -20,8 +20,8 @@ return function(
 
 	if enabled_buttons.Favourite then
 		local favourite: button_header.Button = {
-			id = 106335234167054,
-			id_states = {94312408803509},
+			id = shared.icons.heart,
+			id_states = { 94312408803509 },
 			on_click = function()
 				local return_result = false
 				if override_button_favourite then
@@ -41,8 +41,8 @@ return function(
 	end
 	if enabled_buttons.Remove then
 		local remove: button_header.Button = {
-			id = 84064340071493,
-			id_states = { 83901176085896 },
+			id = shared.icons.add,
+			id_states = { shared.icons.remove },
 			on_click = function()
 				if override_button_remove then
 					override_button_remove()
@@ -80,7 +80,7 @@ return function(
 	if enabled_buttons.Remove then
 		local function set_add_remove_id_state()
 			local wearing = humanoid_editor:id_equipped(asset_type.Id)
-			header_func.set_button_image_state(84064340071493, wearing and 1 or nil)
+			header_func.set_button_image_state(shared.icons.add, wearing and 1 or nil)
 		end
 
 		local function id_changed_event(id: number)
@@ -89,10 +89,12 @@ return function(
 			end
 			set_add_remove_id_state()
 		end
+		local humanoid_changed = humanoid_editor.humanoid_changed.Event:Connect(set_add_remove_id_state)
 		local id_added_event = humanoid_editor.id_added.Event:Connect(id_changed_event)
 		local id_remove_event = humanoid_editor.id_removed.Event:Connect(id_changed_event)
 		header.Destroying:Connect(function()
 			id_added_event:Disconnect()
+			humanoid_changed:Disconnect()
 			id_remove_event:Disconnect()
 		end)
 		set_add_remove_id_state()
