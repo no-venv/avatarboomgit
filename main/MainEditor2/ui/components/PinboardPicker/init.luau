@@ -1,4 +1,5 @@
---!nonstrict
+--!strict
+local shared = require("../../shared")
 local lune = require("@self/../../components/lune_ui")
 local pinboard_shared = require("../../shared/pinboard")
 local pinboard_button = require("@self/pinboardbutton")
@@ -6,6 +7,7 @@ local pinboard_button = require("@self/pinboardbutton")
 type Argument = {
 	parent: Frame?,
 	on_picked_pinboard: (picked: { name: string, data: pinboard_shared.Board }) -> any,
+	internal_prefix: string?,
 }
 return function(arg: Argument)
 	local parent = arg.parent
@@ -18,24 +20,18 @@ return function(arg: Argument)
 	local vbox = lune.styling.vbox(inner_container)
 	vbox.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	local scrolling_container
-	local searchbox
 	lune.textlabel("<font size='24'><b>Your saved boards 🌟</b></font>", inner_container)
 	local function generate()
 		if scrolling_container then
 			scrolling_container:Destroy()
 		end
-		if searchbox then
-			searchbox:Destroy()
-		end
-		-- searchbox = lune.textbox("Search", inner_container)
-		-- searchbox.Size = UDim2.new(1, 0, 0, 32)
 
 		scrolling_container = lune.scrolling_frame(inner_container, "Grid", {
 			HorizontalAlignment = Enum.HorizontalAlignment.Left,
 		})
 
 		lune.iconbutton({
-			id = 104744952813054,
+			id = shared.icons.add,
 			theme_enabled = true,
 			on_click = function()
 				lune.window.prompt({
@@ -44,9 +40,15 @@ return function(arg: Argument)
 					prompt_hint_text = "Board name",
 					verify_prompt_failure_text = "That name already exists 💫",
 					on_verify_prompt = function(result)
+						if result:find("__INTERNAL__") then
+							return false
+						end
 						return not pinboard_shared.pinboard_exists(result)
 					end,
 					on_prompt_result = function(result)
+						if arg.internal_prefix then
+							result = `__INTERNAL__{arg.internal_prefix}__{result}`
+						end
 						pinboard_shared.new_pinboard(result)
 						generate()
 					end,
@@ -58,6 +60,11 @@ return function(arg: Argument)
 		})
 
 		for name, value in pinboard_shared.pinboard_data.data do
+			if arg.internal_prefix then
+				if not name:find(`__INTERNAL__{arg.internal_prefix}__{name}`) then
+					continue
+				end
+			end
 			local assets = {}
 			for item_index = 1, 3 do
 				local item = value[item_index]
