@@ -2,10 +2,12 @@ local textlabel = require("./textbutton")
 local theme = require("./theme_manager")
 local overlay = require("./lune_overlay")
 local utils = require("./utils")
-return function(parent: GuiObject, text: string)
+return function(parent: GuiObject, text: string, embed_to: Frame?)
+	local overlay = embed_to or overlay
 	local tooltip_text = textlabel(text, overlay)
 	tooltip_text.AnchorPoint = Vector2.new(0.5, 0)
 	tooltip_text.Visible = false
+	tooltip_text.ZIndex = 100
 
 	parent.MouseEnter:Connect(function(a0: number, a1: number)
 		tooltip_text.Visible = true
