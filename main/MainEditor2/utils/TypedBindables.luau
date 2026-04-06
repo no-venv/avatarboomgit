@@ -4,7 +4,7 @@ export type Event<T> = {
 	once: ((parm: T) -> ()) -> RBXScriptConnection,
 }
 
-return function()
+return function<T>(type: T): Event<T>
 	local connected = {}
 	local func_id = 0
 	local function create_evt_return(id)

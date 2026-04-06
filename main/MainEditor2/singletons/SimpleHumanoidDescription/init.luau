@@ -5,6 +5,7 @@ local shs = require("@self/SimpleHumanoidDescriptionServer"):new()
 local plugin_global = shared.plugin.plugin
 local plugin_widget = shared.plugin.widget
 local plugin_closed = false
+local mute_event = false
 local selection_changed = SelectionService.SelectionChanged:Connect(function()
 	if plugin_closed then
 		return

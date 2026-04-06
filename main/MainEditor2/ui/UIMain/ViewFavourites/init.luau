@@ -3,7 +3,6 @@ local components = require("../components")
 local singletons = require("../../singletons")
 local pinboard_picker = require("../components/PinboardPicker")
 local show_pinboard_contents = require("@self/show_pinboard_contents")
-local shared = require("../../shared")
 local lune = components.lune_ui
 local tabs = lune.tab
 local empty_frame = lune.empty_frame
@@ -18,7 +17,7 @@ return function(parent: Instance?)
 	styling.padding(pinboards_container).PaddingTop = UDim.new(0, 50)
 
 	local tab_container, _, view_func = tabs({ pinboards_container, board_container }, "Home", parent)
-	view_func.hide_tab_bar(true)
+	view_func.hide_tab(true)
 	local current_view_pinboards: Frame? = nil
 	local current_view_boards: Frame? = nil
 	local is_enabled = false
@@ -73,7 +72,7 @@ return function(parent: Instance?)
 
 	event_bus.topbar_register_custom_button.emit({
 		allowed_overlay = "Favourites",
-		image = shared.icons.back,
+		image = 84503957682657,
 		button_id = "pin_back",
 		tooltip = "Back",
 		on_click = function()

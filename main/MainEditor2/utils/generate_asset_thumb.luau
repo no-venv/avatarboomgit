@@ -1,7 +1,7 @@
 type Argument = {
 	{
 		ItemType: string,
-		Id: string | number,
+		Id: string,
 	}
 }
 return function(args: Argument)
