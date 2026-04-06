@@ -11,6 +11,7 @@ theme_manager:add_custom_gui_instance(main_view, "Background")
 main_view.BackgroundTransparency = 0
 
 return function(parent: Instance)
+	--local mainframe = script.gui.Main:Clone()
 	local mainframe = container:Clone()
 	local inner_container = lune.empty_frame(mainframe)
 	singletons.event_bus.select_rig_overlay.connect(function(parm: { bool: boolean }): nil
@@ -21,7 +22,6 @@ return function(parent: Instance)
 	require("@self/CatalogResult")(inner_container)
 	require("@self/ViewWearing")(inner_container)
 	require("@self/ViewFavourites")(inner_container)
-	-- require("@self/Composer")(inner_container)
 	require("@self/UpdateChecker")()
 	require("@self/SelectRigOverlay")(mainframe)
 	lune.lune_overlay.Parent = inner_container

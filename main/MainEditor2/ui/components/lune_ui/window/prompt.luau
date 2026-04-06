@@ -9,7 +9,7 @@ type PromptArgument = {
 	prompt_close_text: string,
 	verify_prompt_failure_text: string?,
 	on_verify_prompt: ((result: string) -> boolean)?,
-	on_prompt_result: (result: string) -> (),
+	on_prompt_result: (result: string) -> nil,
 } & base.BaseWindowArguments
 return function(arg: PromptArgument)
 	local window

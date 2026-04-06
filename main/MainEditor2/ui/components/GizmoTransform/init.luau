@@ -57,6 +57,7 @@ return function(primary_part: BasePart, on_transform: OnTransformFunc)
 			parent = container,
 			id = shared.icons.drag,
 			theme_enabled = true,
+			tooltip = "Move",
 			on_click = function()
 				self.toggle("Move")
 			end,

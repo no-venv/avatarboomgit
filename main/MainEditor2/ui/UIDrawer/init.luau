@@ -23,15 +23,6 @@ return function(parent: Instance)
 	local accessory_mod = require("@self/ViewAccessoryModification")()
 	local set_themes = require("@self/ViewThemes")()
 	local save_to_pinboard = require("@self/SavePinboard")()
-	local tab_views = {
-		set_filter,
-		import_rig,
-		edit_rig,
-		set_themes,
-		view_asset,
-		accessory_mod,
-		save_to_pinboard,
-	}
 	--
 	local outer_container = ui_lib.empty_frame()
 	outer_container.Size = UDIM_UI_CLOSED
@@ -69,16 +60,24 @@ return function(parent: Instance)
 	end
 
 	drawer_topbar.Parent = drawer_container
-	-- logic for the drawer
+
 	local drawer_view_container = ui_lib.empty_frame(drawer_container)
 	local visible_state = false
+	local tab_views = {
+		set_filter,
+		import_rig,
+		edit_rig,
+		set_themes,
+		view_asset,
+		accessory_mod,
+		save_to_pinboard,
+	}
 
 	local tab, topbar, tab_func = ui_lib.tab(tab_views, "", drawer_view_container, drawer_topbar);
 	(topbar:FindFirstChildWhichIsA("UIListLayout") :: UIListLayout).HorizontalAlignment = Enum.HorizontalAlignment.Left
 	local popout_toggle = false
-	-- pop out
 	iconbutton({
-		id = shared.icons.pip,
+		id = 83221475888424,
 		theme_enabled = true,
 		on_click = function()
 			if not shared.plugin.plugin then
@@ -91,9 +90,13 @@ return function(parent: Instance)
 		end,
 		parent = drawer_topbar,
 	})
-	-- close drawer
+	singletons.event_bus.pop_out_drawer.connect(function(parm): nil
+		popout_toggle = parm.bool
+		outer_container.Size = popout_toggle and UDim2.new(1, 0, 1, 0) or UDIM_UI_OPENED
+		return
+	end)
 	iconbutton({
-		id = shared.icons.close,
+		id = 95107155761501,
 		theme_enabled = true,
 		on_click = function()
 			singletons.event_bus.drawer_open.emit({
@@ -114,10 +117,9 @@ return function(parent: Instance)
 		end
 		outer_container.Size = visible_state and UDIM_UI_OPENED or UDIM_UI_CLOSED
 	end
-	-- buttons that are enabled under these views
 	local conditional_buttons = {
 		[view_asset.Name] = {
-			[accessory_mod.Name] = true,
+			[accessory_mod.Name] = false,
 		},
 		[save_to_pinboard.Name] = {},
 		-- [edit_rig.Name] = {},
@@ -126,13 +128,15 @@ return function(parent: Instance)
 		local is_conditional = conditional_buttons[tab_name]
 		for _, views in tab_views do
 			if views.Name == tab_name then
-				tab_func.hide_tab_bar_button(tab_name, false)
+				tab_func.hide_button(tab_name, false)
 				continue
 			end
 			if is_conditional then
-				tab_func.hide_tab_bar_button(views.Name, not is_conditional[views.Name])
+				if is_conditional[views.Name] ~= false then
+					tab_func.hide_button(views.Name, not is_conditional[views.Name])
+				end
 			else
-				tab_func.hide_tab_bar_button(views.Name, not not conditional_buttons[views.Name])
+				tab_func.hide_button(views.Name, not not conditional_buttons[views.Name])
 			end
 		end
 	end
@@ -144,12 +148,19 @@ return function(parent: Instance)
 		return
 	end)
 
+	singletons.event_bus.accessory_modification_ready.connect(function(parm)
+		if not parm.bool and tab_func.get_current_view() == accessory_mod.Name then
+			tab_func.toggle(view_asset.Name, true)
+		end
+		tab_func.hide_button(accessory_mod.Name, not parm.bool)
+		return
+	end)
+
 	singletons.event_bus.save_pinboard.connect(function()
 		tab_func.toggle(save_to_pinboard.Name, true)
 		change_tab_button_visiblity(save_to_pinboard.Name)
 		show_drawer(true)
 	end)
-
 	singletons.event_bus.drawer_open.connect(function(parm): nil
 		local current_view = tab_func.get_current_view()
 		local view_asset_view = current_view == view_asset.Name
@@ -159,14 +170,8 @@ return function(parent: Instance)
 			tab_func.toggle(set_filter.Name, true)
 		end
 		change_tab_button_visiblity("Set Filter")
-		tab_func.hide_tab_bar_button(accessory_mod.Name, true)
+		tab_func.hide_button(accessory_mod.Name, true)
 		show_drawer(parm.bool)
-		return
-	end)
-
-	singletons.event_bus.pop_out_drawer.connect(function(parm): nil
-		popout_toggle = parm.bool
-		outer_container.Size = popout_toggle and UDim2.new(1, 0, 1, 0) or UDIM_UI_OPENED
 		return
 	end)
 
