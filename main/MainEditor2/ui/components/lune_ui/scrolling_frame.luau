@@ -9,7 +9,7 @@ scrolling_frame.CanvasSize = UDim2.new()
 scrolling_frame.ScrollBarThickness = 1
 scrolling_frame.ScrollingDirection = Enum.ScrollingDirection.Y
 
-return function(parent: Instance?, scrolling_type: ("List" | "Grid")?, override: {}?, on_reached_end: (() -> boolean)?)
+return function(parent: Instance?, scrolling_type: ("List" | "Grid" | "None")?, override: {}?, on_reached_end: ((root : ScrollingFrame) -> boolean)?)
 	scrolling_type = scrolling_type or "List"
 	local clone = scrolling_frame:Clone()
 	local selected_layout: UIGridStyleLayout
@@ -39,7 +39,7 @@ return function(parent: Instance?, scrolling_type: ("List" | "Grid")?, override:
 				local TargetSize = clone.AbsoluteWindowSize.Y + clone.AbsoluteCanvasSize.Y
 				mutex = true
 				while true do
-					local should_continue = on_reached_end()
+					local should_continue = on_reached_end(clone)
 					if (clone.AbsoluteCanvasSize.Y >= TargetSize) or not should_continue then
 						break
 					end

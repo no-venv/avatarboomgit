@@ -35,7 +35,7 @@ type Struct = {
 	} },
 }
 type Impl = {
-	is_init: (self: SimpleHumanoidDescription) -> boolean,
+	is_init: (self: SimpleHumanoidDescription) -> Humanoid?,
 	init: (self: SimpleHumanoidDescription, desc: Humanoid) -> void,
 	apply_fix: (self: SimpleHumanoidDescription) -> "Init" | "Pending",
 	add_id: (
@@ -91,7 +91,6 @@ local asset_type_map = require("@self/asset_type_map")
 local accessory_type_map = require("@self/accessory_type_map")
 local other_prop = require("@self/other_prop")
 local get_accessory_mesh_id = require("@self/get_accessory_mesh_id")
-
 function SimpleHumanoidDescription:is_init()
 	return self.Humanoid
 end
@@ -265,6 +264,10 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 		end
 	end)
 	if not legacy_success then
+		-- print(AccessoryType)
+		-- if AccessoryType == Enum.AvatarAssetType.FaceMakeup then
+		-- 	description
+		-- end
 		table.insert(accessories, {
 			Order = 1,
 			AssetId = id,

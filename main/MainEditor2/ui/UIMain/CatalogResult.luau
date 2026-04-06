@@ -17,27 +17,7 @@ local function search(tab_uuid: string, query: string, parent: Instance?, on_fai
 	local scrolling_container = scrolling_frame(parent, "Grid")
 	styling.padding(scrolling_container).PaddingTop = UDim.new(0, 50)
 	event_bus.catalog_show_overlay.emit({ overlay = "None" })
-	local asset_id = tonumber(query)
-	local roblox_uri = query:match("catalog/(%d+)/")
-	if roblox_uri then
-		asset_id = tonumber(roblox_uri)
-	end
-	if asset_id then
-		local asset_info = CatalogFetcher:GetBatchItemDetails({ asset_id })
-		if #asset_info ~= 0 then
-			shared.tabs.close_tab(tab_uuid)
-			event_bus.avatar_item_selected.emit({ asset_info = asset_info[1] })
-			return scrolling_container
-		end
-		-- bundle?
-		local asset_info = CatalogFetcher:GetBatchItemDetails({ asset_id }, Enum.AvatarItemType.Bundle)
-		if #asset_info ~= 0 then
-			shared.tabs.close_tab(tab_uuid)
-			event_bus.avatar_item_selected.emit({ asset_info = asset_info[1] })
-			return scrolling_container
-		end
-		-- probably a normal search,
-	end
+
 	-- split off into another thread to avoid blocking
 	task.spawn(function()
 		local Spinner = EventFrames.spinner(scrolling_container)
@@ -170,6 +150,27 @@ return function(parent: Instance?)
 	end
 
 	local function search_wrapper(query: string)
+		local asset_id = tonumber(query)
+		local roblox_uri = query:match("catalog/(%d+)/")
+		if roblox_uri then
+			asset_id = tonumber(roblox_uri)
+		end
+		if asset_id then
+			local asset_info = CatalogFetcher:GetBatchItemDetails({ asset_id })
+			if #asset_info ~= 0 then
+				CatalogFetcher.Filter.SearchKeyword = ""
+				event_bus.avatar_item_selected.emit({ asset_info = asset_info[1] })
+				return
+			end
+			-- bundle?
+			local asset_info = CatalogFetcher:GetBatchItemDetails({ asset_id }, Enum.AvatarItemType.Bundle)
+			if #asset_info ~= 0 then
+				CatalogFetcher.Filter.SearchKeyword = ""
+				event_bus.avatar_item_selected.emit({ asset_info = asset_info[1] })
+				return
+			end
+			-- probably a normal search,
+		end
 		-- create new tab if current_tab is not here
 		if not current_tab then
 			create_tab(shared.tabs.new_tab())

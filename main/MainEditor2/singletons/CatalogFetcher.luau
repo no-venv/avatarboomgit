@@ -28,7 +28,7 @@ type Impl = {
 	GetRecommendedAssets: (self: CatalogFetcher, id: number, avatar_asset_type: Enum.AvatarAssetType) -> AssetArray,
 	GetRecommendedBundles: (self: CatalogFetcher, id: number) -> AssetArray,
 	GetBatchItemDetails: (self: CatalogFetcher, id: { number }, type: Enum.AvatarItemType?) -> AssetArray,
-	Search: (self: CatalogFetcher, query: string) -> PageImpl?,
+	Search: (self: CatalogFetcher, query: string, filter_override: CatalogSearchParams?) -> PageImpl?,
 	FilterAsTable: (self: CatalogFetcher) -> {},
 }
 export type CatalogFetcher = Impl & Struct
@@ -64,10 +64,10 @@ function Avatar:Pages(Pages: Pages)
 	return meta
 end
 
-function Avatar:Search(Query: string)
+function Avatar:Search(Query: string, filter_override)
 	self.Filter.SearchKeyword = Query
 	local Ok, Result = pcall(function()
-		return AvatarEditorService:SearchCatalogAsync(self.Filter)
+		return AvatarEditorService:SearchCatalogAsync(filter_override or self.Filter)
 	end)
 
 	if not Ok then
