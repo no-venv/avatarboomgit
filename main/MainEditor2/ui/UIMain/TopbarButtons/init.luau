@@ -1,34 +1,14 @@
+--!strict
 local singletons = require("../../singletons")
 local components = require("../components")
+local shared = require("../../shared")
 local lune = components.lune_ui
 local empty_frame = lune.empty_frame
 local styling = lune.styling
 local theme_manager = lune.theme_manager
 local iconbutton = lune.iconbutton
-local textbutton = lune.textbutton
 local textbox = lune.textbox
-local function state()
-	local first = false
-	local consumed: string = nil
-	local output = {
-		output = "None",
-	}
-	local set_state = function(state: string)
-		if consumed ~= state then
-			consumed = state
-			first = false
-		end
-		if not consumed then
-			output.output = "None"
-			return "None"
-		end
-		first = not first
-		output.output = first and consumed or "None"
-		return output.output
-	end
-	return set_state, output
-end
---
+
 local container = empty_frame()
 container.Size = UDim2.new(1, 0, 0, 48)
 container.BackgroundTransparency = 0
@@ -60,7 +40,7 @@ local button_container = empty_frame()
 button_container.Size = UDim2.new(0.5, 0, 1, 0)
 --
 return function(parent: Instance?)
-	local state, state_status = state()
+	local active_topbar_view = "None"
 	local dropdown_state = false
 	local topbar_container = container:Clone()
 	local left_button_container = button_container:Clone()
@@ -77,6 +57,8 @@ return function(parent: Instance?)
 	search_container.Size = UDim2.new(1, 0, 1, 0)
 	local search = textbox("search or paste ID here", search_container)
 	search.Size = UDim2.new(1, 0, 1, 0)
+	search.AnchorPoint = Vector2.new(0.5, 0.0)
+	search.Position = UDim2.fromScale(0.5, 0)
 	search.ClearTextOnFocus = false
 	search.FocusLost:Connect(function(enterPressed: boolean, inputThatCausedFocusLoss: InputObject)
 		if not enterPressed then
@@ -99,52 +81,6 @@ return function(parent: Instance?)
 		right_layout.HorizontalAlignment = Enum.HorizontalAlignment.Right
 		right_layout.Parent = right_button_container
 	end
-	local dropdown_button = iconbutton({
-		id = 134883261664446,
-		parent = custom_button_container,
-		theme_enabled = true,
-		on_click = function()
-			dropdown_state = not dropdown_state
-			singletons.event_bus.drawer_open.emit({
-				bool = dropdown_state,
-			})
-		end,
-	})
-	lune.tooltips(dropdown_button, "Show Filter & other adjustments ")
-
-	local catalog_button = iconbutton({
-		id = 122758973653468,
-		parent = right_button_container,
-		theme_enabled = true,
-		on_click = function()
-			singletons.event_bus.catalog_show_overlay.emit({ overlay = "None" })
-		end,
-	})
-	lune.tooltips(catalog_button, "Catalog")
-
-	local favourites_button = iconbutton({
-		id = 106335234167054,
-		parent = right_button_container,
-		theme_enabled = true,
-		on_click = function()
-			singletons.event_bus.catalog_show_overlay.emit({
-				overlay = state("Favourites"),
-			})
-		end,
-	})
-	lune.tooltips(favourites_button, "Saved Boards")
-
-	local wearing_button = iconbutton({
-		id = 112085719237258,
-		parent = right_button_container,
-		theme_enabled = true,
-		on_click = function()
-			singletons.event_bus.catalog_show_overlay.emit({
-				overlay = state("Wearing"),
-			})
-		end,
-	})
-	lune.tooltips(wearing_button, "Show Wearing")
 
 	local custom_buttons = {}
 	singletons.event_bus.topbar_register_custom_button.connect(function(parm)
@@ -159,10 +95,16 @@ return function(parent: Instance?)
 					theme_manager:force_highlight(button.button, button.state)
 				end
 				parm.on_click(button.state)
+				if parm.one_shot_visibility then
+					singletons.event_bus.topbar_visibility_custom_button.emit({
+						button_id = parm.button_id,
+						show = false,
+					})
+				end
 			end,
 		})
 
-		button.Visible = state_status.output == parm.allowed_overlay
+		button.Visible = active_topbar_view == parm.allowed_overlay
 		custom_buttons[parm.button_id] = {
 			button = button,
 			allowed_overlay = parm.allowed_overlay,
@@ -194,7 +136,7 @@ return function(parent: Instance?)
 		end
 		for _, button_id in button_ids do
 			local button = custom_buttons[button_id]
-			if state_status.output == button.allowed_overlay then
+			if active_topbar_view == button.allowed_overlay then
 				button.button.Visible = parm.show
 			end
 			button.stored_visible_state = parm.show
@@ -213,9 +155,9 @@ return function(parent: Instance?)
 			+ custom_button_container.AbsolutePosition.X
 		local search_bar_left_pos = search_container.AbsolutePosition.X
 		if left_container_right_pos > search_bar_left_pos then
-			search.Visible = false
+			search.Size = UDim2.new(1.0, (search_bar_left_pos - left_container_right_pos) + -32, 1.0, 0.0)
 		else
-			search.Visible = true
+			search.Size = UDim2.fromScale(1.0, 1.0)
 		end
 	end
 	custom_button_container:GetPropertyChangedSignal("AbsoluteSize"):Connect(function(...)
@@ -224,18 +166,70 @@ return function(parent: Instance?)
 	topbar_container:GetPropertyChangedSignal("AbsoluteSize"):Connect(function(...)
 		overflow_check()
 	end)
+
+	-- Main Buttons
+	local dropdown_button = iconbutton({
+		id = shared.icons.apps,
+		parent = custom_button_container,
+		theme_enabled = true,
+		tooltip = "Show Filter & other adjustments",
+		on_click = function()
+			dropdown_state = not dropdown_state
+			singletons.event_bus.drawer_open.emit({
+				bool = dropdown_state,
+			})
+		end,
+	})
+	-- lune.tooltips(dropdown_button, )
+
+	local catalog_button = iconbutton({
+		id = shared.icons.home,
+		parent = right_button_container,
+		theme_enabled = true,
+		tooltip = "Catalog",
+		on_click = function()
+			singletons.event_bus.catalog_show_overlay.emit({ overlay = "None" })
+		end,
+	})
+	-- lune.tooltips(catalog_button, "Catalog")
+
+	local favourites_button = iconbutton({
+		id = shared.icons.heart,
+		parent = right_button_container,
+		theme_enabled = true,
+		tooltip = "Saved Boards",
+		on_click = function()
+			active_topbar_view = "Favourites"
+			singletons.event_bus.catalog_show_overlay.emit({
+				overlay = "Favourites",
+			})
+		end,
+	})
+	-- lune.tooltips(favourites_button, "Saved Boards")
+
+	local wearing_button = iconbutton({
+		id = shared.icons.clothes,
+		parent = right_button_container,
+		theme_enabled = true,
+		tooltip = "View Wearing",
+		on_click = function()
+			active_topbar_view = "Wearing"
+			singletons.event_bus.catalog_show_overlay.emit({
+				overlay = "Wearing",
+			})
+		end,
+	})
+	--- 
 	singletons.event_bus.drawer_open.connect(function(parm): nil
 		if not parm.bool then
 			dropdown_state = false
 		end
 
 		theme_manager:force_highlight(dropdown_button, parm.bool)
-		--ui_lib.theme_manager:force_highlight(topbar.LeftButtons.Dropdown,parm.bool)
 		return
 	end)
 	singletons.event_bus.avatar_item_selected.connect(function(parm): nil
 		theme_manager:force_highlight(dropdown_button, false)
-		--ui_lib.theme_manager:force_highlight(topbar.LeftButtons.Dropdown,false)
 		dropdown_state = false
 		return
 	end)
@@ -246,16 +240,18 @@ return function(parent: Instance?)
 		end
 		search.Text = parm.SearchKeyword
 	end)
+
 	singletons.event_bus.catalog_show_overlay.connect(function(parm): nil
 		theme_manager:force_highlight(catalog_button, parm.overlay == "None")
 		theme_manager:force_highlight(favourites_button, parm.overlay == "Favourites")
 		theme_manager:force_highlight(wearing_button, parm.overlay == "Wearing")
-		--ui_lib.theme_manager:force_highlight(topbar.RightButtons.Favourites,parm.overlay=="Favourites")
-		--ui_lib.theme_manager:force_highlight(topbar.RightButtons.ViewWearing,parm.overlay=="Wearing")
 		if parm.overlay == "None" then
-			state("None")
+			active_topbar_view = "None"
 		end
 		for _, button in custom_buttons do
+			-- if button.allowed_overlay == "All" then
+			-- 	continue
+			-- end
 			if button.allowed_overlay == parm.overlay then
 				button.button.Visible = button.stored_visible_state
 			else
@@ -268,3 +264,16 @@ return function(parent: Instance?)
 	topbar_container.Parent = parent
 	return container
 end
+
+-- local composer_button = iconbutton({
+-- 	id = 112085719237258,
+-- 	parent = right_button_container,
+-- 	theme_enabled = true,
+-- 	on_click = function()
+-- 		singletons.event_bus.catalog_show_overlay.emit({
+-- 			overlay = "Composer",
+-- 		})
+-- 	end,
+-- })
+-- lune.tooltips(composer_button, "Composer")
+--
