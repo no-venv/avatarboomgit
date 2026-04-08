@@ -39,10 +39,20 @@ recovery.save_rig = function(rig)
 		uuid_recovery_folder = new_uuid_folder
 	end
 
+	-- keep it to a max of 10 rigs to avoid cluttering
+	local rig_saves = recovery.get_rig_saves_by_model(rig)
+	if not rig_saves then
+		return
+	end
+	local rig_saves_len = #rig_saves
+	if rig_saves_len > 10 then
+		local old_rig_save = rig_saves[rig_saves_len]
+		old_rig_save.rig:Destroy()
+	end
 	local cloned = rig:Clone()
 	cloned.Name = tostring(os.time())
 	cloned.Parent = uuid_recovery_folder
-    
+
 	local ignore_avatarboom = Instance.new("BoolValue")
 	ignore_avatarboom.Name = recovery.magic_keyword_ignore_avatarboom
 	ignore_avatarboom.Parent = cloned
