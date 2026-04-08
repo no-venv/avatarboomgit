@@ -1,6 +1,7 @@
 --!strict
 local colour_view = require("./colours")
 local R15Scale_view = require("./scale")
+local convert_rig_view = require("./convert")
 local components = require("../../components")
 local ui_lib = components.lune_ui
 return function(parent: Instance?)
@@ -11,6 +12,7 @@ return function(parent: Instance?)
 	ui_lib.tab({
 		colour_view(),
 		R15Scale_view(),
+		convert_rig_view()
 	}, "Body Colour", edit_rig_view)
 	--tab.Size = UDim2.new(1,0,1,0)
 	return edit_rig_view
