@@ -23,13 +23,12 @@ return function(parent: Instance?)
 
 	do
 		local title_container = ui_lib.empty_frame(container)
-		title_container.Size = UDim2.new(1,0,0,0)
+		title_container.Size = UDim2.new(1, 0, 0, 0)
 		title_container.AutomaticSize = Enum.AutomaticSize.Y
-		ui_lib.styling.vbox(title_container)
-			.HorizontalAlignment = Enum.HorizontalAlignment.Center
+		ui_lib.styling.vbox(title_container).HorizontalAlignment = Enum.HorizontalAlignment.Center
 		local avatar_boom_logo = Instance.new("ImageLabel")
 		avatar_boom_logo.ImageContent = Content.fromAssetId(109639726516588)
-		avatar_boom_logo.Size = UDim2.new(.8, 0, 1, 0)
+		avatar_boom_logo.Size = UDim2.new(0.8, 0, 1, 0)
 		avatar_boom_logo.Parent = title_container
 		avatar_boom_logo.Transparency = 1
 		avatar_boom_logo.BorderSizePixel = 1
@@ -48,6 +47,9 @@ return function(parent: Instance?)
 	container.Transparency = 120
 	container.ZIndex = 10
 	container.Visible = false
+	event_bus.humanoid_description_error.connect(function(parm)
+		components.error_popup(parm.error)
+	end)
 	humanoid_editor.humanoid_changed.Event:Connect(function(...: any)
 		local init_status = not humanoid_editor:is_init()
 		container.Visible = init_status
