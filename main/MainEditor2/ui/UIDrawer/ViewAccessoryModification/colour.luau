@@ -21,6 +21,7 @@ return function(tab: tab.TabImpl)
 	local min_size = Instance.new("UISizeConstraint")
 	min_size.MinSize = Vector2.new(0, 32)
 	local hex_colour = lune.textbox("Hex Colour", colour_edit)
+	hex_colour.ClearTextOnFocus = false
 	local reset_colour = lune.textbutton("Reset", colour_edit, function(): nil
 		colour_wheel.set_colour(Color3.new(1, 1, 1))
 		return

@@ -8,7 +8,7 @@ return function(parent: Frame?, events: events.Events)
 	local container = lune.empty_frame(parent)
 	do
 		lune.styling.sizeconst(
-			lune.textlabel("Select the rig you want to restore:", container),
+			lune.textlabel("Select the Rig you want to restore:", container),
 			Vector2.zero,
 			Vector2.new(math.huge, 32)
 		)

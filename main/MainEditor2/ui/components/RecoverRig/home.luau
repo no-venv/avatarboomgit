@@ -3,10 +3,20 @@ local lune = require("../lune_ui")
 local viewport_frame = require("../ViewportFrame")
 local singletons = require("../../../singletons")
 local events = require("./events")
-return function(parent: Instance?,events : events.Events)
+return function(parent: Instance?, events: events.Events)
 	local recovery_folder = singletons.data_recovery.get_recovery_folder()
 	local container = lune.empty_frame(parent)
 	container.Name = "Restore Rig Menu"
+	do
+		lune.styling.sizeconst(
+			lune.textlabel("Select the Rig you want to restore:", container),
+			Vector2.zero,
+			Vector2.new(math.huge, 32)
+		)
+		local vbox = lune.styling.vbox(container)
+		vbox.VerticalFlex = Enum.UIFlexAlignment.Fill
+		vbox.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	end
 	local scrolling_container
 	local function update()
 		if scrolling_container then
