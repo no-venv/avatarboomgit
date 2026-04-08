@@ -18,6 +18,7 @@ return function(parent: Instance?, user_id: number)
 		for _, friend in friends:GetCurrentPage() do
 			local user = lune.iconbutton({
 				id = 0,
+				tooltip = friend.Username,
 				on_click = function()
 					local hum_desc = players:GetHumanoidDescriptionFromUserIdAsync(friend.Id)
 					local rig_model = players:CreateHumanoidModelFromDescriptionAsync(hum_desc, selected_rig_type)
@@ -28,6 +29,7 @@ return function(parent: Instance?, user_id: number)
 				end,
 				parent = scrolling_container,
 			})
+			
 			task.spawn(function()
 				user:SetAttribute(
 					"image",
