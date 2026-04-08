@@ -5,4 +5,5 @@ return {
 	wearing_cache = require("@self/WearingCache"),
 	plugin_fs = require("@self/PluginFS"),
 	migrate_favourites = require("@self/migrate_favourites"),
+	data_recovery = require("@self/data_recovery")
 }
