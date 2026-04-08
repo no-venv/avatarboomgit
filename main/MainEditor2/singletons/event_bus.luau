@@ -63,6 +63,9 @@ type Events = {
 		setting: string,
 		value: any,
 	}>,
+	humanoid_description_error: event.Event<{
+		error: string,
+	}>,
 }
 return {
 	catalog_search = event(),
@@ -78,6 +81,7 @@ return {
 	topbar_register_custom_button = event(),
 	topbar_unregister_custom_button = event(),
 	topbar_visibility_custom_button = event(),
+	humanoid_description_error = event(),
 	-- topbar_hide_search
 	topbar_set_state = event(),
 	plugin_settings_updated = event(),

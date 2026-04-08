@@ -1,9 +1,9 @@
-local cache : {
-	[Instance] : {(SpecialMesh | SurfaceAppearance)}
+local cache: {
+	[Instance]: { SpecialMesh | SurfaceAppearance },
 } = {}
-local function FindFirstDescendantOfClass(instance : Instance, target : string) : Instance?
+local function FindFirstDescendantOfClass(instance: Instance, target: string): Instance?
 	local descendant = instance:GetDescendants()
-	for _,child : Instance in descendant do
+	for _, child: Instance in descendant do
 		if child:IsA(target) then
 			return child
 		end
@@ -11,7 +11,7 @@ local function FindFirstDescendantOfClass(instance : Instance, target : string) 
 	return
 end
 return {
-	get = function(humanoid : Instance,id : number) : (SpecialMesh | SurfaceAppearance)?
+	get = function(humanoid: Instance, id: number): (SpecialMesh | SurfaceAppearance)?
 		local local_cache = cache[humanoid]
 		if local_cache then
 			local accessory_cache = local_cache[id]
@@ -22,17 +22,29 @@ return {
 			cache[humanoid] = {}
 			local_cache = cache[humanoid]
 		end
-		
-		for _,description in humanoid:FindFirstChild("HumanoidDescription"):GetChildren() do
+
+		local humanoid_description = humanoid:FindFirstChild("HumanoidDescription")
+		if not humanoid_description then
+			return
+		end
+		for _, description in humanoid_description:GetChildren() do
 			if not description:IsA("AccessoryDescription") then
 				continue
 			end
 			if description.AssetId ~= id then
 				continue
 			end
-			local accessory = description:GetAppliedInstance()
+			local ok, result = pcall(function(...)
+				return description:GetAppliedInstance() -- what the hell? this can error??
+			end)
+			if not ok then
+				warn(result)
+				return
+			end
+			local accessory = result
 			local handle_part = accessory:FindFirstChild("Handle") :: MeshPart
-			local accessory_material = FindFirstDescendantOfClass(accessory,"SpecialMesh") or FindFirstDescendantOfClass(accessory,"SurfaceAppearance")
+			local accessory_material = FindFirstDescendantOfClass(accessory, "SpecialMesh")
+				or FindFirstDescendantOfClass(accessory, "SurfaceAppearance")
 			if accessory_material then
 				local_cache[id] = accessory_material
 				return accessory_material
@@ -46,8 +58,8 @@ return {
 			end
 		end
 		return
-	end;
-	remove = function(humanoid : Instance, id : number)
+	end,
+	remove = function(humanoid: Instance, id: number)
 		if cache[humanoid] then
 			cache[humanoid][id] = nil
 		end

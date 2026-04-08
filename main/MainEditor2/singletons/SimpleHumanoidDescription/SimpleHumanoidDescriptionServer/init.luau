@@ -35,8 +35,8 @@ type Struct = {
 	} },
 }
 type Impl = {
-	is_init: (self: SimpleHumanoidDescription) -> boolean,
-	init: (self: SimpleHumanoidDescription, desc: Humanoid) -> void,
+	is_init: (self: SimpleHumanoidDescription) -> Humanoid?,
+	init: (self: SimpleHumanoidDescription, desc: Humanoid) -> (boolean, string),
 	apply_fix: (self: SimpleHumanoidDescription) -> "Init" | "Pending",
 	add_id: (
 		self: SimpleHumanoidDescription,
@@ -61,6 +61,7 @@ type Impl = {
 	get_body_scale: (self: SimpleHumanoidDescription) -> BodyScale,
 	get_body_colours: (self: SimpleHumanoidDescription) -> BodyColours,
 	get_humanoid_type: (self: SimpleHumanoidDescription) -> "R15" | "R6",
+	convert_humanoid_type: (self: SimpleHumanoidDescription, humanoid_type: "R6" | "R15") -> Model,
 	--
 	set_id_transformation: (
 		self: SimpleHumanoidDescription,
@@ -69,8 +70,8 @@ type Impl = {
 		value: Vector3
 	) -> void,
 	get_id_transformation: (self: SimpleHumanoidDescription, id: number, type: "Pos" | "Rot" | "Scale") -> Vector3?,
-	set_id_colour: (self: SimpleHumanoidDescription, id: number, colour: Color3) -> void,
-	get_id_colour: (self: SimpleHumanoidDescription, id: number) -> void,
+	set_id_colour: (self: SimpleHumanoidDescription, id: number, colour: Color3) -> (),
+	get_id_colour: (self: SimpleHumanoidDescription, id: number) -> Color3?,
 
 	get_id_texture: (self: SimpleHumanoidDescription, id: number) -> string?,
 	set_id_texture: (self: SimpleHumanoidDescription, id: number, texture_id: number) -> string?,
@@ -83,6 +84,7 @@ export type SimpleHumanoidDescription = Impl & Struct
 local AvatarEditorService = game:GetService("AvatarEditorService")
 local HttpService = game:GetService("HttpService")
 local AssetService = game:GetService("AssetService")
+local PlayerService = game:GetService("Players")
 local SimpleHumanoidDescription = {} :: SimpleHumanoidDescription
 SimpleHumanoidDescription.__index = SimpleHumanoidDescription
 local id_to_accessory_description = require("@self/id_to_accessory_description")
@@ -91,31 +93,38 @@ local asset_type_map = require("@self/asset_type_map")
 local accessory_type_map = require("@self/accessory_type_map")
 local other_prop = require("@self/other_prop")
 local get_accessory_mesh_id = require("@self/get_accessory_mesh_id")
-
 function SimpleHumanoidDescription:is_init()
 	return self.Humanoid
 end
 
 function SimpleHumanoidDescription:init(humanoid)
 	if self.Humanoid == humanoid then
-		return
+		return true, ""
 	end
+
 	self.Humanoid = humanoid
 	if not humanoid then
 		-- clean up since nil
 		self.humanoid_changed:Fire()
-		return
+		return true, ""
+	end
+
+	if not self.Humanoid:FindFirstChildOfClass("HumanoidDescription") then
+		self.Humanoid = nil
+		self.humanoid_changed:Fire()
+		return false,
+			"To avoid corruption, this Rig cannot be used because Humanoid Description is not found.\n\nYou probably have used a rig from the toolbox, or used an insert tool to customize the selected rig.\n\nAvatarBoom requires rigs to have HumanoidDescription otherwise your rigs will be reset to black.\n\nYou may need to create a new rig and rebuild your outfit."
 	end
 
 	if self:apply_fix() == "Pending" then
-		return
+		return true, "Avatar is loading"
 	end
 	if self.Humanoid ~= humanoid then
 		-- mismatch
-		return
+		return false, "Rig switched during loading"
 	end
 	self.humanoid_changed:Fire()
-	return
+	return true, "Avatar has loaded"
 end
 
 function SimpleHumanoidDescription:apply_fix()
@@ -265,6 +274,10 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 		end
 	end)
 	if not legacy_success then
+		-- print(AccessoryType)
+		-- if AccessoryType == Enum.AvatarAssetType.FaceMakeup then
+		-- 	description
+		-- end
 		table.insert(accessories, {
 			Order = 1,
 			AssetId = id,
@@ -482,6 +495,47 @@ function SimpleHumanoidDescription:get_humanoid_type()
 	return type :: "R15" | "R6"
 end
 
+function SimpleHumanoidDescription:convert_humanoid_type(humanoid_type)
+	-- Creates a new model
+	local stored_humanoid = self.Humanoid
+	local applied_description = self.Humanoid:GetAppliedDescription()
+	local converted_model = PlayerService:CreateHumanoidModelFromDescriptionAsync(
+		applied_description,
+		humanoid_type == "R6" and Enum.HumanoidRigType.R6 or Enum.HumanoidRigType.R15
+	)
+	converted_model.PrimaryPart = converted_model:FindFirstChild("HumanoidRootPart") :: BasePart
+	-- fix dragging
+	for _, child in converted_model:GetChildren() do
+		if child:IsA("BasePart") or child:IsA("MeshPart") then
+			child.Locked = false
+		end
+	end
+	local id_colours = {}
+	for _, accessories in applied_description:GetAccessories(true) do
+		id_colours[accessories.AssetId] = self:get_id_colour(accessories.AssetId)
+	end
+	-- apply the colours and stuff
+	local shirt_colour = self:get_clothing_colour("Shirt")
+	local pants_colour = self:get_clothing_colour("Pants")
+
+	self.Humanoid = converted_model:FindFirstChild("Humanoid") :: Humanoid
+	if shirt_colour then
+		self:set_clothing_colour("Shirt", shirt_colour)
+	end
+	if pants_colour then
+		self:set_clothing_colour("Pants", pants_colour)
+	end
+	for id, colour in id_colours do
+		if not colour then
+			continue
+		end
+		self:set_id_colour(id, colour)
+		id_to_accessory_mat.remove(self.Humanoid, id)
+	end
+	self.Humanoid = stored_humanoid
+	return converted_model
+end
+
 function SimpleHumanoidDescription:set_id_transformation(id, trans_type, vec3)
 	if not self:is_init() then
 		return
@@ -570,7 +624,10 @@ function SimpleHumanoidDescription:get_clothing_colour(type)
 		return
 	end
 	local humanoid_parent = self.Humanoid.Parent
-	local clothing = humanoid_parent:FindFirstChild(type)
+	local clothing = (humanoid_parent :: Instance):FindFirstChild(type)
+	if not clothing then
+		return
+	end
 	if clothing:IsA("Shirt") or clothing:IsA("Pants") then
 		return clothing.Color3
 	end
