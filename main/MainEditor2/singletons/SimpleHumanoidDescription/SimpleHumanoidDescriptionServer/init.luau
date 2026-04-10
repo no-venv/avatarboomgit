@@ -398,7 +398,7 @@ function SimpleHumanoidDescription:remove_bundle_id(id)
 	local saved_bundle_data: BundleInfo = HttpService:JSONDecode(bundle_data_string)
 
 	if saved_bundle_data.BundleType == "BodyParts" then
-		local description = self.Humanoid:GetAppliedDescription()
+		local description = humanoid:GetAppliedDescription()
 		description.Head = 0
 		description.LeftArm = 0
 		description.LeftLeg = 0
