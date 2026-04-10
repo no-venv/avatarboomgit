@@ -73,7 +73,6 @@ return function(parent: Instance?)
 		current_asset_info = parm.asset_info
 		if not humanoid_editor:id_equipped(parm.asset_info.Id) then
 			show_warning_overlay(true, "Try on the asset to edit!")
-			return
 		end
 		event_parm.event_type = "selected_id"
 		on_tab_count(0)
