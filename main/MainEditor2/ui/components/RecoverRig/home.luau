@@ -9,7 +9,10 @@ return function(parent: Instance?, events: events.Events)
 	container.Name = "Restore Rig Menu"
 	do
 		lune.styling.sizeconst(
-			lune.textlabel("Select the Rig you want to restore:", container),
+			lune.textlabel(
+				"AvatarBOOM now auto-saves your rigs in-case something goes wrong with them.\nSelect the Rig you want to restore:",
+				container
+			),
 			Vector2.zero,
 			Vector2.new(math.huge, 32)
 		)
