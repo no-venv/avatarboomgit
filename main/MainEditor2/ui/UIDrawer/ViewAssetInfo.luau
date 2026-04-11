@@ -73,8 +73,11 @@ local function build_asset_info_container(parent: Instance?, parm: typeof(catalo
 			end
 			update_equipped_state()
 		end)
-		local asset_type = Enum.AvatarAssetType:FromName(parm.AssetType)
 
+		local asset_type
+		if parm.AssetType then
+			asset_type = Enum.AvatarAssetType:FromName(parm.AssetType)
+		end
 		textbutton(`Set filter to {parm.CreatorName}`, asset_info_container, function()
 			if asset_type then
 				event_bus.catalog_set_search_filter.emit({
