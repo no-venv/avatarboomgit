@@ -40,18 +40,12 @@ crashlytics.start = function()
 		return "MORE_THAN_ONE_INSTANCE"
 	end
 
-	local ok, result = pcall(function(...)
-		local request = HttpService:RequestAsync({
-			Url = "http://ask_plugin_permissions.avatarboom.qzz.io",
-			Compress = Enum.HttpCompression.Gzip,
-		})
-		return request.Success
-	end)
-	if not ok then
-		warn(`AvatarBOOM automatic crash log collection cannot connect to server: {result}`)
-		return "HTTP_FAIL"
-	end
+	local complete_init = false
+
 	on_script_error = ScriptContext.Error:Connect(function(message, trace, script)
+		if not complete_init then
+			return
+		end
 		local allowed = "MainEditor2"
 		if message:find(allowed :: string) then
 			local full_log = `{message}\n\n{trace}`
@@ -95,6 +89,7 @@ crashlytics.start = function()
 			end
 		end
 	end)
+
 	local janitor = utils.ui_labs.Environment.GetJanitor()
 	-- for ui-labs to prevent memory leaks while debugging
 	-- this is not an issue with plugin releases since the scripts will
@@ -104,6 +99,22 @@ crashlytics.start = function()
 			janitor:Add(on_script_error)
 		end
 	end
+
+	local ok, result = pcall(function(...)
+		local request = HttpService:RequestAsync({
+			Url = "http://ask_plugin_permissions.avatarboom.qzz.io",
+			Compress = Enum.HttpCompression.Gzip,
+		})
+		return request.Success
+	end)
+
+	if not ok then
+		crashlytics.stop()
+		warn(`AvatarBOOM automatic crash log collection cannot connect to server: {result}`)
+		return "HTTP_FAIL"
+	end
+
+	complete_init = true
 	return "OK"
 end
 
