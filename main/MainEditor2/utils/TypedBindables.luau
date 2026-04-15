@@ -18,7 +18,7 @@ return function()
 		emit = function(...)
 			for _, func in connected do
 				local arg = ...
-				task.defer(function()
+				task.spawn(function()
 					func(arg)
 				end)
 			end
