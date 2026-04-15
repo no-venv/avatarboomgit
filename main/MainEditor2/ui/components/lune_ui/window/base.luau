@@ -10,6 +10,7 @@ export type BaseWindowArguments = {
 	view: Frame?,
 	important: boolean?,
 	custom_embed: Frame?,
+	hide_exit: boolean?,
 	left_topbar: { GuiBase }?,
 	middle_topbar: GuiBase?,
 	right_topbar: { GuiBase }?,
@@ -58,25 +59,26 @@ return function(arg: BaseWindowArguments)
 	hbox.HorizontalFlex = Enum.UIFlexAlignment.Fill
 
 	local left_topbar = empty_frame(topbar)
-	left_topbar.Size = UDim2.new(0.6,0,1,0)
+	left_topbar.Size = UDim2.new(0.6, 0, 1, 0)
 	styling.hbox(left_topbar)
 	local middle_topbar = empty_frame(topbar)
 	local right_topbar = empty_frame(topbar)
-	right_topbar.Size = UDim2.new(0.6,0,1,0)
+	right_topbar.Size = UDim2.new(0.6, 0, 1, 0)
 	styling.hbox(right_topbar).HorizontalAlignment = Enum.HorizontalAlignment.Right
 
 	if not arg.middle_topbar then
 		textlabel(title, middle_topbar).Size = UDim2.new(1, 0, 1, 0)
 	end
-	iconbutton({
-		id = 95107155761501,
-		theme_enabled = true,
-		on_click = function()
-			shadow_container:Destroy()
-		end,
-		parent = right_topbar,
-	})
-
+	if not arg.hide_exit then
+		iconbutton({
+			id = 95107155761501,
+			theme_enabled = true,
+			on_click = function()
+				shadow_container:Destroy()
+			end,
+			parent = right_topbar,
+		})
+	end
 	if arg.left_topbar then
 		for _, element in arg.left_topbar do
 			element.Parent = left_topbar

@@ -21,6 +21,7 @@ return function(arg: PromptArgument)
 		return
 	end)
 	arg.view = container
+	arg.hide_exit = true
 	window = base(arg)
 	return window
 end
