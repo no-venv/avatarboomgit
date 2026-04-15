@@ -17,7 +17,10 @@ return function()
 	return {
 		emit = function(...)
 			for _, func in connected do
-				func(...)
+				local arg = ...
+				task.defer(function()
+					func(arg)
+				end)
 			end
 		end,
 		connect = function(connected_function)
