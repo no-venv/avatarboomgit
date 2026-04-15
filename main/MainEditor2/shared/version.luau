@@ -1,2 +1,2 @@
 --avatarBoom Next
-return 3.11
+return 3.12

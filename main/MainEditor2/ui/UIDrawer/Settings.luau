@@ -22,11 +22,13 @@ return function(parent: Instance?)
 		local vbox = lune.styling.vbox(setting_container)
 		vbox.HorizontalAlignment = Enum.HorizontalAlignment.Center
 		vbox.HorizontalFlex = Enum.UIFlexAlignment.Fill
-		lune.collasped_view(table.concat(split_text, " "), setting_container, container)
+		lune.collasped_view(table.concat(split_text, " "), setting_container, scrolling_container)
 		lune.textlabel(setting.description, setting_container)
 		if setting.value_options then
 			-- usually this is a table.
-			local _, func = lune.option_buttons(setting_container, setting.value_options, function(value: string) end)
+			local _, func = lune.option_buttons(setting_container, setting.value_options, function(value: string)
+				setting.set(value)
+			end)
 			setting.changed.connect(function(parm)
 				func.set(parm.value)
 			end)
@@ -37,7 +39,7 @@ return function(parent: Instance?)
 		local setting_type = type(setting.default_value)
 		if setting_type == "boolean" then
 			local button = lune.textbutton("", setting_container, function()
-				setting.set(not setting.value, true)
+				setting.set(not setting.value)
 			end)
 			local function change_state(boolean)
 				button.Text = setting.value and "On" or "Off"
