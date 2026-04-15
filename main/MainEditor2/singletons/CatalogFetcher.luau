@@ -37,7 +37,7 @@ Avatar.Filter = CatalogSearchParams.new();
 (Avatar.Filter :: any).Limit = 120
 Avatar.Filter.AssetTypes = { Enum.AvatarAssetType.HairAccessory }
 function Avatar:Pages(Pages: Pages)
-	local meta = {}
+	local meta = {} :: PageImpl
 	local First = true
 
 	function meta:Next()
