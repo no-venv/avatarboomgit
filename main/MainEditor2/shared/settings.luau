@@ -57,12 +57,6 @@ local function SettingProperty(arg: {
 	return prop
 end
 
-local function init()
-	for _, prop in settings_data do
-		init_prop(prop)
-	end
-end
-
 local default_setting: Settings = {
 	auto_try_on_click = SettingProperty({
 		desc = "",
@@ -92,6 +86,18 @@ local default_setting: Settings = {
 		hidden = true,
 	}),
 }
+
+local function init()
+	-- check for new settings
+	for name, setting in default_setting do
+		if not settings_data[name] then
+			settings_data[name] = setting
+		end
+	end
+	for _, prop in settings_data do
+		init_prop(prop)
+	end
+end
 
 settings_data = plugin_fs.get(plugin_save_name, true) or default_setting
 init()
