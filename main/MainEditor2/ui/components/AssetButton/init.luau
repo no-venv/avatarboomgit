@@ -18,6 +18,7 @@ return function(arg: arg): TextButton
 	if asset_type == "Bundle" then
 		asset_type = "BundleThumbnail"
 	end
+	local auto_try_click = shared.settings.auto_try_on_click
 	local asset_button
 	asset_button = iconbutton({
 		parent = parent,
@@ -28,7 +29,7 @@ return function(arg: arg): TextButton
 				on_click()
 			else
 				-- default function, in process of centralizing logic to reduce redundancy
-				local auto_try = shared.settings.get("auto_try_on_click")
+				local auto_try = auto_try_click.value
 				if auto_try then
 					if singletons.humanoid_description:id_equipped(asset_id) then
 						singletons.humanoid_description:remove_id(asset_id)
@@ -47,10 +48,7 @@ return function(arg: arg): TextButton
 	})
 
 	if not on_click then
-		local on_setting_changed = singletons.event_bus.plugin_settings_updated.connect(function(parm)
-			if parm.setting ~= "auto_try_on_click" then
-				return
-			end
+		local on_setting_changed = auto_try_click.changed.connect(function(parm)
 			if not parm.value then
 				lune.theme_manager:force_highlight(asset_button, false)
 			else
@@ -58,7 +56,7 @@ return function(arg: arg): TextButton
 			end
 		end)
 		-- initially set if the id is equipped
-		if shared.settings.get("auto_try_on_click") then
+		if auto_try_click.value then
 			lune.theme_manager:force_highlight(asset_button, singletons.humanoid_description:id_equipped(asset_id))
 		end
 		asset_button.Destroying:Connect(function(...)

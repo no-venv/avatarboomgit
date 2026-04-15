@@ -23,11 +23,13 @@ return function(parent: Instance)
 	local accessory_mod = require("@self/ViewAccessoryModification")()
 	local set_themes = require("@self/ViewThemes")()
 	local save_to_pinboard = require("@self/SavePinboard")()
+	local settings_view = require("@self/Settings")()
 	local tab_views = {
 		set_filter,
 		import_rig,
 		edit_rig,
 		set_themes,
+		settings_view,
 		view_asset,
 		accessory_mod,
 		save_to_pinboard,

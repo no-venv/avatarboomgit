@@ -267,7 +267,7 @@ return function(parent: Instance?)
 		tooltip = "Auto try on",
 		has_state = true,
 		on_click = function(state)
-			shared.settings.set("auto_try_on_click", state)
+			shared.settings.auto_try_on_click.set(state, false)
 			return
 		end,
 	})
@@ -275,6 +275,6 @@ return function(parent: Instance?)
 		button_id = { "catalog_tab", "catalog_auto_try" },
 		show = true,
 	})
-	event_bus.topbar_set_state.emit({ button_id = "catalog_auto_try", state = shared.settings.get("auto_try_on_click") })
+	event_bus.topbar_set_state.emit({ button_id = "catalog_auto_try", state = shared.settings.auto_try_on_click.value })
 	return container
 end
