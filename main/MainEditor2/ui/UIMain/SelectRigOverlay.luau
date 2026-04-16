@@ -44,7 +44,9 @@ return function(parent: Instance?)
 	-- import_rig.AutomaticSize = Enum.AutomaticSize.Y
 	import_rig.Size = UDim2.new(1, 0, 0.8, 0)
 	import_rig.Visible = true
-	container.Transparency = 120
+	container.Transparency = 0
+	ui_lib.styling.corner(container)
+	ui_lib.theme_manager:add_custom_gui_instance(container, "Background")
 	container.ZIndex = 10
 	container.Visible = false
 	event_bus.humanoid_description_error.connect(function(parm)

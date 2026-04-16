@@ -81,7 +81,10 @@ return function(parent: Instance?)
 		right_layout.HorizontalAlignment = Enum.HorizontalAlignment.Right
 		right_layout.Parent = right_button_container
 	end
-
+	local location_containers = {
+		left = left_button_container,
+		right = right_button_container,
+	}
 	local custom_buttons = {}
 	singletons.event_bus.topbar_register_custom_button.connect(function(parm)
 		local button = iconbutton({
@@ -113,6 +116,17 @@ return function(parent: Instance?)
 			on_click = parm.on_click,
 		}
 		lune.tooltips(button, parm.tooltip)
+	end)
+	singletons.event_bus.topbar_register_custom_element.connect(function(parm)
+		parm.element.Visible = active_topbar_view == parm.allowed_overlay
+		parm.element.Parent = location_containers[parm.location or "left"]
+		custom_buttons[parm.button_id] = {
+			button = parm.element,
+			allowed_overlay = parm.allowed_overlay,
+			stored_visible_state = false,
+			state = false,
+			on_click = function() end,
+		}
 	end)
 	singletons.event_bus.topbar_unregister_custom_button.connect(function(parm)
 		local button_ids = {}
@@ -180,46 +194,7 @@ return function(parent: Instance?)
 			})
 		end,
 	})
-	-- lune.tooltips(dropdown_button, )
 
-	local catalog_button = iconbutton({
-		id = shared.icons.home,
-		parent = right_button_container,
-		theme_enabled = true,
-		tooltip = "Catalog",
-		on_click = function()
-			singletons.event_bus.catalog_show_overlay.emit({ overlay = "None" })
-		end,
-	})
-	-- lune.tooltips(catalog_button, "Catalog")
-
-	local favourites_button = iconbutton({
-		id = shared.icons.heart,
-		parent = right_button_container,
-		theme_enabled = true,
-		tooltip = "Saved Boards",
-		on_click = function()
-			active_topbar_view = "Favourites"
-			singletons.event_bus.catalog_show_overlay.emit({
-				overlay = "Favourites",
-			})
-		end,
-	})
-	-- lune.tooltips(favourites_button, "Saved Boards")
-
-	local wearing_button = iconbutton({
-		id = shared.icons.clothes,
-		parent = right_button_container,
-		theme_enabled = true,
-		tooltip = "View Wearing",
-		on_click = function()
-			active_topbar_view = "Wearing"
-			singletons.event_bus.catalog_show_overlay.emit({
-				overlay = "Wearing",
-			})
-		end,
-	})
-	--- 
 	singletons.event_bus.drawer_open.connect(function(parm): nil
 		if not parm.bool then
 			dropdown_state = false
@@ -242,12 +217,7 @@ return function(parent: Instance?)
 	end)
 
 	singletons.event_bus.catalog_show_overlay.connect(function(parm): nil
-		theme_manager:force_highlight(catalog_button, parm.overlay == "None")
-		theme_manager:force_highlight(favourites_button, parm.overlay == "Favourites")
-		theme_manager:force_highlight(wearing_button, parm.overlay == "Wearing")
-		if parm.overlay == "None" then
-			active_topbar_view = "None"
-		end
+		active_topbar_view = parm.overlay
 		for _, button in custom_buttons do
 			-- if button.allowed_overlay == "All" then
 			-- 	continue

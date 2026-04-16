@@ -17,7 +17,7 @@ return function(parent: Instance, plugin_global: Plugin?, widget_global: DockWid
 	local singletons = require("./MainEditor2/singletons")
 	local lune = require("./MainEditor2/ui/components/lune_ui")
 	local ui_main, ui_main_inner = require("./MainEditor2/ui/UIMain")(parent)
-	local ui_drawer = require("./MainEditor2/ui/UIDrawer")(ui_main_inner)
+	local ui_drawer = require("./MainEditor2/ui/UIDrawer")(ui_main)
 	lune.lune_overlay.Parent = ui_main
 	if plugin_global then
 		local widget = plugin_global:CreateDockWidgetPluginGuiAsync("avatarBOOM drawer", drawer_widget_info)

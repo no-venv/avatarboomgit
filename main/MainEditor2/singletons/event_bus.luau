@@ -48,6 +48,12 @@ type Events = {
 		location: ("left" | "centre" | "right")?,
 		on_click: (state: boolean) -> any,
 	}>,
+	topbar_register_custom_element: event.Event<{
+		element: GuiBase2d,
+		button_id: string,
+		allowed_overlay: UiOverlay,
+		location: ("left" | "centre" | "right")?,
+	}>,
 	topbar_unregister_custom_button: event.Event<{
 		button_id: string | { string },
 	}>,
@@ -79,6 +85,7 @@ return {
 	save_pinboard = event(),
 	save_pinboard_success = event(),
 	topbar_register_custom_button = event(),
+	topbar_register_custom_element = event(),
 	topbar_unregister_custom_button = event(),
 	topbar_visibility_custom_button = event(),
 	humanoid_description_error = event(),
