@@ -18,12 +18,15 @@ return function(parent: GuiObject, text: string, embed_to: Frame?)
 	parent.MouseMoved:Connect(function(x: number, y: number)
 		local left_out_of_bounds = (x - (tooltip_text.AbsoluteSize.X / 2)) < 0
 		local right_out_of_bounds = x + (tooltip_text.AbsoluteSize.X / 2) > overlay.AbsoluteSize.X
+		local bottom_out_of_bounds = y + (tooltip_text.AbsoluteSize.Y / 2) > overlay.AbsoluteSize.Y
 		tooltip_text.AnchorPoint = left_out_of_bounds and Vector2.zero
 			or right_out_of_bounds and Vector2.new(1, 0)
 			or Vector2.new(0.5, 0)
 
+		tooltip_text.AnchorPoint += bottom_out_of_bounds and Vector2.new(0, 1) or Vector2.zero
+
 		local pos = utils.normalize_mouse(Vector2.new(x, y), overlay.AbsolutePosition, overlay.AbsoluteSize)
-		tooltip_text.Position = UDim2.new(pos.X, 0, pos.Y, 16)
+		tooltip_text.Position = UDim2.new(pos.X, 0, pos.Y, bottom_out_of_bounds and -16 or 16)
 	end)
 	theme:force_highlight(tooltip_text, true)
 	return tooltip_text
