@@ -206,57 +206,70 @@ return function(parent: Instance?)
 	event_bus.catalog_show_overlay.connect(function(parm)
 		container.Visible = parm.overlay == "None"
 	end)
-
+	local popup_overlay = lune.empty_frame(container)
+	popup_overlay.ZIndex = 1999
+	popup_overlay.Visible = false
+	local popup_mutex = false
 	event_bus.topbar_register_custom_button.emit({
 		allowed_overlay = "None",
 		button_id = "catalog_tab",
 		image = 108641844075033,
 		tooltip = "Tabs",
 		on_click = function()
-			components.catalog_browser_tab_popup({
-				parent = container,
-				selected_uuid = (current_tab and current_tab.uuid) or "",
-				tab_name = ``,
-				preview_asset_info = {},
-				on_click = function(tab)
-					if not switch_tab(tab.tab_uuid) then
-						-- new tab and set filters
-						create_tab(tab.tab_uuid)
-						event_bus.catalog_set_search_filter.emit(tab.saved_filter)
-					else
-						opened_tabs[tab.tab_uuid].ignore_search_filter = true
-						event_bus.catalog_set_search_filter.emit(tab.saved_filter)
-					end
-					return
-				end,
-				on_new = function(index)
-					create_tab(index)
-					event_bus.catalog_set_search_filter.emit({
-						AssetTypes = Enum.AvatarAssetType:GetEnumItems(),
-						BundleTypes = Enum.BundleType:GetEnumItems(),
-						IncludeOffSale = false,
-						SortType = Enum.CatalogSortType.Relevance,
-						CreatorName = "",
-						SearchKeyword = "",
-					})
-					return
-				end,
-				on_close = function(tab)
-					local opened_tabs = shared.tabs.get_tabs()
-					local new_tab = shared.tabs.get_tabs()[tab.index]
-					remove_tab(tab.tab_uuid)
-					if new_tab then
-						switch_tab(new_tab.tab_uuid)
-					else
-						local tab = opened_tabs[#opened_tabs]
-						if not tab then
-							return
+			if popup_mutex then
+				return
+			end
+			popup_mutex = true
+			popup_overlay.Visible = true
+			components
+				.catalog_browser_tab_popup({
+					parent = popup_overlay,
+					selected_uuid = (current_tab and current_tab.uuid) or "",
+					tab_name = ``,
+					preview_asset_info = {},
+					on_click = function(tab)
+						if not switch_tab(tab.tab_uuid) then
+							-- new tab and set filters
+							create_tab(tab.tab_uuid)
+							event_bus.catalog_set_search_filter.emit(tab.saved_filter)
+						else
+							opened_tabs[tab.tab_uuid].ignore_search_filter = true
+							event_bus.catalog_set_search_filter.emit(tab.saved_filter)
 						end
-						switch_tab(tab.tab_uuid)
-					end
-					return
-				end,
-			})
+						return
+					end,
+					on_new = function(index)
+						create_tab(index)
+						event_bus.catalog_set_search_filter.emit({
+							AssetTypes = Enum.AvatarAssetType:GetEnumItems(),
+							BundleTypes = Enum.BundleType:GetEnumItems(),
+							IncludeOffSale = false,
+							SortType = Enum.CatalogSortType.Relevance,
+							CreatorName = "",
+							SearchKeyword = "",
+						})
+						return
+					end,
+					on_close = function(tab)
+						local opened_tabs = shared.tabs.get_tabs()
+						local new_tab = shared.tabs.get_tabs()[tab.index]
+						remove_tab(tab.tab_uuid)
+						if new_tab then
+							switch_tab(new_tab.tab_uuid)
+						else
+							local tab = opened_tabs[#opened_tabs]
+							if not tab then
+								return
+							end
+							switch_tab(tab.tab_uuid)
+						end
+						return
+					end,
+				}).Destroying
+				:Connect(function(...)
+					popup_mutex = false
+					popup_overlay.Visible = false
+				end)
 			return
 		end,
 	})
