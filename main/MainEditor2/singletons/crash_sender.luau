@@ -12,7 +12,9 @@ local ScriptContext = game:GetService("ScriptContext")
 local shared = require("../shared")
 local utils = require("../utils")
 local on_script_error: RBXScriptConnection?
+local disable_dev = true
 local allowed_scripts = { ["MainEditor2"] = true }
+local janitor = utils.ui_labs.Environment.GetJanitor()
 
 local function hash(string: string)
 	return buffer.tostring(
@@ -35,6 +37,9 @@ end
 local crashlytics = {} :: Impl
 
 crashlytics.start = function()
+	if janitor and disable_dev then
+		return "OK"
+	end
 	if on_script_error then
 		warn("More than one instance of crashlytics is not supported")
 		return "MORE_THAN_ONE_INSTANCE"
