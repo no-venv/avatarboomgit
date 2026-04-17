@@ -107,10 +107,19 @@ return function(parent: Instance?)
 			end,
 		})
 
-		button.Visible = active_topbar_view == parm.allowed_overlay
+		local allowed_overlay = {}
+		if type(parm.allowed_overlay) == "string" then
+			parm.allowed_overlay = { parm.allowed_overlay }
+		end
+
+		for _, overlay in parm.allowed_overlay do
+			allowed_overlay[overlay] = true
+		end
+
+		button.Visible = allowed_overlay[active_topbar_view]
 		custom_buttons[parm.button_id] = {
 			button = button,
-			allowed_overlay = parm.allowed_overlay,
+			allowed_overlay = allowed_overlay,
 			stored_visible_state = false,
 			state = false,
 			on_click = parm.on_click,
@@ -118,11 +127,18 @@ return function(parent: Instance?)
 		lune.tooltips(button, parm.tooltip)
 	end)
 	singletons.event_bus.topbar_register_custom_element.connect(function(parm)
-		parm.element.Visible = active_topbar_view == parm.allowed_overlay
+		local allowed_overlay = {}
+		if type(parm.allowed_overlay) == "string" then
+			parm.allowed_overlay = { parm.allowed_overlay }
+		end
+		for _, overlay in parm.allowed_overlay do
+			allowed_overlay[overlay] = true
+		end
+		parm.element.Visible = allowed_overlay[active_topbar_view]
 		parm.element.Parent = location_containers[parm.location or "left"]
 		custom_buttons[parm.button_id] = {
 			button = parm.element,
-			allowed_overlay = parm.allowed_overlay,
+			allowed_overlay = allowed_overlay,
 			stored_visible_state = false,
 			state = false,
 			on_click = function() end,
@@ -150,7 +166,7 @@ return function(parent: Instance?)
 		end
 		for _, button_id in button_ids do
 			local button = custom_buttons[button_id]
-			if active_topbar_view == button.allowed_overlay then
+			if button.allowed_overlay[active_topbar_view] then
 				button.button.Visible = parm.show
 			end
 			button.stored_visible_state = parm.show
@@ -222,7 +238,7 @@ return function(parent: Instance?)
 			-- if button.allowed_overlay == "All" then
 			-- 	continue
 			-- end
-			if button.allowed_overlay == parm.overlay then
+			if button.allowed_overlay[parm.overlay] then
 				button.button.Visible = button.stored_visible_state
 			else
 				button.button.Visible = false

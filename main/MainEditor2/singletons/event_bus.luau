@@ -41,7 +41,7 @@ type Events = {
 	topbar_register_custom_button: event.Event<{
 		image: number,
 		button_id: string,
-		allowed_overlay: UiOverlay,
+		allowed_overlay: { UiOverlay } | UiOverlay,
 		tooltip: string,
 		has_state: boolean?,
 		one_shot_visibility: boolean?,
@@ -51,7 +51,7 @@ type Events = {
 	topbar_register_custom_element: event.Event<{
 		element: GuiBase2d,
 		button_id: string,
-		allowed_overlay: UiOverlay,
+		allowed_overlay: { UiOverlay } | UiOverlay,
 		location: ("left" | "centre" | "right")?,
 	}>,
 	topbar_unregister_custom_button: event.Event<{
@@ -64,10 +64,6 @@ type Events = {
 	topbar_set_state: event.Event<{
 		button_id: string,
 		state: boolean,
-	}>,
-	plugin_settings_updated: event.Event<{
-		setting: string,
-		value: any,
 	}>,
 	humanoid_description_error: event.Event<{
 		error: string,
@@ -91,5 +87,4 @@ return {
 	humanoid_description_error = event(),
 	-- topbar_hide_search
 	topbar_set_state = event(),
-	plugin_settings_updated = event(),
 } :: Events
