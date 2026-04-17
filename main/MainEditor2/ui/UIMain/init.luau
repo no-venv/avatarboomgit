@@ -20,6 +20,7 @@ return function(parent: Instance)
 		inner_container.Visible = not parm.bool
 		return
 	end)
+
 	require("@self/TopbarButtons")(inner_container)
 	require("@self/CatalogResult")(inner_container)
 	require("@self/ViewWearing")(inner_container)
@@ -47,5 +48,17 @@ return function(parent: Instance)
 	mainframe.Parent = parent
 	print("UI Main Loaded")
 	singletons.event_bus.catalog_show_overlay.emit({ overlay = "None" })
+	local robux_amount = components.robux_count()
+
+	singletons.event_bus.topbar_register_custom_element.emit({
+		allowed_overlay = { "Wearing", "None" },
+		button_id = "wearing_robux",
+		location = "right",
+		element = robux_amount,
+	})
+	singletons.event_bus.topbar_visibility_custom_button.emit({
+		button_id = "wearing_robux",
+		show = true,
+	})
 	return mainframe, inner_container
 end
