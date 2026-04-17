@@ -37,8 +37,10 @@ return function(parent: Instance)
 	--
 	local outer_container = ui_lib.empty_frame()
 	outer_container.Size = UDIM_UI_CLOSED
+	outer_container.Visible = false
 	outer_container.AnchorPoint = Vector2.new(0, 1)
 	outer_container.Position = UDim2.new(0, 0, 1, 0)
+	outer_container.ZIndex = 1899
 	input_catcher:Clone().Parent = outer_container
 	local drawer_container = ui_lib.empty_frame(outer_container)
 	drawer_container.BackgroundTransparency = 0
@@ -114,6 +116,7 @@ return function(parent: Instance)
 		if popout_toggle then
 			return
 		end
+		outer_container.Visible = visible_state
 		outer_container.Size = visible_state and UDIM_UI_OPENED or UDIM_UI_CLOSED
 	end
 	-- buttons that are enabled under these views
@@ -169,6 +172,7 @@ return function(parent: Instance)
 	singletons.event_bus.pop_out_drawer.connect(function(parm): nil
 		popout_toggle = parm.bool
 		outer_container.Size = popout_toggle and UDim2.new(1, 0, 1, 0) or UDIM_UI_OPENED
+		outer_container.Visible = popout_toggle
 		return
 	end)
 
