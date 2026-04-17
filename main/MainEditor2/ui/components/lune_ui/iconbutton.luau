@@ -2,7 +2,7 @@ type arg = {
 	parent: Instance?,
 	id: number | string | { number | string },
 	theme_enabled: boolean?,
-	aspect_ratio: (boolean)?,
+	aspect_ratio: boolean?,
 	tooltip: string?,
 	on_click: () -> (),
 }
@@ -20,6 +20,10 @@ local function new_image(id: number | string): ImageLabel
 	image.Position = UDim2.new(0.5, 0, 0.5, 0)
 	image.Size = UDim2.new(1, 0, 1, 0)
 	image.ImageContent = type(id) == "string" and Content.fromUri(id) or Content.fromAssetId(id :: number)
+	local aspct_clone = aspect_ratio:Clone()
+	-- aspct_clone.AspectType = Enum.AspectType.FitWithinMaxSize
+	-- aspct_clone.DominantAxis = Enum.DominantAxis.Width
+	aspct_clone.Parent = image
 	return image
 end
 local image_positioning = {
