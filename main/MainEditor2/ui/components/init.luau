@@ -12,4 +12,6 @@ return {
 	pinboard_picker = require("@self/PinboardPicker"),
 	recover_rig = require("@self/RecoverRig"),
 	error_popup = require("@self/error_popup"),
+	buy_asset_button = require("@self/BuyAssetButton"),
+	robux_count = require("@self/RobuxCount")
 }

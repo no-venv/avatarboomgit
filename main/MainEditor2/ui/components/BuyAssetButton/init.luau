@@ -1,4 +1,5 @@
 local lune = require("../components/lune_ui")
+local asset_button = require("../components/AssetButton")
 local catalog_fetcher = require("../../singletons/CatalogFetcher")
 local utils = require("../../utils")
 local shared = require("../../shared")
@@ -20,15 +21,16 @@ return function(parent: Instance?, assets: catalog_fetcher.AssetArray)
 			local shared_asset_text = { `My Outfit! ⭐ ({sum_price} robux) (may change with dynamic pricing)` }
 			for index, asset in assets do
 				local asset_container = lune.empty_frame(buy_container)
-				asset_container.Size = UDim2.new(1, 0, 0, 64)
+				asset_container.Size = UDim2.new(1, 0, 0, 72)
+				lune.styling.sizeconst(asset_container, Vector2.new(0, 72), Vector2.new(math.huge, 72))
 				asset_container.AutomaticSize = Enum.AutomaticSize.Y
 				local hbox = lune.styling.hbox(asset_container)
 				hbox.HorizontalFlex = Enum.UIFlexAlignment.Fill
 				hbox.VerticalFlex = Enum.UIFlexAlignment.Fill
 
-				lune.iconbutton({
+				asset_button({
 					parent = asset_container,
-					id = utils.generate_asset_thumb({ asset })[1],
+					asset = asset,
 					on_click = function() end,
 				})
 				local catalog_link = `https://www.roblox.com/catalog/{asset.Id}`
