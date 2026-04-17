@@ -4,30 +4,28 @@ export type Event<T> = {
 	once: ((parm: T) -> ()) -> RBXScriptConnection,
 }
 
+local function create_evt_return(connected_ref, id)
+	local self = {}
+	function self:Disconnect()
+		connected_ref[id] = nil
+	end
+	return self
+end
+
 return function()
+	-- creates a typed signal object
 	local connected = {}
 	local func_id = 0
-	local function create_evt_return(id)
-		local self = {}
-		function self:Disconnect()
-			connected[id] = nil
-		end
-		return self
-	end
 	return {
 		emit = function(...)
 			for _, func in connected do
-				local arg = ...
-				task.spawn(function()
-					func(arg)
-				end)
+				task.spawn(func, ...)
 			end
 		end,
 		connect = function(connected_function)
-			-- print(connected_function)
 			func_id += 1
 			connected[func_id] = connected_function
-			return create_evt_return(func_id)
+			return create_evt_return(connected, func_id)
 		end,
 		once = function(connected_function)
 			func_id += 1
@@ -36,7 +34,7 @@ return function()
 				connected_function(...)
 				connected[strong_func_id] = nil
 			end
-			return create_evt_return(strong_func_id)
+			return create_evt_return(connected, strong_func_id)
 		end,
 	}
 end
