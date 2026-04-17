@@ -107,7 +107,7 @@ crashlytics.start = function()
 
 	local ok, result = pcall(function(...)
 		local request = HttpService:RequestAsync({
-			Url = "http://ask_plugin_permissions.avatarboom.qzz.io",
+			Url = "https://bugs.avatarboom.qzz.io",
 			Compress = Enum.HttpCompression.Gzip,
 		})
 		return request.Success
@@ -118,7 +118,7 @@ crashlytics.start = function()
 		warn(`AvatarBOOM automatic crash log collection cannot connect to server: {result}`)
 		return "HTTP_FAIL"
 	end
-
+	print("AvatarBOOM automatic crash log is running")
 	complete_init = true
 	return "OK"
 end

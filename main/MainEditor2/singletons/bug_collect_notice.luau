@@ -9,7 +9,7 @@ if shared.settings.show_crash_log_consent.value then
 			if result == "Yes" then
 				lune.window.option({
 					title = "Accept Network Permissions",
-					prompt_text = "Roblox Studio will prompt you to allow:\n\n- ask_plugin_permissions.avatarboom.qzz.io\n\n- bugs.avatarboom.qzz.io\n\n",
+					prompt_text = "Roblox Studio will prompt you to allow:\n\n- bugs.avatarboom.qzz.io\n\n",
 					options = { "Okay" },
 					important = true,
 					on_prompt_result = function()
