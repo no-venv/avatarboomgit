@@ -24,9 +24,10 @@ local function build_asset_info_container(parent: Instance?, parm: typeof(catalo
 	vert_layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	vert_layout.Parent = asset_info_container
 
-	local asset_button = components.lune_ui.iconbutton({
+	local asset_button = asset_button({
 		parent = asset_info_container,
-		id = utils.generate_asset_thumb({ parm }),
+		asset = parm,
+		-- id = utils.generate_asset_thumb({ parm }),
 		on_click = function() end,
 	})
 

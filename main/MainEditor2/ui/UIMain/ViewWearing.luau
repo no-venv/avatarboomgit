@@ -27,8 +27,8 @@ return function(parent: Instance?)
 		end
 		current_view_wearing = view_wearing_instance
 
-		local wearing_ids = singletons.wearing_cache.get_wearing()
-
+		local wearing_ids = singletons.humanoid_description:get_id_asset_info_list()
+		components.buy_asset_button(view_wearing_instance, wearing_ids)
 		for _, asset in wearing_ids do
 			local button = asset_button({
 				asset = asset,
@@ -41,7 +41,6 @@ return function(parent: Instance?)
 			})
 			asset_button_header(asset, { ["Favourite"] = true, ["Remove"] = true }, button)
 		end
-
 		return
 	end
 
