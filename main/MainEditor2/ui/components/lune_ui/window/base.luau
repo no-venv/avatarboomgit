@@ -56,14 +56,18 @@ return function(arg: BaseWindowArguments)
 	topbar.Size = UDim2.new(1, 0, 0, 32)
 
 	local hbox = styling.hbox(topbar)
+	hbox.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	hbox.HorizontalFlex = Enum.UIFlexAlignment.Fill
 
 	local left_topbar = empty_frame(topbar)
-	left_topbar.Size = UDim2.new(0.6, 0, 1, 0)
+	left_topbar.Size = UDim2.new(0.0, 0, 1, 0)
+	left_topbar.AutomaticSize = Enum.AutomaticSize.X
 	styling.hbox(left_topbar)
 	local middle_topbar = empty_frame(topbar)
 	local right_topbar = empty_frame(topbar)
-	right_topbar.Size = UDim2.new(0.6, 0, 1, 0)
+	right_topbar.Size = UDim2.new(0.0, 0, 1, 0)
+	right_topbar.AutomaticSize = Enum.AutomaticSize.X
+
 	styling.hbox(right_topbar).HorizontalAlignment = Enum.HorizontalAlignment.Right
 
 	if not arg.middle_topbar then
