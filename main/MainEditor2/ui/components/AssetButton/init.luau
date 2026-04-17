@@ -8,9 +8,10 @@ type arg = {
 }
 
 local iconbutton = lune.iconbutton
+local textlabel = lune.textlabel
 local container_udim = UDim2.new(0, 135, 0, 135)
 return function(arg: arg): TextButton
-	-- local price = arg.price
+	local price = arg.asset.Price
 	local asset_id = arg.asset.Id
 	local asset_type = arg.asset.ItemType
 	local parent = arg.parent
@@ -46,6 +47,13 @@ return function(arg: arg): TextButton
 			end
 		end,
 	})
+
+	if price then
+		local pricelabel = textlabel(`{price} {utf8.char(0xE002)}`, asset_button,true)
+		pricelabel.AnchorPoint = Vector2.new(0, 1)
+		pricelabel.Size = UDim2.new()
+		pricelabel.Position = UDim2.fromScale(0, 1)
+	end
 
 	if not on_click then
 		local on_setting_changed = auto_try_click.changed.connect(function(parm)
