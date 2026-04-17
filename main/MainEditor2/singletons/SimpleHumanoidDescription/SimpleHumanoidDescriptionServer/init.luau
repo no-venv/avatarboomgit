@@ -79,7 +79,9 @@ type Impl = {
 
 	get_clothing_colour: (self: SimpleHumanoidDescription, type: "Shirt" | "Pants") -> Color3?,
 	set_clothing_colour: (self: SimpleHumanoidDescription, type: "Shirt" | "Pants", colour: Color3) -> void,
+	get_id_asset_info_list: (self: SimpleHumanoidDescription) -> { any },
 }
+
 export type SimpleHumanoidDescription = Impl & Struct
 local AvatarEditorService = game:GetService("AvatarEditorService")
 local HttpService = game:GetService("HttpService")
@@ -93,6 +95,7 @@ local asset_type_map = require("@self/asset_type_map")
 local accessory_type_map = require("@self/accessory_type_map")
 local other_prop = require("@self/other_prop")
 local get_accessory_mesh_id = require("@self/get_accessory_mesh_id")
+local wearing_cache = require("@self/wearing_cache")
 function SimpleHumanoidDescription:is_init()
 	return self.Humanoid
 end
@@ -301,7 +304,7 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 		description:SetAccessories(accessories, true)
 	end
 
-	if not humanoid_desc_override then
+	if not humanoid_desc_override and humanoid == self.Humanoid then
 		humanoid:ApplyDescriptionAsync(description)
 		self.id_added:Fire(id)
 	end
@@ -335,7 +338,9 @@ function SimpleHumanoidDescription:remove_id(id)
 	id_to_accessory_description.remove(id)
 	id_to_accessory_mat.remove(humanoid, id)
 	humanoid:ApplyDescriptionAsync(description)
-	self.id_removed:Fire(id)
+	if humanoid == self.Humanoid then
+		self.id_removed:Fire(id)
+	end
 	return true
 end
 
@@ -374,8 +379,9 @@ function SimpleHumanoidDescription:add_bundle_id(id)
 	end
 
 	humanoid:ApplyDescriptionResetAsync(description)
-	self.id_added:Fire(id)
-
+	if humanoid == self.Humanoid then
+		self.id_added:Fire(id)
+	end
 	local save_shoes = saved_bundle_data.BundleType == "Shoes"
 	local save_body = saved_bundle_data.BundleType == "BodyParts"
 	if save_shoes or save_body then
@@ -408,7 +414,9 @@ function SimpleHumanoidDescription:remove_bundle_id(id)
 		humanoid:SetAttribute("BodyPartsBundleID", nil)
 		humanoid:SetAttribute(id_string, nil)
 		humanoid:ApplyDescriptionAsync(description)
-		self.id_removed:Fire()
+		if humanoid == self.Humanoid then
+			self.id_removed:Fire()
+		end
 		return true
 	end
 	if saved_bundle_data.BundleType == "DynamicHead" then
@@ -804,6 +812,10 @@ function SimpleHumanoidDescription:reset_id_texture(id)
 	end
 	self:set_id_texture(id, tonumber(texture_id) :: number)
 	return
+end
+
+function SimpleHumanoidDescription:get_id_asset_info_list()
+	return wearing_cache(self:get_id_list())
 end
 
 local constructor = {}
