@@ -60,7 +60,7 @@ local default_setting: Settings = {
 	}),
 	send_crash_logs = SettingProperty({
 		description = "Sends anonymized crash logs when the plugin errors",
-		default_value = true,
+		default_value = false,
 	}),
 	show_crash_log_consent = SettingProperty({
 		description = "",
