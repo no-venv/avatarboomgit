@@ -19,12 +19,14 @@ return function(parent: Instance, views: NavigationViews)
 	local hbox = lune.styling.hbox(container)
 	hbox.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	hbox.VerticalAlignment = Enum.VerticalAlignment.Center
-	hbox.HorizontalFlex = Enum.UIFlexAlignment.SpaceAround
+	hbox.HorizontalFlex = Enum.UIFlexAlignment.Fill
 	for _, view in views do
+		-- local button = navigation_button(container, view.icon, view.tooltip)
 		local button = lune.iconbutton({
 			parent = container,
 			id = view.icon,
 			theme_enabled = true,
+			aspect_ratio = false,
 			on_click = function()
 				if view.custom then
 					view.custom()
