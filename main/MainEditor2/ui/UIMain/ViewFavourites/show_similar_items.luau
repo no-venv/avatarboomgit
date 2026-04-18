@@ -20,8 +20,11 @@ return function(parent, name: string, contents: pinboard_shared.Board)
 			end_generate = true
 			return false
 		end
+		local assets = asset.ItemType == "Asset"
+				and catalog:GetRecommendedAssets(asset.Id, Enum.AvatarAssetType:FromName(asset.AssetType))
+			or catalog:GetRecommendedBundles(asset.Id)
 
-		local assets = catalog:GetRecommendedAssets(asset.Id, Enum.AvatarAssetType:FromName(asset.AssetType))
+		-- local assets = catalog:GetRecommendedAssets(asset.Id, Enum.AvatarAssetType:FromName(asset.AssetType))
 		for _, asset in assets do
 			asset_button_header(
 				asset,
