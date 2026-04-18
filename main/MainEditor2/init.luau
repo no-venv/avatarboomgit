@@ -14,6 +14,7 @@ return function(parent: Instance, plugin_global: Plugin?, widget_global: DockWid
 	plugin_container.widget = widget_global
 	local utils = require("./MainEditor2/utils")
 	local shared = require("./MainEditor2/shared")
+	local daemons = require("./MainEditor2/daemons")
 	local singletons = require("./MainEditor2/singletons")
 	local lune = require("./MainEditor2/ui/components/lune_ui")
 	local ui_main, ui_main_inner = require("./MainEditor2/ui/UIMain")(parent)
