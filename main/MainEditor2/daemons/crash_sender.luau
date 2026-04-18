@@ -3,7 +3,6 @@ type struct = {}
 type Impl = {
 	start: () -> "OK" | "MORE_THAN_ONE_INSTANCE" | "HTTP_FAIL",
 	stop: () -> (),
-	allow_script: (name: string) -> (),
 }
 
 local EncodingService = game:GetService("EncodingService")
@@ -13,7 +12,6 @@ local shared = require("../shared")
 local utils = require("../utils")
 local on_script_error: RBXScriptConnection?
 local disable_dev = true
-local allowed_scripts = { ["MainEditor2"] = true }
 local janitor = utils.ui_labs.Environment.GetJanitor()
 
 local function hash(string: string)
@@ -130,10 +128,6 @@ crashlytics.stop = function()
 	end
 end
 
-crashlytics.allow_script = function(name)
-	allowed_scripts[name] = true
-end
-
 if shared.settings.send_crash_logs.value then
 	crashlytics.start()
 end
@@ -144,4 +138,4 @@ shared.settings.send_crash_logs.changed.connect(function(parm)
 		crashlytics.stop()
 	end
 end)
-return crashlytics
+return nil

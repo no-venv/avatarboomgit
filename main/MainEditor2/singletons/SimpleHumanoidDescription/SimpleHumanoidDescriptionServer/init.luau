@@ -74,7 +74,7 @@ type Impl = {
 	get_id_colour: (self: SimpleHumanoidDescription, id: number) -> Color3?,
 
 	get_id_texture: (self: SimpleHumanoidDescription, id: number) -> string?,
-	set_id_texture: (self: SimpleHumanoidDescription, id: number, texture_id: number) -> string?,
+	set_id_texture: (self: SimpleHumanoidDescription, id: number, texture_id: number | string) -> string?,
 	reset_id_texture: (self: SimpleHumanoidDescription, id: number) -> void,
 
 	get_clothing_colour: (self: SimpleHumanoidDescription, type: "Shirt" | "Pants") -> Color3?,
@@ -776,7 +776,7 @@ function SimpleHumanoidDescription:set_id_texture(id, texture_id)
 		return
 	end
 
-	local rbx_asset_uri = `rbxassetid://{texture_id}`
+	local rbx_asset_uri = type(texture_id) == "number" and `rbxassetid://{texture_id}` or texture_id
 
 	if not id_material:GetAttribute("base_material_id") then
 		-- set the base id for reverting later!!!
