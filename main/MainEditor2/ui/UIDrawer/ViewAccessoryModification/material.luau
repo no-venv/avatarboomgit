@@ -3,7 +3,7 @@ local lune = require("../../components/lune_ui")
 local tab = require("../../components/lune_ui/tab")
 local on_modification = require("./on_modification")
 local humanoid_editor = require("../../../singletons/SimpleHumanoidDescription")
-
+local image_from_disk = require("../../../utils/image_from_disk")
 return function(tab: tab.TabImpl)
 	local current_id = 0
 	local container = lune.empty_frame()
@@ -27,11 +27,15 @@ return function(tab: tab.TabImpl)
 	texture_buttons_container.AutomaticSize = Enum.AutomaticSize.Y
 	texture_buttons_container.Size = UDim2.new(1, 0, 0, 0)
 	lune.styling.hbox(texture_buttons_container).HorizontalAlignment = Enum.HorizontalAlignment.Center
+	local warning_local_texture =
+		lune.textlabel("⚠️ The local texture will not work after closing Studio.", container)
+	warning_local_texture.Visible = false
 	local function update_texture()
 		local material_id = humanoid_editor:get_id_texture(current_id)
 		if not material_id then
 			return false
 		end
+		warning_local_texture.Visible = material_id:match("rbxtemp") and true or false
 		texture_preview.ImageContent = Content.fromUri(material_id)
 		texture_textbox.Text = material_id
 		return true
@@ -50,6 +54,15 @@ return function(tab: tab.TabImpl)
 		humanoid_editor:reset_id_texture(asset_id)
 		update_texture()
 	end)
+	lune.textbutton("Upload File", texture_buttons_container, function(...)
+		local generated_asset_id = image_from_disk()
+		if not generated_asset_id then
+			return
+		end
+		humanoid_editor:set_id_texture(current_id, generated_asset_id)
+		update_texture()
+	end)
+
 	on_modification.connect(function(parm)
 		if parm.event_type == "disable" then
 			tab.hide_tab_bar_button("Texture", true)
