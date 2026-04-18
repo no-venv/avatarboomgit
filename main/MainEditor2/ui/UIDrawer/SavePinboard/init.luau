@@ -3,7 +3,7 @@ local lune = require("@self/../../components/lune_ui")
 local singletons = require("@self/../../../singletons")
 local pinboard_shared = require("../../shared/pinboard")
 local pinboard_viewer = require("@self/../../components/PinboardPicker")
-
+local utils = require("../../utils")
 return function(parent: Frame?)
 	local container = lune.empty_frame()
 	container.Name = "Save to Board"
@@ -26,9 +26,12 @@ return function(parent: Frame?)
 		local cocat_msg_2 = ((#stuff_to_save == 2) and "other") or (#stuff_to_save > 2 and "others") or ""
 		save_text.Text = `{stuff_to_save[1].Name} {cocat_msg_1} {cocat_msg_2}`
 		local ids = {}
+
 		for index = 1, 3 do
 			if stuff_to_save[index] then
-				ids[index] = `rbxthumb://type={stuff_to_save[index].ItemType}&id={stuff_to_save[index].Id}&w=420&h=420`
+				ids[index] = utils.generate_asset_thumb({
+					stuff_to_save[index],
+				})[1]
 			end
 		end
 		item_button = lune.iconbutton({
