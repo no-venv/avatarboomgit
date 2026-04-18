@@ -2,6 +2,7 @@
 local components = require("../components")
 local singletons = require("../../singletons")
 local utils = require("../../utils")
+local shared = require("../../shared")
 local asset_button = components.asset_button
 local asset_button_header = components.asset_button_header
 local lune = components.lune_ui
@@ -48,7 +49,7 @@ return function(parent: Instance?)
 		allowed_overlay = "Wearing",
 		button_id = "wearing_upload_custom",
 		tooltip = "Upload Local Shirts or Pants",
-		image = 0,
+		image = shared.icons.upload,
 		on_click = function(state)
 			local function upload(image, clothing_type: "Shirt" | "Pants")
 				local humanoid = humanoid_editor.Humanoid
@@ -67,7 +68,6 @@ return function(parent: Instance?)
 					clothing = new_clothing
 				end
 
-				print(type(clothing))
 
 				if clothing_type == "Shirt" then
 					(clothing :: Shirt).ShirtTemplate = image
