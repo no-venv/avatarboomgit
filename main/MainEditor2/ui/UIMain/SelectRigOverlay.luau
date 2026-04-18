@@ -47,7 +47,7 @@ return function(parent: Instance?)
 	container.Transparency = 0
 	ui_lib.styling.corner(container)
 	ui_lib.theme_manager:add_custom_gui_instance(container, "Background")
-	container.ZIndex = 10
+	container.ZIndex = 1989
 	container.Visible = false
 	event_bus.humanoid_description_error.connect(function(parm)
 		components.error_popup(parm.error)
