@@ -25,7 +25,7 @@ return function(parent: Instance, plugin_global: Plugin?, widget_global: DockWid
 		widget.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 		widget.Enabled = false
 		local function popout_drawer_state(state: boolean)
-			ui_drawer.Parent = state and widget or ui_main_inner
+			ui_drawer.Parent = state and widget or ui_main
 			widget.Enabled = state
 		end
 		widget:BindToClose(function()
