@@ -1,6 +1,8 @@
 local pinboard_shared = require("../../../shared/pinboard")
 local singletons = require("../../../singletons")
 local event_bus = singletons.event_bus
+local buy_asset_button = require("../../components/BuyAssetButton")
+local robux_counter = require("../../components/RobuxCount")
 local asset_button = require("../../components/AssetButton")
 local asset_button_header = require("../../components/AssetButtonHeader")
 local show_similar_items = require("./show_similar_items")
@@ -20,6 +22,7 @@ return function(parent: Frame, name: string)
 	local select_mode = false
 	local stored_buttons = {}
 	local selected_buttons = {}
+	local robux_counter = robux_counter(nil, 0)
 
 	local tab_container = tabs({ outer_container, similar_items_container }, "Pins", parent)
 	styling.padding(tab_container).PaddingTop = UDim.new(0, 50)
@@ -31,18 +34,22 @@ return function(parent: Frame, name: string)
 		stored_buttons = {}
 		selected_buttons = {}
 		-- select_mode = false
-		local scrolling_container = scrolling_frame(outer_container, "List", {
-			HorizontalAlignment = Enum.HorizontalAlignment.Center,
-		})
-
+		local scrolling_container = empty_frame(outer_container)
+		local vbox = styling.vbox(scrolling_container)
+		vbox.HorizontalAlignment = Enum.HorizontalAlignment.Center
+		vbox.VerticalFlex = Enum.UIFlexAlignment.Fill
 		do
 			label(`<b>{name}</b>\n{#contents} Pins`, scrolling_container).Size = UDim2.new(1, 0, 0, 32)
 		end
 
 		local container = scrolling_frame(scrolling_container, "Grid")
-		container.AutomaticSize = Enum.AutomaticSize.Y
-
+		-- container.AutomaticSize = Enum.AutomaticSize.Y
+		buy_asset_button(container, contents)
+		local tally = 0
 		for index, value in contents do
+			if value.Price then
+				tally += value.Price
+			end
 			local button: TextButton
 			button = asset_button({
 				-- asset_id = value.Id,
@@ -87,6 +94,7 @@ return function(parent: Frame, name: string)
 				header.Visible = false
 			end
 		end
+		robux_counter.Text = tally
 		current_view = scrolling_container
 	end
 	local contents = pinboard_shared.pinboard_data.data[name]
@@ -158,6 +166,16 @@ return function(parent: Frame, name: string)
 			return
 		end,
 	})
+	event_bus.topbar_register_custom_element.emit({
+		allowed_overlay = "Favourites",
+		button_id = "favourites_robux",
+		element = robux_counter,
+		location = "right",
+	})
+	event_bus.topbar_visibility_custom_button.emit({
+		button_id = "favourites_robux",
+		show = true,
+	})
 	local on_pinboard_save = event_bus.save_pinboard_success.connect(function(parm: {})
 		contents = pinboard_shared.pinboard_exists(name)
 		generate(contents)
@@ -168,7 +186,7 @@ return function(parent: Frame, name: string)
 	})
 	outer_container.Destroying:Connect(function(...)
 		event_bus.topbar_unregister_custom_button.emit({
-			button_id = { "pin_select", "pin_move", "pin_remove" },
+			button_id = { "pin_select", "pin_move", "pin_remove", "favourites_robux" },
 		})
 		on_pinboard_save:Disconnect()
 	end)
