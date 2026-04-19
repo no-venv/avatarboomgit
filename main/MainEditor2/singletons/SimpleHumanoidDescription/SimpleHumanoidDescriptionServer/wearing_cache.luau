@@ -1,3 +1,4 @@
+
 --!strict
 local AvatarEditorService = game:GetService("AvatarEditorService")
 -- caches avatar asset type
@@ -54,10 +55,6 @@ return function(wearing_ids: { number })
 			end
 		end
 		for _, removal in id_for_removal do
-			if not cached_assets[removal] then
-				-- error
-				return {}
-			end
 			table.remove(wait_for_pending, table.find(wait_for_pending, removal))
 		end
 		task.wait()
