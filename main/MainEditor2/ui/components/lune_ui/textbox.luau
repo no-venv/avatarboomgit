@@ -12,7 +12,7 @@ textbox.Text = ""
 textbox.TextScaled = false
 styling.corner(textbox)
 styling.font(textbox)
-return function(background_text: string, parent: Instance?, on_text: ((text: string) -> any)?)
+return function(background_text: string, parent: Instance?, on_text: ((text: string, enter_pressed: boolean) -> any)?)
 	local clone = textbox:Clone()
 	clone.PlaceholderText = background_text
 	styling.stroke(clone)
@@ -20,6 +20,16 @@ return function(background_text: string, parent: Instance?, on_text: ((text: str
 	utils.prop_scope.auto_set_property(clone)
 	if parent then
 		clone.Parent = parent
+	end
+	if on_text then
+		clone.FocusLost:Connect(function(enter: boolean)
+			if enter then
+				on_text(clone.Text, true)
+			end
+		end)
+		clone:GetPropertyChangedSignal("Text"):Connect(function(...)
+			on_text(clone.Text, false)
+		end)
 	end
 	return clone
 end
