@@ -21,7 +21,10 @@ return function(arg: BaseWindowArguments)
 	local size = arg.size or Vector2.new(320, 240)
 	local important = arg.important
 	local custom_embed = arg.custom_embed
-	local shadow_container = empty_frame()
+	local shadow_container = Instance.new("TextButton")
+	shadow_container.Text = ""
+	shadow_container.Size = UDim2.fromScale(1,1)
+	shadow_container.AutoButtonColor = false
 	shadow_container.BackgroundColor3 = Color3.new()
 	styling.corner(shadow_container)
 
