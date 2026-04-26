@@ -49,6 +49,7 @@ recovery.save_rig = function(rig)
 		local old_rig_save = rig_saves[rig_saves_len]
 		old_rig_save.rig:Destroy()
 	end
+	rig.Archivable = true
 	local cloned = rig:Clone()
 	cloned.Name = tostring(os.time())
 	cloned.Parent = uuid_recovery_folder
