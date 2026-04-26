@@ -1,7 +1,7 @@
 --!strict
 local components = require("../components")
 local singletons = require("../../singletons")
-local catalog_filters = require("@self/catalog_filters")
+local catalog_filters = require("../../shared/catalog_filters")
 local ui_lib = components.lune_ui
 local event_bus = singletons.event_bus
 local scrolling_frame = ui_lib.scrolling_frame
