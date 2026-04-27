@@ -25,7 +25,7 @@ return function(parent: Instance)
 	require("@self/CatalogResult")(inner_container)
 	require("@self/ViewWearing")(inner_container)
 	require("@self/ViewFavourites")(inner_container)
-	-- require("@self/Composer")(inner_container)
+	require("@self/LayeredItemsViewportOverlay")(inner_container)
 	require("@self/UpdateChecker")()
 	require("@self/SelectRigOverlay")(mainframe)
 	require("@self/NavigationBar")(mainframe, {
