@@ -83,7 +83,8 @@ type Impl = {
 	set_makeup_order: (self: SimpleHumanoidDescription, id: number, order: number) -> (),
 	get_makeup_order: (self: SimpleHumanoidDescription) -> { MakeupDescription },
 	set_layered_clothing_order: (self: SimpleHumanoidDescription, id: number, order: number) -> (),
-	get_layered_clothing_order: (self: SimpleHumanoidDescription) -> { HumanoidDescriptionAccessory },
+	get_highest_layered_clothing_count: (self: SimpleHumanoidDescription) -> number,
+	get_layered_clothing_order: (self: SimpleHumanoidDescription) -> { AccessoryDescription },
 }
 
 export type SimpleHumanoidDescription = Impl & Struct
@@ -290,7 +291,7 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 		end
 		AccessoryType = to_asset_type
 	end
-	
+
 	local legacy_success, error = pcall(function(...)
 		local map = asset_type_map[AccessoryType.Name]
 		local property_type = typeof((description :: any)[map])
@@ -309,10 +310,13 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 		then
 			makeup_description_helper.add_makeup(description, id, AccessoryType)
 		else
+			local order = self:get_highest_layered_clothing_count() + 1
+			local is_layered = accessory_type_map[AccessoryType] and true or false
 			table.insert(accessories, {
-				Order = 1,
+				Order = is_layered and order or 1,
 				AssetId = id,
 				AccessoryType = accessory_type_map[AccessoryType],
+				IsLayered = is_layered,
 			})
 			description:SetAccessories(accessories, true)
 		end
@@ -875,7 +879,18 @@ function SimpleHumanoidDescription:get_layered_clothing_order()
 	end
 	local humanoid = self.Humanoid
 	local description = humanoid:GetAppliedDescription()
-	return description:GetAccessories(false)
+	return description:GetAccessories(false) :: any
+end
+
+function SimpleHumanoidDescription:get_highest_layered_clothing_count()
+	local layered_clothing = self:get_layered_clothing_order()
+	local order = 0
+	for _, layered in layered_clothing do
+		if layered.Order > order then
+			order = layered.Order
+		end
+	end
+	return order
 end
 
 local constructor = {}
