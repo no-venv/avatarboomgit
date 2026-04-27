@@ -80,6 +80,10 @@ type Impl = {
 	get_clothing_colour: (self: SimpleHumanoidDescription, type: "Shirt" | "Pants") -> Color3?,
 	set_clothing_colour: (self: SimpleHumanoidDescription, type: "Shirt" | "Pants", colour: Color3) -> void,
 	get_id_asset_info_list: (self: SimpleHumanoidDescription) -> { any },
+	set_makeup_order: (self: SimpleHumanoidDescription, id: number, order: number) -> (),
+	get_makeup_order: (self: SimpleHumanoidDescription) -> { MakeupDescription },
+	set_layered_clothing_order: (self: SimpleHumanoidDescription, id: number, order: number) -> (),
+	get_layered_clothing_order: (self: SimpleHumanoidDescription) -> { HumanoidDescriptionAccessory },
 }
 
 export type SimpleHumanoidDescription = Impl & Struct
@@ -96,6 +100,7 @@ local accessory_type_map = require("@self/accessory_type_map")
 local other_prop = require("@self/other_prop")
 local get_accessory_mesh_id = require("@self/get_accessory_mesh_id")
 local wearing_cache = require("@self/wearing_cache")
+local makeup_description_helper = require("@self/makeup_description_helper")
 function SimpleHumanoidDescription:is_init()
 	return self.Humanoid
 end
@@ -230,11 +235,15 @@ function SimpleHumanoidDescription:get_id_list(only_accessories)
 	end
 
 	if not only_accessories then
+		local makeup_ids = makeup_description_helper.get_makeup(description)
 		for _, prop in other_prop do
 			local prop_id = (description :: any)[prop]
 			if prop_id > 0 then
 				table.insert(ids, prop_id)
 			end
+		end
+		for _, makeup in makeup_ids do
+			table.insert(ids, makeup.AssetId)
 		end
 	end
 
@@ -293,15 +302,20 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 	end)
 	if not legacy_success then
 		-- print(AccessoryType)
-		-- if AccessoryType == Enum.AvatarAssetType.FaceMakeup then
-		-- 	description
-		-- end
-		table.insert(accessories, {
-			Order = 1,
-			AssetId = id,
-			AccessoryType = accessory_type_map[AccessoryType],
-		})
-		description:SetAccessories(accessories, true)
+		if
+			(AccessoryType == Enum.AvatarAssetType.FaceMakeup)
+			or (AccessoryType == Enum.AvatarAssetType.EyeMakeup)
+			or (AccessoryType == Enum.AvatarAssetType.LipMakeup)
+		then
+			makeup_description_helper.add_makeup(description, id, AccessoryType)
+		else
+			table.insert(accessories, {
+				Order = 1,
+				AssetId = id,
+				AccessoryType = accessory_type_map[AccessoryType],
+			})
+			description:SetAccessories(accessories, true)
+		end
 	end
 
 	if not humanoid_desc_override and humanoid == self.Humanoid then
@@ -337,6 +351,7 @@ function SimpleHumanoidDescription:remove_id(id)
 	end
 	id_to_accessory_description.remove(id)
 	id_to_accessory_mat.remove(humanoid, id)
+	makeup_description_helper.remove_makeup(description, id)
 	humanoid:ApplyDescriptionAsync(description)
 	if humanoid == self.Humanoid then
 		self.id_removed:Fire(id)
@@ -452,6 +467,10 @@ function SimpleHumanoidDescription:id_equipped(id)
 	end
 
 	if humanoid:GetAttribute(tostring(id)) then
+		return true
+	end
+
+	if makeup_description_helper.makeup_equipped(description, id) then
 		return true
 	end
 
@@ -816,6 +835,47 @@ end
 
 function SimpleHumanoidDescription:get_id_asset_info_list()
 	return wearing_cache(self:get_id_list())
+end
+
+function SimpleHumanoidDescription:set_makeup_order(id, order)
+	if not self.Humanoid then
+		return
+	end
+	local humanoid = self.Humanoid
+	local description = humanoid:GetAppliedDescription()
+	makeup_description_helper.set_makeup_order(description, id, order)
+	humanoid:ApplyDescriptionAsync(description)
+end
+
+function SimpleHumanoidDescription:get_makeup_order()
+	if not self.Humanoid then
+		return {}
+	end
+	local description = self.Humanoid:GetAppliedDescription()
+	return makeup_description_helper.get_makeup(description)
+end
+
+function SimpleHumanoidDescription:set_layered_clothing_order(id, order)
+	if not self.Humanoid then
+		return
+	end
+	local humanoid = self.Humanoid
+	local accessory_description = id_to_accessory_description.get(humanoid, id)
+	if not accessory_description then
+		return
+	end
+	accessory_description.Order = order
+	local description = humanoid:GetAppliedDescription()
+	humanoid:ApplyDescriptionAsync(description)
+end
+
+function SimpleHumanoidDescription:get_layered_clothing_order()
+	if not self.Humanoid then
+		return {}
+	end
+	local humanoid = self.Humanoid
+	local description = humanoid:GetAppliedDescription()
+	return description:GetAccessories(false)
 end
 
 local constructor = {}
