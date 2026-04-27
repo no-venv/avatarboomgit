@@ -47,9 +47,12 @@ return function(parent: Frame?, events: events.Events)
 					important = true,
 					on_prompt_result = function(result)
 						if result == "Yes" then
-							cloned_rig
-								:FindFirstChild(singletons.data_recovery.magic_keyword_ignore_avatarboom)
-								:Destroy()
+							-- fix for /issues/issue/b42a701f-f10e-4450-9e3c-d95cf9343e7c/event/last/details/
+							local ignore_avatarboom_instance =
+								cloned_rig:FindFirstChild(singletons.data_recovery.magic_keyword_ignore_avatarboom)
+							if ignore_avatarboom_instance then
+								ignore_avatarboom_instance:Destroy()
+							end
 						end
 					end,
 				})
