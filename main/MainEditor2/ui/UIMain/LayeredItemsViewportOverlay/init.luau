@@ -34,6 +34,7 @@ return function(parent: Instance)
 			layered_items_container.Visible = false
 		end,
 		parent = button_container,
+		theme_enabled = true
 	})
 	lune.tooltips(hide_adjust_button, "Hide Adjust", tooltip_container)
 
@@ -46,6 +47,7 @@ return function(parent: Instance)
 			layered_items_container.Visible = true
 		end,
 		parent = adjust_buttons_container,
+		theme_enabled = true
 	})
 	lune.tooltips(adjust_makeup_button, "Adjust Makeup", tooltip_container)
 
@@ -56,6 +58,7 @@ return function(parent: Instance)
 			layered_items_container.Visible = true
 		end,
 		parent = adjust_buttons_container,
+		theme_enabled = true
 	})
 	lune.tooltips(adjust_layered_clothing_button, "Adjust Layered clothing", tooltip_container)
 	---
