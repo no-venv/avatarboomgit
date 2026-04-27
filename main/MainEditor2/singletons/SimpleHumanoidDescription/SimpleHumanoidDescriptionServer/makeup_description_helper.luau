@@ -37,7 +37,7 @@ makeup_description_helper.get_makeup = function(description)
 	local makeup = {}
 	for _, child in children do
 		if child:IsA("MakeupDescription") then
-			makeup[child.Order] = child
+			table.insert(makeup,child)
 		end
 	end
 	return makeup
