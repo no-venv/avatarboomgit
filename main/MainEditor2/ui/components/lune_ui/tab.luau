@@ -93,6 +93,14 @@ return function(
 	tab.add_views = function(views)
 		for _, view_frame in views do
 			local view_name = view_frame.Name
+			local existing_button = scrolling_frame:FindFirstChild(view_name)
+			local existing_view = container:FindFirstChild(view_name)
+			if existing_button then
+				existing_button:Destroy()
+			end
+			if existing_view then
+				existing_view:Destroy()
+			end
 			local button = textbutton(view_name, scrolling_frame)
 			tab.views[view_name] = {
 				tab_view = view_frame,
@@ -104,6 +112,9 @@ return function(
 			end)
 			view_frame.Visible = false
 			view_frame.Parent = container
+			if view_name == current_view then
+				view_frame.Visible = true
+			end
 			if view_name == default_view then
 				tab.toggle(view_name, true)
 			end
