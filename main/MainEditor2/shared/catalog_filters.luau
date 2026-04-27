@@ -64,23 +64,23 @@ local filters: Struct = {
 			},
 		},
 	},
-	-- {
-	-- 	catagory = "Makeup",
-	-- 	filters = {
-	-- 		{
-	-- 			filter_name = "Face",
-	-- 			avatar_asset_type = Enum.AvatarAssetType.FaceMakeup,
-	-- 		},
-	-- 		{
-	-- 			filter_name = "Eye",
-	-- 			avatar_asset_type = Enum.AvatarAssetType.EyeMakeup,
-	-- 		},
-	-- 		{
-	-- 			filter_name = "Lip",
-	-- 			avatar_asset_type = Enum.AvatarAssetType.LipMakeup,
-	-- 		},
-	-- 	},
-	-- },
+	{
+		catagory = "Makeup",
+		filters = {
+			{
+				filter_name = "Face",
+				avatar_asset_type = Enum.AvatarAssetType.FaceMakeup,
+			},
+			{
+				filter_name = "Eye",
+				avatar_asset_type = Enum.AvatarAssetType.EyeMakeup,
+			},
+			{
+				filter_name = "Lip",
+				avatar_asset_type = Enum.AvatarAssetType.LipMakeup,
+			},
+		},
+	},
 	{
 		catagory = "Head & Body",
 		filters = {

@@ -1,6 +1,7 @@
 local toolbar = plugin:CreateToolbar("avatarBOOM")
 local widget_info = DockWidgetPluginGuiInfo.new(Enum.InitialDockState.Float, true, false, 400, 700, 400, 700)
 local widget = plugin:CreateDockWidgetPluginGuiAsync("avatarBOOM editor", widget_info)
+widget.Title = "avatarBOOM editor"
 widget.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 local pluginButton = toolbar:CreateButton(
 	"open avatarBOOM", --Text that will appear below button
@@ -33,7 +34,7 @@ warn_text.Size = UDim2.fromScale(1, 0)
 warn_text.TextWrapped = false
 warn_text.BackgroundTransparency = 1
 warn_text.BorderSizePixel = 0
-warn_text.Size = UDim2.new(1,0,0,128)
+warn_text.Size = UDim2.new(1, 0, 0, 128)
 warn_text.Text =
 	"If you're seeing this, avatarBoom is either loading, or couldn't start because the script injection permission has been denied.\nFollow the instructions below to fix the issue."
 warn_text.TextColor3 = Color3.new()

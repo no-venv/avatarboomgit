@@ -1,6 +1,6 @@
 type Argument = {
 	{
-		ItemType: string,
+		ItemType: string?,
 		Id: string | number,
 	}
 }
@@ -10,7 +10,7 @@ return function(args: Argument)
 		if not asset then
 			break
 		end
-		local asset_type = asset.ItemType
+		local asset_type = asset.ItemType or "Asset"
 		local asset_id = asset.Id
 		if asset_type == "Bundle" then
 			asset_type = "BundleThumbnail"

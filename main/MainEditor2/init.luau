@@ -22,6 +22,7 @@ return function(parent: Instance, plugin_global: Plugin?, widget_global: DockWid
 	lune.lune_overlay.Parent = ui_main
 	if plugin_global then
 		local widget = plugin_global:CreateDockWidgetPluginGuiAsync("avatarBOOM drawer", drawer_widget_info)
+		widget.Title = "avatarBOOM drawer"
 		widget.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 		widget.Enabled = false
 		local function popout_drawer_state(state: boolean)

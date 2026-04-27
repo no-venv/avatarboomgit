@@ -83,20 +83,17 @@ function Avatar:GetRecommendedAssets(Id: number, avatar_asset_type: Enum.AvatarA
 		Returns an array of recommended assets
 	]]
 	local ok, asset_array = pcall(function(...)
+		-- GetRecommendedAssetsAsync assetType WILL HAVE SOME ITEMS BE DIFFERENT FROM THE SPECIFIED ASSET TYPE
+		-- very annoying roblox, thanks
 		local Recommended = AvatarEditorService:GetRecommendedAssetsAsync(avatar_asset_type, Id)
-		local asset_array: { AssetType } = {}
+		local ids: { number } = {}
 		for _, Item in Recommended do
-			table.insert(asset_array, {
-				Id = Item.Item.AssetId,
-				AssetType = avatar_asset_type.Name,
-				ItemType = "Asset",
-				Name = Item.Item.Name,
-				Description = "",
-				ProductId = Item.Product.Id,
-				CreatorName = Item.Creator.Name,
-				Price = Item.Item.Price,
-			})
+			table.insert(ids, Item.Item.AssetId)
 		end
+
+		local asset_array: { AssetType } =
+			AvatarEditorService:GetBatchItemDetailsAsync(ids, Enum.AvatarItemType.Asset)
+
 		return asset_array
 	end)
 

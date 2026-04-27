@@ -9,6 +9,7 @@ type arg = {
 local textbutton = require("./textbutton")
 local theme_manager = require("./theme_manager")
 local tooltip = require("./tooltips")
+local styling = require("./styling_components")
 local aspect_ratio = Instance.new("UIAspectRatioConstraint")
 aspect_ratio.AspectRatio = 1
 aspect_ratio.AspectType = Enum.AspectType.ScaleWithParentSize
@@ -23,6 +24,7 @@ local function new_image(id: number | string): ImageLabel
 	local aspct_clone = aspect_ratio:Clone()
 	-- aspct_clone.AspectType = Enum.AspectType.FitWithinMaxSize
 	-- aspct_clone.DominantAxis = Enum.DominantAxis.Width
+	styling.corner(image)
 	aspct_clone.Parent = image
 	return image
 end
