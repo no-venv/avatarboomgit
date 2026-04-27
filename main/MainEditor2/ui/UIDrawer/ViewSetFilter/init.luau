@@ -24,10 +24,11 @@ local function filter_topbar(children: { GuiObject }, parent: Instance?)
 	local container = ui_lib.empty_frame()
 	container.Size = UDim2.new(1, 0, 0, 32)
 	local horz_layout = Instance.new("UIListLayout")
+	-- horz_layout.HorizontalFlex = Enum.ui
 	horz_layout.SortOrder = Enum.SortOrder.LayoutOrder
 	horz_layout.FillDirection = Enum.FillDirection.Horizontal
 	horz_layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-	horz_layout.HorizontalFlex = Enum.UIFlexAlignment.SpaceBetween
+	horz_layout.HorizontalFlex = Enum.UIFlexAlignment.Fill
 	horz_layout.VerticalAlignment = Enum.VerticalAlignment.Center
 	horz_layout.Padding = UDim.new(0, 8)
 	horz_layout.Parent = container
@@ -57,7 +58,7 @@ local function filter_section(title: string, filter_section_children: { TextButt
 	local hbox = Instance.new("UIListLayout")
 	hbox.SortOrder = Enum.SortOrder.LayoutOrder
 	hbox.FillDirection = Enum.FillDirection.Horizontal
-	hbox.HorizontalFlex = Enum.UIFlexAlignment.SpaceBetween
+	hbox.HorizontalFlex = Enum.UIFlexAlignment.Fill
 	hbox.Parent = topbar
 	local text_label = textlabel(title, topbar)
 
@@ -71,6 +72,7 @@ local function filter_section(title: string, filter_section_children: { TextButt
 	local hbox = Instance.new("UIListLayout")
 	hbox.Padding = UDim.new(0, 8)
 	hbox.SortOrder = Enum.SortOrder.LayoutOrder
+	-- hbox.HorizontalFlex = Enum.UIFlexAlignment.Fill
 	hbox.FillDirection = Enum.FillDirection.Horizontal
 	hbox.Wraps = true
 	hbox.Parent = children_container
