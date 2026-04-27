@@ -1,5 +1,5 @@
 local toolbar = plugin:CreateToolbar("avatarBOOM")
-local widget_info = DockWidgetPluginGuiInfo.new(Enum.InitialDockState.Right, false, false, 400, 255, 400, 255)
+local widget_info = DockWidgetPluginGuiInfo.new(Enum.InitialDockState.Right, true, false, 400, 700, 400, 700)
 local widget = plugin:CreateDockWidgetPluginGuiAsync("avatarBOOM editor", widget_info)
 widget.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 local pluginButton = toolbar:CreateButton(
