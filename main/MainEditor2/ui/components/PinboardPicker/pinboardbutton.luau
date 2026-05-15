@@ -43,23 +43,23 @@ return function(arg: arg): TextButton
 
 	asset_button.Size = container_udim
 
-	local label = textlabel(name, asset_button,true)
+	local label = textlabel(name, asset_button, true)
 	label.AnchorPoint = Vector2.new(0, 1)
 	label.Position = UDim2.fromScale(0, 1)
 	label.TextYAlignment = Enum.TextYAlignment.Bottom
 	button_header({
 		parent = asset_button,
 		left_topbar = {
-			{
+			(on_rename and {
 				id = shared.icons.rename,
 				on_click = on_rename,
-			},
+			}) or nil,
 		},
 		right_topbar = {
-			{
+			(on_remove and {
 				id = shared.icons.remove,
 				on_click = on_remove,
-			},
+			}) or nil,
 		},
 	})
 

@@ -8,6 +8,7 @@ type Argument = {
 	parent: Frame?,
 	on_picked_pinboard: (picked: { name: string, data: pinboard_shared.Board }) -> any,
 	internal_prefix: string?,
+	pick_only: boolean?,
 }
 return function(arg: Argument)
 	local parent = arg.parent
@@ -86,7 +87,7 @@ return function(arg: Argument)
 						data = value,
 					})
 				end,
-				on_remove = function()
+				on_remove = (not arg.pick_only and function()
 					lune.window.option({
 						title = "Delete confirmation",
 						prompt_text = `Are you sure you want to delete {name}?`,
@@ -100,8 +101,8 @@ return function(arg: Argument)
 						custom_embed = container,
 						important = true,
 					})
-				end,
-				on_rename = function()
+				end) or nil,
+				on_rename = (not arg.pick_only and function()
 					lune.window.prompt({
 						title = `Rename board: {name}`,
 						prompt_close_text = "Rename",
@@ -117,7 +118,7 @@ return function(arg: Argument)
 						custom_embed = container,
 						important = true,
 					})
-				end,
+				end or nil),
 				on_share = function() end,
 			})
 		end

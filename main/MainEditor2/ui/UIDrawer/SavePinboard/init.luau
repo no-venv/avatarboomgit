@@ -42,6 +42,7 @@ return function(parent: Frame?)
 		item_button.Size = UDim2.fromOffset(130, 130)
 		pinboard_viewer_container = pinboard_viewer({
 			parent = container,
+			pick_only = true,
 			on_picked_pinboard = function(picked)
 				if parm.operation == "Move" then
 					local ids = {}
