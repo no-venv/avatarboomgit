@@ -1,8 +1,6 @@
 local players = game:GetService("Players")
 local lune = require("../../components/lune_ui")
-local get_spawn_position = require("./spawn_position")
-local selectable_rig = require("./selectable_rig")
-local fix_rig = require("./fix_rig")
+local rigbuilder = require("./rigbuilder")
 return function(parent: Instance?, user_id: number)
 	local container = lune.empty_frame(parent)
 	container.Name = "Import From Friends"
@@ -20,16 +18,11 @@ return function(parent: Instance?, user_id: number)
 				id = 0,
 				tooltip = friend.Username,
 				on_click = function()
-					local hum_desc = players:GetHumanoidDescriptionFromUserIdAsync(friend.Id)
-					local rig_model = players:CreateHumanoidModelFromDescriptionAsync(hum_desc, selected_rig_type)
-					fix_rig(rig_model)
-					rig_model.Parent = workspace
-					rig_model:MoveTo(get_spawn_position())
-					selectable_rig(rig_model)
+					rigbuilder.from_user(friend.Id, selected_rig_type, workspace)
 				end,
 				parent = scrolling_container,
 			})
-			
+
 			task.spawn(function()
 				user:SetAttribute(
 					"image",
