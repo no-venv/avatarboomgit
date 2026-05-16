@@ -803,7 +803,7 @@ function SimpleHumanoidDescription:set_id_texture(id, texture_id)
 		return
 	end
 
-	local rbx_asset_uri = type(texture_id) == "number" and `rbxassetid://{texture_id}` or texture_id
+	local rbx_asset_uri = (type(texture_id) == "number" and `rbxassetid://{texture_id}` or texture_id) :: string
 
 	if not id_material:GetAttribute("base_material_id") then
 		-- set the base id for reverting later!!!
