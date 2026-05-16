@@ -92,8 +92,7 @@ local AvatarEditorService = game:GetService("AvatarEditorService")
 local HttpService = game:GetService("HttpService")
 local AssetService = game:GetService("AssetService")
 local PlayerService = game:GetService("Players")
-local SimpleHumanoidDescription = {} :: SimpleHumanoidDescription
-SimpleHumanoidDescription.__index = SimpleHumanoidDescription
+
 local id_to_accessory_description = require("@self/id_to_accessory_description")
 local id_to_accessory_mat = require("@self/id_to_accessory_mat")
 local asset_type_map = require("@self/asset_type_map")
@@ -102,6 +101,10 @@ local other_prop = require("@self/other_prop")
 local get_accessory_mesh_id = require("@self/get_accessory_mesh_id")
 local wearing_cache = require("@self/wearing_cache")
 local makeup_description_helper = require("@self/makeup_description_helper")
+
+local SimpleHumanoidDescription = {} :: SimpleHumanoidDescription
+SimpleHumanoidDescription.__index = SimpleHumanoidDescription
+local constructor = {}
 function SimpleHumanoidDescription:is_init()
 	return self.Humanoid
 end
@@ -587,9 +590,17 @@ function SimpleHumanoidDescription:convert_humanoid_type(humanoid_type)
 	if not self.Humanoid then
 		return
 	end
-	local stored_humanoid = self.Humanoid
 	local applied_description = self.Humanoid:GetAppliedDescription()
-
+	-- @ fix for issues/issue/2451a3dd-4395-4992-83bd-f187406b63a1/event/5f6c401d-1a3f-429c-b4c2-e40a62dfd05b/details/
+	-- ?
+	local id_colours = {}
+	for _, accessories in applied_description:GetAccessories(true) do
+		id_colours[accessories.AssetId] = self:get_id_colour(accessories.AssetId)
+	end
+	-- apply the colours and stuff
+	local shirt_colour = self:get_clothing_colour("Shirt")
+	local pants_colour = self:get_clothing_colour("Pants")
+	-- @ 
 	local converted_model = PlayerService:CreateHumanoidModelFromDescriptionAsync(
 		applied_description,
 		humanoid_type == "R6" and Enum.HumanoidRigType.R6 or Enum.HumanoidRigType.R15
@@ -601,30 +612,23 @@ function SimpleHumanoidDescription:convert_humanoid_type(humanoid_type)
 			(child :: BasePart).Locked = false
 		end
 	end
-	local id_colours = {}
-	for _, accessories in applied_description:GetAccessories(true) do
-		id_colours[accessories.AssetId] = self:get_id_colour(accessories.AssetId)
-	end
-	-- apply the colours and stuff
-	local shirt_colour = self:get_clothing_colour("Shirt")
-	local pants_colour = self:get_clothing_colour("Pants")
-
-	self.Humanoid = converted_model:FindFirstChild("Humanoid") :: Humanoid
+	-- instead we use a local shs server to avoid race conditions
+	local local_shs = constructor:new()
+	local_shs.Humanoid = converted_model:FindFirstChild("Humanoid") :: Humanoid
 	if shirt_colour then
-		self:set_clothing_colour("Shirt", shirt_colour)
+		local_shs:set_clothing_colour("Shirt", shirt_colour)
 	end
 	if pants_colour then
-		self:set_clothing_colour("Pants", pants_colour)
+		local_shs:set_clothing_colour("Pants", pants_colour)
 	end
 	for id, colour in id_colours do
 		if not colour then
 			continue
 		end
-		self:set_id_colour(id, colour)
-		id_to_accessory_mat.remove(self.Humanoid, id)
+		local_shs:set_id_colour(id, colour)
+		id_to_accessory_mat.remove(local_shs.Humanoid :: Humanoid, id)
 	end
-	self.Humanoid = stored_humanoid
-	return converted_model
+		return converted_model
 end
 
 function SimpleHumanoidDescription:set_id_transformation(id, trans_type, vec3)
@@ -893,7 +897,6 @@ function SimpleHumanoidDescription:get_highest_layered_clothing_count()
 	return order
 end
 
-local constructor = {}
 
 function constructor:new(): SimpleHumanoidDescription
 	local struct = {
