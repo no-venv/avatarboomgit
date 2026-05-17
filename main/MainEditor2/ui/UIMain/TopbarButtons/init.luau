@@ -70,6 +70,40 @@ return function(parent: Instance?)
 			query = query,
 		})
 	end)
+	-- do
+	-- 	-- embed filter popup
+	-- 	local input_blocker = Instance.new("TextButton")
+	-- 	input_blocker.Transparency = 1
+	-- 	input_blocker.Position = UDim2.new(0, 0, 1, 8)
+	-- 	input_blocker.Size = UDim2.new(1, 0, 0, 400)
+	-- 	input_blocker.Parent = search
+	-- 	local container = lune.empty_frame(input_blocker, "Foreground")
+
+	-- 	local mouse_in_container = false
+	-- 	require("../UIDrawer/ViewSetFilter")(container)
+
+	-- 	input_blocker.Visible = false
+	-- 	search.Focused:Connect(function()
+	-- 		input_blocker.Visible = true
+	-- 	end)
+	-- 	search.FocusLost:Connect(function(a0: boolean, a1: InputObject)
+	-- 		if not mouse_in_container or a0 then
+	-- 			input_blocker.Visible = false
+	-- 		else 
+
+	-- 		end
+	-- 	end)
+
+	-- 	input_blocker.MouseEnter:Connect(function(a0: number, a1: number)
+	-- 		mouse_in_container = true
+	-- 	end)
+	-- 	input_blocker.MouseLeave:Connect(function(a0: number, a1: number)
+	-- 		mouse_in_container = false
+	-- 	end)
+	-- 	singletons.event_bus.catalog_set_search_filter.connect(function()  
+	-- 		input_blocker.Visible = false
+	-- 	end)
+	-- end
 
 	local right_button_container = button_container:Clone()
 	right_button_container.Parent = topbar_container
@@ -250,16 +284,3 @@ return function(parent: Instance?)
 	topbar_container.Parent = parent
 	return container
 end
-
--- local composer_button = iconbutton({
--- 	id = 112085719237258,
--- 	parent = right_button_container,
--- 	theme_enabled = true,
--- 	on_click = function()
--- 		singletons.event_bus.catalog_show_overlay.emit({
--- 			overlay = "Composer",
--- 		})
--- 	end,
--- })
--- lune.tooltips(composer_button, "Composer")
---
