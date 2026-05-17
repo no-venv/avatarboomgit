@@ -44,6 +44,7 @@ type Impl = {
 		asset_type: Enum.AvatarAssetType?,
 		humanoid_desc_override: HumanoidDescription?
 	) -> boolean,
+	batch_add_id: (self: SimpleHumanoidDescription, ids: { number }) -> boolean,
 	remove_id: (self: SimpleHumanoidDescription, id: number) -> boolean,
 	add_bundle_id: (self: SimpleHumanoidDescription, id: number) -> boolean,
 	remove_bundle_id: (self: SimpleHumanoidDescription, id: number) -> boolean,
@@ -329,6 +330,27 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 		humanoid:ApplyDescriptionAsync(description)
 		self.id_added:Fire(id)
 	end
+	return true
+end
+
+function SimpleHumanoidDescription:batch_add_id(ids)
+	-- Adds the ids in batches. Useful in cases where GetBatchItemDetailsAsync should be used
+	if not self.Humanoid then
+		return false
+	end
+	local humanoid = self.Humanoid
+
+	local description = humanoid:GetAppliedDescription()
+	local asset_info = AvatarEditorService:GetBatchItemDetailsAsync(ids, Enum.AvatarItemType.Asset)
+	for _, asset in asset_info do
+		local to_asset_type = Enum.AvatarAssetType:FromName(asset.AssetType)
+		if not to_asset_type then
+			print(`{asset.AssetType} failed with Enum.AvatarAssetType:FromName`)
+			return false
+		end
+		self:add_id(asset.Id, to_asset_type, description)
+	end
+	humanoid:ApplyDescriptionAsync(description)
 	return true
 end
 
@@ -628,7 +650,7 @@ function SimpleHumanoidDescription:convert_humanoid_type(humanoid_type)
 		local_shs:set_id_colour(id, colour)
 		id_to_accessory_mat.remove(local_shs.Humanoid :: Humanoid, id)
 	end
-		return converted_model
+	return converted_model
 end
 
 function SimpleHumanoidDescription:set_id_transformation(id, trans_type, vec3)
