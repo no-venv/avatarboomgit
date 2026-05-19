@@ -187,10 +187,10 @@ function SimpleHumanoidDescription:apply_fix()
 		local new_shirt = humanoid_parent:FindFirstChild("Shirt") :: Shirt
 		local new_pants = humanoid_parent:FindFirstChild("Pants") :: Pants
 		--
-		if old_shirt then
+		if old_shirt and new_shirt then
 			new_shirt.Color3 = old_shirt.Color3
 		end
-		if old_pants then
+		if old_pants and new_pants then
 			new_pants.Color3 = old_pants.Color3
 		end
 		for _, new_accessory in new_accessories do
