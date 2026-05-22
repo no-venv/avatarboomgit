@@ -33,6 +33,7 @@ type Struct = {
 		mutex: boolean,
 		fully_init: boolean,
 	} },
+	accessory_added_connection: RBXScriptConnection?,
 }
 type Impl = {
 	is_init: (self: SimpleHumanoidDescription) -> Humanoid?,
@@ -102,6 +103,7 @@ local other_prop = require("@self/other_prop")
 local get_accessory_mesh_id = require("@self/get_accessory_mesh_id")
 local wearing_cache = require("@self/wearing_cache")
 local makeup_description_helper = require("@self/makeup_description_helper")
+local position_accessory_handle = require("@self/position_accessory_handle")
 
 local SimpleHumanoidDescription = {} :: SimpleHumanoidDescription
 SimpleHumanoidDescription.__index = SimpleHumanoidDescription
@@ -113,6 +115,11 @@ end
 function SimpleHumanoidDescription:init(humanoid)
 	if self.Humanoid == humanoid then
 		return true, ""
+	end
+
+	if self.accessory_added_connection then
+		self.accessory_added_connection:Disconnect()
+		self.accessory_added_connection = nil
 	end
 
 	self.Humanoid = humanoid
@@ -127,6 +134,15 @@ function SimpleHumanoidDescription:init(humanoid)
 		self.humanoid_changed:Fire()
 		return false,
 			"To avoid corruption, this Rig cannot be used because Humanoid Description is not found.\n\nYou probably have used a rig from the toolbox, or used an insert tool to customize the selected rig.\n\nAvatarBoom requires rigs to have HumanoidDescription otherwise your rigs will be reset to black.\n\nYou may need to create a new rig and rebuild your outfit."
+	end
+
+	local character = self.Humanoid.Parent
+	if character then
+		self.accessory_added_connection = character.ChildAdded:Connect(function(child)
+			if child:IsA("Accessory") then
+				position_accessory_handle(child, character)
+			end
+		end)
 	end
 
 	if self:apply_fix() == "Pending" then
@@ -210,6 +226,9 @@ function SimpleHumanoidDescription:apply_fix()
 					break
 				end
 			end
+		end
+		for _, new_accessory in new_accessories do
+			position_accessory_handle(new_accessory, humanoid_parent)
 		end
 	end)
 
