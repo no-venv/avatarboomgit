@@ -15,17 +15,20 @@ return function(parent: Instance?)
 	padding.PaddingBottom = _8_padding
 	padding.Parent = container
 	local vert_layout = Instance.new("UIListLayout")
-	vert_layout.Padding = UDim.new(0, 8)
+	vert_layout.Padding = UDim.new(0, 32)
 	vert_layout.SortOrder = Enum.SortOrder.LayoutOrder
 	vert_layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	vert_layout.VerticalAlignment = Enum.VerticalAlignment.Center
 	vert_layout.Parent = container
+	vert_layout.VerticalFlex = Enum.UIFlexAlignment.Fill
 
 	do
 		local title_container = ui_lib.empty_frame(container)
 		title_container.Size = UDim2.new(1, 0, 0, 0)
 		title_container.AutomaticSize = Enum.AutomaticSize.Y
-		ui_lib.styling.vbox(title_container).HorizontalAlignment = Enum.HorizontalAlignment.Center
+		local vbox = ui_lib.styling.vbox(title_container)
+		vbox.VerticalFlex = Enum.UIFlexAlignment.Fill
+		vbox.HorizontalAlignment = Enum.HorizontalAlignment.Center
 		local avatar_boom_logo = Instance.new("ImageLabel")
 		avatar_boom_logo.ImageContent = Content.fromAssetId(109639726516588)
 		avatar_boom_logo.Size = UDim2.new(0.8, 0, 1, 0)
@@ -37,6 +40,12 @@ return function(parent: Instance?)
 		ratio_const.AspectRatio = 8.32971800434
 		ratio_const.Parent = avatar_boom_logo
 		ui_lib.textlabel("<b>Select a Rig or import one to use avatarBOOM!</b>", title_container)
+		if #game:GetService("Players"):GetPlayers() > 0 then
+			ui_lib.textlabel(
+				"\n\n<b>avatarBoom has detected Team Create.\n\nAt May 21, Roblox has pushed an update that breaks the plugin with Team Create enabled.\n\nYou can still use Team Create with AvatarBoom to check if it works. Otherwise disable Team Create for the plugin to work correctly.\n\n I'm SO sorry for the inconvenience ugh 💔</b>",
+				title_container
+			)
+		end
 	end
 	-- text.Size = UDim2.new(1,0,0,0)
 	-- text.AutomaticSize = Enum.AutomaticSize.Y
