@@ -227,6 +227,9 @@ function SimpleHumanoidDescription:apply_fix()
 				end
 			end
 		end
+		for _, new_accessory in new_accessories do
+			position_accessory_handle(new_accessory, humanoid_parent)
+		end
 	end)
 
 	if not ok then
