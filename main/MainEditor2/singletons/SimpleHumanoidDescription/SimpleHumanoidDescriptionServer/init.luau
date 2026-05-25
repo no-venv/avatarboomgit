@@ -179,7 +179,9 @@ function SimpleHumanoidDescription:apply_fix()
 	}
 	local ok = pcall(function()
 		local hum_desc = humanoid:GetAppliedDescription()
-		local humanoid_parent = humanoid.Parent :: Instance
+		-- this usually is a model
+		local humanoid_parent = humanoid.Parent :: Model
+		local saved_pivot = humanoid_parent:GetPivot()
 		-- save old shirts
 		local old_shirt = humanoid_parent:FindFirstChild("Shirt") :: Shirt
 		local old_pants = humanoid_parent:FindFirstChild("Pants") :: Pants
@@ -230,6 +232,9 @@ function SimpleHumanoidDescription:apply_fix()
 		for _, new_accessory in new_accessories do
 			position_accessory_handle(new_accessory, humanoid_parent)
 		end
+		task.defer(function()
+			humanoid_parent:PivotTo(saved_pivot)
+		end)
 	end)
 
 	if not ok then
@@ -641,7 +646,7 @@ function SimpleHumanoidDescription:convert_humanoid_type(humanoid_type)
 	-- apply the colours and stuff
 	local shirt_colour = self:get_clothing_colour("Shirt")
 	local pants_colour = self:get_clothing_colour("Pants")
-	-- @ 
+	-- @
 	local converted_model = PlayerService:CreateHumanoidModelFromDescriptionAsync(
 		applied_description,
 		humanoid_type == "R6" and Enum.HumanoidRigType.R6 or Enum.HumanoidRigType.R15
@@ -937,7 +942,6 @@ function SimpleHumanoidDescription:get_highest_layered_clothing_count()
 	end
 	return order
 end
-
 
 function constructor:new(): SimpleHumanoidDescription
 	local struct = {
