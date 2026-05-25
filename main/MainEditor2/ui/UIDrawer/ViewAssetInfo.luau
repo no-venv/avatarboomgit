@@ -1,7 +1,6 @@
 --!strict
 local singletons = require("../../singletons")
 local components = require("../components")
-local utils = require("../../utils")
 local catalog_fetcher = singletons.catalog_fetcher
 local event_bus = singletons.event_bus
 local asset_button = components.asset_button
@@ -11,6 +10,7 @@ local styling = ui_lib.styling
 local textlabel = ui_lib.textlabel
 local textbutton = ui_lib.textbutton
 local empty_frame = ui_lib.empty_frame
+local textbox = ui_lib.textbox
 local humanoid_editor = singletons.humanoid_description
 
 local function build_asset_info_container(parent: Instance?, parm: typeof(catalog_fetcher.ExportAssetType))
@@ -94,6 +94,10 @@ local function build_asset_info_container(parent: Instance?, parm: typeof(catalo
 				bool = false,
 			})
 		end)
+		local catalog_text = textbox("", asset_info_container)
+		catalog_text.Text = `https://www.roblox.com/catalog/{parm.Id}`
+		catalog_text.ClearTextOnFocus = false
+		catalog_text.TextEditable = false
 		return
 	end)
 
