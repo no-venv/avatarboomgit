@@ -3,6 +3,7 @@ local components = require("../components")
 local singletons = require("../../singletons")
 local utils = require("../../utils")
 local shared = require("../../shared")
+local exporters = require("@self/exporters")
 local asset_button = components.asset_button
 local asset_button_header = components.asset_button_header
 local lune = components.lune_ui
@@ -28,7 +29,7 @@ return function(parent: Instance?)
 			current_view_wearing:Destroy()
 		end
 		current_view_wearing = view_wearing_instance
-		
+
 		local wearing_ids = singletons.humanoid_description:get_id_asset_info_list()
 		components.buy_asset_button(view_wearing_instance, wearing_ids)
 		for _, asset in wearing_ids do
@@ -55,8 +56,20 @@ return function(parent: Instance?)
 			return
 		end,
 	})
+
+	singletons.event_bus.topbar_register_custom_button.emit({
+		allowed_overlay = "Wearing",
+		button_id = "wearing_export",
+		tooltip = "Export Wearing",
+		image = shared.icons.export,
+		on_click = function(state)
+			exporters()
+			return
+		end,
+	})
+
 	singletons.event_bus.topbar_visibility_custom_button.emit({
-		button_id = "wearing_upload_custom",
+		button_id = { "wearing_upload_custom", "wearing_export" },
 		show = true,
 	})
 
