@@ -46,7 +46,7 @@ return function()
 		return
 	end
 	local selected_rig = humanoid.Parent :: Model
-	local rig = selected_rig:Clone()
+	local rig =  humanoid_description:get_humanoid_type() == "R6" and humanoid_description:convert_humanoid_type("R15") or selected_rig:Clone()
 	local ignore_avatarboom = Instance.new("BoolValue")
 	ignore_avatarboom.Name = "DELETE_THIS_IF_YOU_WANT_TO_USE_THIS_RIG"
 	ignore_avatarboom.Parent = rig
@@ -57,7 +57,6 @@ return function()
 
 	rig.PrimaryPart.Position = Vector3.new(0, 3, 0)
 	meta_rig.PrimaryPart.Position = Vector3.new(0, 3, 0)
-	
 	rig.Parent = workspace
 	meta_rig.Parent = workspace
 
