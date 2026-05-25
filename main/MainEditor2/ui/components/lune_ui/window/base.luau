@@ -23,7 +23,7 @@ return function(arg: BaseWindowArguments)
 	local custom_embed = arg.custom_embed
 	local shadow_container = Instance.new("TextButton")
 	shadow_container.Text = ""
-	shadow_container.Size = UDim2.fromScale(1,1)
+	shadow_container.Size = UDim2.fromScale(1, 1)
 	shadow_container.AutoButtonColor = false
 	shadow_container.BackgroundColor3 = Color3.new()
 	styling.corner(shadow_container)
@@ -57,18 +57,18 @@ return function(arg: BaseWindowArguments)
 
 	local topbar = empty_frame(container)
 	topbar.Size = UDim2.new(1, 0, 0, 32)
-
-	local hbox = styling.hbox(topbar)
-	hbox.HorizontalAlignment = Enum.HorizontalAlignment.Center
-	hbox.HorizontalFlex = Enum.UIFlexAlignment.Fill
+	styling.sizeconst(topbar, Vector2.new(0, 32), Vector2.new(math.huge, 32))
+	-- local hbox = styling.hbox(topbar)
+	-- hbox.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	-- hbox.HorizontalFlex = Enum.UIFlexAlignment.Fill
 
 	local left_topbar = empty_frame(topbar)
-	left_topbar.Size = UDim2.new(0.0, 0, 1, 0)
+	left_topbar.Size = UDim2.new(1, 0, 1, 0)
 	left_topbar.AutomaticSize = Enum.AutomaticSize.X
 	styling.hbox(left_topbar)
 	local middle_topbar = empty_frame(topbar)
 	local right_topbar = empty_frame(topbar)
-	right_topbar.Size = UDim2.new(0.0, 0, 1, 0)
+	right_topbar.Size = UDim2.new(1, 0, 1, 0)
 	right_topbar.AutomaticSize = Enum.AutomaticSize.X
 
 	styling.hbox(right_topbar).HorizontalAlignment = Enum.HorizontalAlignment.Right
@@ -108,7 +108,7 @@ return function(arg: BaseWindowArguments)
 	--div(container)
 	local view_container = empty_frame(container)
 	view.Parent = view_container
-	theme_manager:add_custom_gui_instance(container, "Foreground")
+	theme_manager:add_custom_gui_instance(container, "Background")
 	shadow_container.Parent = custom_embed or lune_overlay
 	if important then
 		shadow_container.Transparency = 0.5

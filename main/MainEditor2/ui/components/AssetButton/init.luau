@@ -24,6 +24,7 @@ return function(arg: arg): TextButton
 	asset_button = iconbutton({
 		parent = parent,
 		id = `rbxthumb://type={asset_type}&id={asset_id}&w=420&h=420`,
+		padding = 32,
 		theme_enabled = false,
 		on_click = function()
 			if on_click then
@@ -49,7 +50,7 @@ return function(arg: arg): TextButton
 	})
 
 	if price then
-		local pricelabel = textlabel(`{price} {utf8.char(0xE002)}`, asset_button,true)
+		local pricelabel = textlabel(`{price} {utf8.char(0xE002)}`, asset_button, true)
 		pricelabel.AnchorPoint = Vector2.new(0, 1)
 		pricelabel.Size = UDim2.new()
 		pricelabel.Position = UDim2.fromScale(0, 1)

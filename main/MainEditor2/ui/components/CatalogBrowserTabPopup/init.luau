@@ -43,11 +43,11 @@ return function(arg: Arguments)
 				end,
 			})
 
-			local label = lune.textlabel((tab_data.tab_name == "" and "New Tab") or tab_data.tab_name, asset_button,true)
+			local label =
+				lune.textlabel((tab_data.tab_name == "" and "New Tab") or tab_data.tab_name, asset_button, true)
 			label.AnchorPoint = Vector2.new(0, 1)
 			label.Position = UDim2.fromScale(0, 1)
 			label.TextYAlignment = Enum.TextYAlignment.Bottom
-			lune.theme_manager:force_highlight(asset_button, tab_data.tab_uuid == arg.selected_uuid)
 			button_header({
 				parent = asset_button,
 				left_topbar = {},
@@ -62,6 +62,7 @@ return function(arg: Arguments)
 					},
 				},
 			})
+			lune.theme_manager:force_highlight(asset_button, tab_data.tab_uuid == arg.selected_uuid)
 		end
 		prev_scrolling = scrolling_container
 	end
@@ -72,7 +73,7 @@ return function(arg: Arguments)
 		size = Vector2.new(0.8, 0.8),
 		view = container,
 		important = true,
-		custom_embed = arg.parent,
+		-- custom_embed = arg.parent,
 		left_topbar = {
 			lune.iconbutton({
 				id = 104744952813054,

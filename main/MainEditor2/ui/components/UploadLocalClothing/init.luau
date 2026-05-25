@@ -47,15 +47,9 @@ return function()
 		end
 		upload(image, "Pants")
 	end)
-	lune.textbutton("Close", upload_view, function(...)
-		window:Destroy()
-	end)
 	window = lune.window.base({
 		title = "Upload Local Shirts or Pants",
 		view = upload_view,
-		-- prompt_text = ,
-		-- options = { "Upload Shirts", "Upload Pants" },
-		-- on_prompt_result = function(result) end,
 		important = true,
 	})
 	return
