@@ -1,5 +1,6 @@
 type arg = {
 	parent: Instance?,
+	padding: number?,
 	id: number | string | { number | string },
 	theme_enabled: boolean?,
 	aspect_ratio: boolean?,
@@ -14,12 +15,12 @@ local aspect_ratio = Instance.new("UIAspectRatioConstraint")
 aspect_ratio.AspectRatio = 1
 aspect_ratio.AspectType = Enum.AspectType.ScaleWithParentSize
 aspect_ratio.DominantAxis = Enum.DominantAxis.Height
-local function new_image(id: number | string): ImageLabel
+local function new_image(id: number | string, padding : number?): ImageLabel
 	local image = Instance.new("ImageLabel")
 	image.Transparency = 1
 	image.AnchorPoint = Vector2.new(0.5, 0.5)
 	image.Position = UDim2.new(0.5, 0, 0.5, 0)
-	image.Size = UDim2.new(1, 0, 1, 0)
+	image.Size = UDim2.new(1, -(padding or 0) , 1, -(padding or 0))
 	image.ImageContent = type(id) == "string" and Content.fromUri(id) or Content.fromAssetId(id :: number)
 	local aspct_clone = aspect_ratio:Clone()
 	-- aspct_clone.AspectType = Enum.AspectType.FitWithinMaxSize
@@ -59,7 +60,7 @@ return function(arg: arg)
 	local created_images = {}
 	if type(id) == "table" then
 		if #id == 1 then
-			local image = new_image(id[1])
+			local image = new_image(id[1],arg.padding)
 			image.Parent = clone
 			table.insert(created_images, image)
 		else
@@ -67,7 +68,7 @@ return function(arg: arg)
 				local pos = image_positioning[index]
 				local image = new_image(value)
 				image.Position = pos[1]
-				image.Size = pos[2]
+				image.Size = UDim2.new(pos[2].Width.Scale,-(arg.padding or 0),pos[2].Height.Scale,-(arg.padding or 0))
 				image.Rotation = pos[3]
 				image.ZIndex = pos[4]
 				image.Parent = clone
@@ -75,7 +76,7 @@ return function(arg: arg)
 			end
 		end
 	else
-		local image = new_image(id)
+		local image = new_image(id,arg.padding)
 		image.Parent = clone
 		table.insert(created_images, image)
 	end
