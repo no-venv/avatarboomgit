@@ -16,7 +16,7 @@ return function(parent: Frame?)
 	end)
 
 	container.Destroying:Connect(function(...)
-		on_update_rig:Disconnect()
+		local_events.update_saved_rigs.disconnect(on_update_rig)
 	end)
 	return container
 end
