@@ -33,6 +33,24 @@ local accessory_attachment = {
 	[Enum.AvatarAssetType.DressSkirtAccessory] = TORSO_COLOUR,
 }
 
+local limb_transparency_id = {
+	Head = 0.0, -- 1.0
+	LeftFoot = 0.15, -- 0.85
+	LeftHand = 0.20, -- 0.80
+	LeftLowerArm = 0.25, --0.75
+	LeftLowerLeg = 0.30, -- 0.70
+	LeftUpperArm = 0.35, -- 0.65
+	LeftUpperLeg = 0.40, -- 0.60
+	LowerTorso = 0.45, -- 0.55
+	RightFoot = 0.50, -- 0.50
+	RightHand = 0.55, --0.45
+	RightLowerArm = 0.60, -- 0.40
+	RightLowerLeg = 0.65, -- 0.35
+	RightUpperArm = 0.70, -- 0.30
+	RightUpperLeg = 0.75, -- 0.25
+	UpperTorso = 0.80, -- 0.20
+}
+
 local function snap_model(model: Model)
 	local _, bounding_size = model:GetBoundingBox()
 	local current_pivot = model:GetPivot()
@@ -46,33 +64,28 @@ return function()
 		return
 	end
 	local selected_rig = humanoid.Parent :: Model
-	local rig =  humanoid_description:get_humanoid_type() == "R6" and humanoid_description:convert_humanoid_type("R15") or selected_rig:Clone()
+	local rig = humanoid_description:get_humanoid_type() == "R6" and humanoid_description:convert_humanoid_type("R15")
+		or selected_rig:Clone()
+
 	local ignore_avatarboom = Instance.new("BoolValue")
 	ignore_avatarboom.Name = "DELETE_THIS_IF_YOU_WANT_TO_USE_THIS_RIG"
 	ignore_avatarboom.Parent = rig
-	local meta_rig = rig:Clone()
 
 	rig.Name = "EXPORT"
-	meta_rig.Name = "META"
-
 	rig.PrimaryPart.Position = Vector3.new(0, 3, 0)
-	meta_rig.PrimaryPart.Position = Vector3.new(0, 3, 0)
 	rig.Parent = workspace
-	meta_rig.Parent = workspace
 
 	local humanoid = rig:FindFirstChild("Humanoid") :: Humanoid
-	local meta_humanoid = meta_rig:FindFirstChild("Humanoid") :: Humanoid
-	-- set the body colours and accessory handle colors
 	local local_humanoid_description = humanoid_description_server:new()
-	local_humanoid_description:init(meta_humanoid)
 	local_humanoid_description:init(humanoid)
-	local_humanoid_description:set_body_colour("Head", HEAD_COLOUR)
-	local_humanoid_description:set_body_colour("Left Arm", LEFT_ARM_COLOUR)
-	local_humanoid_description:set_body_colour("Right Arm", RIGHT_ARM_COLOUR)
-	local_humanoid_description:set_body_colour("Torso", TORSO_COLOUR)
-	local_humanoid_description:set_body_colour("Left Leg", LEFT_LEG_COLOUR)
-	local_humanoid_description:set_body_colour("Right Leg", RIGHT_LEG_COLOUR)
-	--
+
+	for _,part in rig:GetChildren() do
+		local transparency_id = limb_transparency_id[part.Name]
+		if transparency_id then
+			(part::BasePart).Transparency = transparency_id
+		end
+	end
+
 	for _, asset in humanoid_description:get_id_asset_info_list() do
 		local id = asset.Id
 		local accessory = local_humanoid_description:get_id_accessory(id)
@@ -96,15 +109,12 @@ return function()
 	end
 
 	rig.Archivable = false
-	meta_rig.Archivable = false
-
+	
 	local export_folder = Instance.new("Folder")
 	export_folder.Archivable = false
 	export_folder.Parent = workspace
 
 	rig.Parent = export_folder
-	meta_rig.Parent = export_folder
-
 	Selection:Set({ export_folder })
 
 	task.defer(function()
@@ -112,9 +122,7 @@ return function()
 		-- ENDER PEARL
 		-- CHICKEN JOCKEY
 		rig:SetPrimaryPartCFrame(CFrame.new(0, 3, 0))
-		meta_rig:SetPrimaryPartCFrame(CFrame.new(0, 3, 0))
 		snap_model(rig)
-		snap_model(meta_rig)
 		PluginManager():ExportSelection()
 	end)
 
