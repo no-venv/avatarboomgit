@@ -44,18 +44,22 @@ local function build_asset_info_container(parent: Instance?, parm: typeof(catalo
 
 	local item_equipped = false
 	local insert_asset_button: TextButton
+	local id_operations_ready_event
 	local function update_equipped_state()
 		if not humanoid_editor:is_init() then
-			return
+			return "Humanoid has not loaded"
 		end
 		item_equipped = humanoid_editor:is_init() and humanoid_editor:id_equipped(parm.Id) or false
-		insert_asset_button.Text = item_equipped and "Take off" or "Try on"
+		return item_equipped and "Take off" or "Try on"
 	end
 
 	ui_lib.property_scope({
 		Size = UDim2.new(1, 0, 0, 32),
 	}, function()
-		insert_asset_button = textbutton("Put on", asset_info_container, function()
+		insert_asset_button = textbutton("Try on", asset_info_container, function()
+			if not humanoid_editor:is_id_operations_ready() then
+				return
+			end
 			local item_type = parm.ItemType
 			local asset_type = parm.AssetType
 			local asset_id = parm.Id
@@ -72,9 +76,12 @@ local function build_asset_info_container(parent: Instance?, parm: typeof(catalo
 					humanoid_editor:add_bundle_id(asset_id)
 				end
 			end
-			update_equipped_state()
 		end)
 
+		insert_asset_button.Text = humanoid_editor:is_id_operations_ready() and update_equipped_state() or "Loading..."
+		id_operations_ready_event = humanoid_editor.id_operations_ready_event.Event:Connect(function(ready)
+			insert_asset_button.Text = not ready and "Loading..." or update_equipped_state()
+		end)
 		local asset_type
 		if parm.AssetType then
 			asset_type = Enum.AvatarAssetType:FromName(parm.AssetType)
@@ -109,6 +116,7 @@ local function build_asset_info_container(parent: Instance?, parm: typeof(catalo
 		id_added_signal:Disconnect()
 		id_remove_signal:Disconnect()
 		humanoid_change_signal:Disconnect()
+		id_operations_ready_event:Disconnect()
 	end)
 
 	update_equipped_state()
