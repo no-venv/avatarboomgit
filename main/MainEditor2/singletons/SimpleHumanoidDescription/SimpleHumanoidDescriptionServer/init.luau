@@ -23,12 +23,14 @@ type BundleInfo = {
 }
 type Struct = {
 	__index: SimpleHumanoidDescription,
+	_id_operations_lock: boolean,
 	Humanoid: Humanoid?,
 	BaseHumanoidDescription: HumanoidDescription,
 	humanoid_loading: BindableEvent,
 	humanoid_changed: BindableEvent,
 	id_added: BindableEvent,
 	id_removed: BindableEvent,
+	id_operations_ready_event: BindableEvent,
 	inited_humanoids: { [Humanoid]: {
 		mutex: boolean,
 		fully_init: boolean,
@@ -46,9 +48,11 @@ type Impl = {
 		humanoid_desc_override: HumanoidDescription?
 	) -> boolean,
 	batch_add_id: (self: SimpleHumanoidDescription, ids: { number }) -> boolean,
-	remove_id: (self: SimpleHumanoidDescription, id: number) -> boolean,
+	remove_id: (self: SimpleHumanoidDescription, id: number, humanoid_desc_override: HumanoidDescription?) -> boolean,
 	add_bundle_id: (self: SimpleHumanoidDescription, id: number) -> boolean,
 	remove_bundle_id: (self: SimpleHumanoidDescription, id: number) -> boolean,
+	set_id_operation_lock: (self: SimpleHumanoidDescription, lock: boolean) -> (),
+	is_id_operations_ready: (self: SimpleHumanoidDescription) -> boolean,
 	--reset : (self : SimpleHumanoidDescription) -> void;
 	id_equipped: (self: SimpleHumanoidDescription, id: number) -> boolean,
 	get_id_accessory: (self: SimpleHumanoidDescription, id: number) -> Accessory?,
@@ -299,14 +303,16 @@ end
 
 function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override)
 	-- adds accesories
-	if not self.Humanoid then
+	if not self.Humanoid or (self._id_operations_lock and not humanoid_desc_override) then
 		return false
 	end
 	local humanoid = self.Humanoid
 	if self:id_equipped(id) then
 		return true
 	end
-
+	if not humanoid_desc_override then
+		self:set_id_operation_lock(true)
+	end
 	local description = humanoid_desc_override or humanoid:GetAppliedDescription()
 	local accessories = description:GetAccessories(true)
 	local AccessoryType = asset_type :: Enum.AvatarAssetType
@@ -330,7 +336,6 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 		end
 	end)
 	if not legacy_success then
-		-- print(AccessoryType)
 		if
 			(AccessoryType == Enum.AvatarAssetType.FaceMakeup)
 			or (AccessoryType == Enum.AvatarAssetType.EyeMakeup)
@@ -354,33 +359,41 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 		humanoid:ApplyDescriptionAsync(description)
 		self.id_added:Fire(id)
 	end
+	if not humanoid_desc_override then
+		self:set_id_operation_lock(false)
+	end
 	return true
 end
 
 function SimpleHumanoidDescription:batch_add_id(ids)
 	-- Adds the ids in batches. Useful in cases where GetBatchItemDetailsAsync should be used
-	if not self.Humanoid then
+	if not self.Humanoid or self._id_operations_lock then
 		return false
 	end
+	self:set_id_operation_lock(true)
 	local humanoid = self.Humanoid
-
 	local description = humanoid:GetAppliedDescription()
 	local asset_info = AvatarEditorService:GetBatchItemDetailsAsync(ids, Enum.AvatarItemType.Asset)
 	for _, asset in asset_info do
 		local to_asset_type = Enum.AvatarAssetType:FromName(asset.AssetType)
 		if not to_asset_type then
 			print(`{asset.AssetType} failed with Enum.AvatarAssetType:FromName`)
+			self:set_id_operation_lock(false)
 			return false
 		end
 		self:add_id(asset.Id, to_asset_type, description)
 	end
 	humanoid:ApplyDescriptionAsync(description)
+	self:set_id_operation_lock(false)
 	return true
 end
 
-function SimpleHumanoidDescription:remove_id(id)
-	if not self.Humanoid then
+function SimpleHumanoidDescription:remove_id(id, humanoid_desc_override)
+	if not self.Humanoid or (self._id_operations_lock and not humanoid_desc_override) then
 		return false
+	end
+	if not humanoid_desc_override then
+		self:set_id_operation_lock(true)
 	end
 	local humanoid = self.Humanoid
 	local description = humanoid:GetAppliedDescription()
@@ -405,17 +418,22 @@ function SimpleHumanoidDescription:remove_id(id)
 	id_to_accessory_description.remove(id)
 	id_to_accessory_mat.remove(humanoid, id)
 	makeup_description_helper.remove_makeup(description, id)
-	humanoid:ApplyDescriptionAsync(description)
-	if humanoid == self.Humanoid then
-		self.id_removed:Fire(id)
+
+	if not humanoid_desc_override then
+		humanoid:ApplyDescriptionAsync(description)
+		if humanoid == self.Humanoid then
+			self.id_removed:Fire(id)
+		end
+		self:set_id_operation_lock(false)
 	end
 	return true
 end
 
 function SimpleHumanoidDescription:add_bundle_id(id)
-	if not self.Humanoid then
+	if not self.Humanoid or self._id_operations_lock then
 		return false
 	end
+	self:set_id_operation_lock(true)
 	local humanoid = self.Humanoid
 	local bundle_details = AssetService:GetBundleDetailsAsync(id)
 	local saved_bundle_data: BundleInfo = {
@@ -455,12 +473,12 @@ function SimpleHumanoidDescription:add_bundle_id(id)
 	if save_shoes or save_body then
 		humanoid:SetAttribute(tostring(id), HttpService:JSONEncode(saved_bundle_data))
 	end
-
+	self:set_id_operation_lock(false)
 	return true
 end
 
 function SimpleHumanoidDescription:remove_bundle_id(id)
-	if not self.Humanoid then
+	if not self.Humanoid or self._id_operations_lock then
 		return false
 	end
 	local humanoid = self.Humanoid
@@ -470,9 +488,9 @@ function SimpleHumanoidDescription:remove_bundle_id(id)
 		return false
 	end
 	local saved_bundle_data: BundleInfo = HttpService:JSONDecode(bundle_data_string)
+	local description = humanoid:GetAppliedDescription()
 
 	if saved_bundle_data.BundleType == "BodyParts" then
-		local description = humanoid:GetAppliedDescription()
 		description.Head = 0
 		description.LeftArm = 0
 		description.LeftLeg = 0
@@ -483,7 +501,7 @@ function SimpleHumanoidDescription:remove_bundle_id(id)
 		humanoid:SetAttribute(id_string, nil)
 		humanoid:ApplyDescriptionAsync(description)
 		if humanoid == self.Humanoid then
-			self.id_removed:Fire()
+			self.id_removed:Fire(id)
 		end
 		return true
 	end
@@ -492,11 +510,21 @@ function SimpleHumanoidDescription:remove_bundle_id(id)
 	end
 	for _, item in saved_bundle_data.Items do
 		humanoid:SetAttribute(`b_asset_id_{item}`, nil)
-		self:remove_id(item)
+		self:remove_id(item, description)
 	end
-
+	humanoid:ApplyDescriptionAsync(description)
 	humanoid:SetAttribute(id_string, nil)
+	self:set_id_operation_lock(false)
 	return true
+end
+
+function SimpleHumanoidDescription:set_id_operation_lock(lock)
+	self._id_operations_lock = lock
+	self.id_operations_ready_event:Fire(not lock)
+	return
+end
+function SimpleHumanoidDescription:is_id_operations_ready()
+	return not self._id_operations_lock
 end
 
 function SimpleHumanoidDescription:id_equipped(id)
@@ -950,6 +978,8 @@ function constructor:new(): SimpleHumanoidDescription
 		humanoid_changed = Instance.new("BindableEvent"),
 		id_added = Instance.new("BindableEvent"),
 		id_removed = Instance.new("BindableEvent"),
+		id_operations_ready_event = Instance.new("BindableEvent"),
+		_id_operations_lock = false,
 		inited_humanoids = {},
 	}
 	return setmetatable(struct, SimpleHumanoidDescription)
