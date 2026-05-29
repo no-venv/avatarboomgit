@@ -8,6 +8,6 @@ export type Events = {
 
 return function()
 	return {
-		update_saved_rigs = typed_events(),
+		update_saved_rigs = typed_events.client(),
 	} :: Events
 end

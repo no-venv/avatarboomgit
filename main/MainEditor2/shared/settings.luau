@@ -39,7 +39,7 @@ local function SettingProperty(arg: {
 		value = arg.default_value,
 		ignore_save = arg.ignore_save,
 		hidden = arg.hidden or false,
-		changed = typed_events(),
+		changed = typed_events.client(),
 		set = function(value)
 			prop.value = value
 			if not prop.ignore_save then

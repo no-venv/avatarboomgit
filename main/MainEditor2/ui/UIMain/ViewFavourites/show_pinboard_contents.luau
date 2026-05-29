@@ -188,7 +188,7 @@ return function(parent: Frame, name: string)
 		event_bus.topbar_unregister_custom_button.emit({
 			button_id = { "pin_select", "pin_move", "pin_remove", "favourites_robux" },
 		})
-		on_pinboard_save:Disconnect()
+		event_bus.save_pinboard_success.disconnect(on_pinboard_save)
 	end)
 	generate(contents)
 	return tab_container
