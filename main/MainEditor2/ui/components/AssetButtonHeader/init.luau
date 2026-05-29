@@ -39,6 +39,7 @@ return function(
 		}
 		table.insert(left_topbar, favourite)
 	end
+	enabled_buttons.Remove = false
 	if enabled_buttons.Remove then
 		local remove: button_header.Button = {
 			id = shared.icons.add,
