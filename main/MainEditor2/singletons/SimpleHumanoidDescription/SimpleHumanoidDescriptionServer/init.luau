@@ -468,11 +468,11 @@ function SimpleHumanoidDescription:add_bundle_id(id)
 	if humanoid == self.Humanoid then
 		self.id_added:Fire(id)
 	end
-	local save_shoes = saved_bundle_data.BundleType == "Shoes"
-	local save_body = saved_bundle_data.BundleType == "BodyParts"
-	if save_shoes or save_body then
-		humanoid:SetAttribute(tostring(id), HttpService:JSONEncode(saved_bundle_data))
-	end
+	-- local save_shoes = saved_bundle_data.BundleType == "Shoes"
+	-- local save_body = saved_bundle_data.BundleType == "BodyParts"
+	-- if save_shoes or save_body then
+	-- 	humanoid:SetAttribute(tostring(id), HttpService:JSONEncode(saved_bundle_data))
+	-- end
 	self:set_id_operation_lock(false)
 	return true
 end
