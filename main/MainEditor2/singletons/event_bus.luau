@@ -2,6 +2,7 @@
 -- Event Bus for the views
 local CatalogFetcher = require("../singletons/CatalogFetcher")
 local event = require("../utils/TypedBindables")
+local client_event = event.client
 type UiOverlay = "Wearing" | "Favourites" | "None" | "Composer" | "All"
 type Events = {
 	catalog_search: event.Event<{
@@ -70,21 +71,21 @@ type Events = {
 	}>,
 }
 return {
-	catalog_search = event(),
-	catalog_set_search_filter = event(),
-	avatar_item_selected = event(),
-	drawer_open = event(),
-	pop_out_drawer = event(),
-	select_rig_overlay = event(),
-	catalog_show_overlay = event(),
-	avatar_boom_post_init = event(),
-	save_pinboard = event(),
-	save_pinboard_success = event(),
-	topbar_register_custom_button = event(),
-	topbar_register_custom_element = event(),
-	topbar_unregister_custom_button = event(),
-	topbar_visibility_custom_button = event(),
-	humanoid_description_error = event(),
+	catalog_search = client_event(),
+	catalog_set_search_filter = client_event(),
+	avatar_item_selected = client_event(),
+	drawer_open = client_event(),
+	pop_out_drawer = client_event(),
+	select_rig_overlay = client_event(),
+	catalog_show_overlay = client_event(),
+	avatar_boom_post_init = client_event(),
+	save_pinboard = client_event(),
+	save_pinboard_success = client_event(),
+	topbar_register_custom_button = client_event(),
+	topbar_register_custom_element = client_event(),
+	topbar_unregister_custom_button = client_event(),
+	topbar_visibility_custom_button = client_event(),
+	humanoid_description_error = client_event(),
 	-- topbar_hide_search
-	topbar_set_state = event(),
+	topbar_set_state = client_event(),
 } :: Events

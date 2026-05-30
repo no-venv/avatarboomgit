@@ -7,4 +7,4 @@ export type EventParm = {
 	is_clothing: boolean,
 	clothing_type: string,
 }
-return typed_events() :: typed_events.Event<EventParm>
+return typed_events.client() :: typed_events.Event<EventParm>

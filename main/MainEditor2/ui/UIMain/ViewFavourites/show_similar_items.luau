@@ -31,13 +31,8 @@ return function(parent, name: string, contents: pinboard_shared.Board)
 				{ ["Favourite"] = true, ["Remove"] = true },
 				asset_button({
 					parent = similar_items_container,
-					-- asset_id = asset.Id,
-					-- asset_type = asset.ItemType,
-					-- price = 0,
+					ignore_auto_try = true,
 					asset = asset,
-					on_click = function()
-						event_bus.avatar_item_selected.emit({ asset_info = asset })
-					end,
 				}),
 				function()
 					if pinboard_shared.check_pin_in_board(name, asset.Id) then

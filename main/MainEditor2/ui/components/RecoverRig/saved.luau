@@ -65,7 +65,7 @@ return function(parent: Frame?, events: events.Events)
 		update(parm.rig)
 	end)
 	container.Destroying:Connect(function(...)
-		update_rig_event:Disconnect()
+		events.update_saved_rigs.disconnect(update_rig_event)
 	end)
 	return container
 end

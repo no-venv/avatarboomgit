@@ -138,7 +138,7 @@ return function(primary_part: BasePart, on_transform: OnTransformFunc)
 	local gizmo_transform_instance = Instance.new("Model")
 	gizmo_transform_instance.Destroying:Connect(function(...)
 		if plugin then
-			plugin:Activate(false)
+			plugin:Deactivate()
 		end
 		for _, gizmo in gizmos do
 			gizmo:Destroy()

@@ -5,6 +5,8 @@ export type buttons_enabled_args = {
 local shared = require("../../shared")
 local singletons = require("../../singletons")
 local button_header = require("./ButtonHeader")
+local event_frames = require("./EventFrames")
+
 local catalog_fetcher = singletons.catalog_fetcher
 local humanoid_editor = singletons.humanoid_description
 
@@ -39,6 +41,7 @@ return function(
 		}
 		table.insert(left_topbar, favourite)
 	end
+
 	if enabled_buttons.Remove then
 		local remove: button_header.Button = {
 			id = shared.icons.add,
@@ -47,9 +50,13 @@ return function(
 				if override_button_remove then
 					override_button_remove()
 				else
-					if not humanoid_editor:is_init() then
+					if not humanoid_editor:is_init() or not humanoid_editor:is_id_operations_ready() then
 						return nil
 					end
+					local spinner = event_frames.spinner(parent)
+					spinner.ZIndex = 150
+					spinner.AnchorPoint = Vector2.new(0.5, 0.5)
+					spinner.Position = UDim2.fromScale(0.5, 0.5)
 					local wearing = humanoid_editor:id_equipped(asset_type.Id)
 					if wearing then
 						if asset_type.ItemType == "Asset" then
@@ -57,6 +64,7 @@ return function(
 						else
 							humanoid_editor:remove_bundle_id(asset_type.Id)
 						end
+						spinner:Destroy()
 						return nil
 					else
 						if asset_type.ItemType == "Asset" then
@@ -64,6 +72,7 @@ return function(
 						else
 							humanoid_editor:add_bundle_id(asset_type.Id)
 						end
+						spinner:Destroy()
 						return 1
 					end
 				end
