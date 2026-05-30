@@ -102,11 +102,14 @@ return function(arg: arg): TextButton
 			end
 		end
 
-		local humanoid_changed = singletons.humanoid_description.humanoid_changed.Event:Connect(function(...)
-			if auto_try_click.value then
-				lune.theme_manager:force_highlight(asset_button, singletons.humanoid_description:id_equipped(asset_id))
-			end
-		end)
+		local humanoid_changed
+		if not ignore_auto_try then
+			humanoid_changed = singletons.humanoid_description.humanoid_changed.Event:Connect(function(...)
+				if auto_try_click.value then
+					lune.theme_manager:force_highlight(asset_button, singletons.humanoid_description:id_equipped(asset_id))
+				end
+			end)
+		end
 
 		local able_to_use_button = singletons.humanoid_description.id_operations_ready_event.Event:Connect(
 			function(ready)
@@ -121,7 +124,9 @@ return function(arg: arg): TextButton
 			if on_setting_changed then
 				auto_try_click.changed.disconnect(on_setting_changed)
 			end
-			humanoid_changed:Disconnect()
+			if humanoid_changed then
+				humanoid_changed:Disconnect()
+			end
 			able_to_use_button:Disconnect()
 		end)
 	end
