@@ -157,6 +157,7 @@ function SimpleHumanoidDescription:init(humanoid)
 		return false, "Rig switched during loading"
 	end
 	self.humanoid_changed:Fire()
+	self:set_id_operation_lock(false)
 	return true, "Avatar has loaded"
 end
 
