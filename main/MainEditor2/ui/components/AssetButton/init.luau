@@ -85,20 +85,32 @@ return function(arg: arg): TextButton
 	end
 
 	if not on_click then
-		local function set_add_remove_id_state()
-			lune.theme_manager:force_highlight(asset_button, singletons.humanoid_description:id_equipped(asset_id))
-		end
-
-		local function id_changed_event(id: number)
-			if id ~= asset_id then
-				return
+		local on_setting_changed
+		if not ignore_auto_try then
+			on_setting_changed = auto_try_click.changed.connect(function(parm)
+				if not parm.value then
+					lune.theme_manager:force_highlight(asset_button, false)
+				else
+					lune.theme_manager:force_highlight(
+						asset_button,
+						singletons.humanoid_description:id_equipped(asset_id)
+					)
+				end
+			end)
+			if auto_try_click.value then
+				lune.theme_manager:force_highlight(asset_button, singletons.humanoid_description:id_equipped(asset_id))
 			end
-			set_add_remove_id_state()
 		end
 
-		local humanoid_changed = singletons.humanoid_description.humanoid_changed.Event:Connect(set_add_remove_id_state)
-		local id_added_event = singletons.humanoid_description.id_added.Event:Connect(id_changed_event)
-		local id_remove_event = singletons.humanoid_description.id_removed.Event:Connect(id_changed_event)
+		local humanoid_changed
+		if not ignore_auto_try then
+			humanoid_changed = singletons.humanoid_description.humanoid_changed.Event:Connect(function(...)
+				if auto_try_click.value then
+					lune.theme_manager:force_highlight(asset_button, singletons.humanoid_description:id_equipped(asset_id))
+				end
+			end)
+		end
+
 		local able_to_use_button = singletons.humanoid_description.id_operations_ready_event.Event:Connect(
 			function(ready)
 				lune.utils.spr.stop(grey_overlay)
@@ -108,12 +120,14 @@ return function(arg: arg): TextButton
 			end
 		)
 
-		lune.theme_manager:force_highlight(asset_button, singletons.humanoid_description:id_equipped(asset_id))
 		asset_button.Destroying:Connect(function(...)
+			if on_setting_changed then
+				auto_try_click.changed.disconnect(on_setting_changed)
+			end
+			if humanoid_changed then
+				humanoid_changed:Disconnect()
+			end
 			able_to_use_button:Disconnect()
-			id_added_event:Disconnect()
-			humanoid_changed:Disconnect()
-			id_remove_event:Disconnect()
 		end)
 	end
 	asset_button.Size = container_udim
