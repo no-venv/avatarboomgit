@@ -24,7 +24,6 @@ return function(arg: arg): TextButton
 	end
 	local auto_try_click = shared.settings.auto_try_on_click
 	local asset_button
-	local spinner
 	asset_button = iconbutton({
 		parent = parent,
 		id = `rbxthumb://type={asset_type}&id={asset_id}&w=420&h=420`,
@@ -40,7 +39,11 @@ return function(arg: arg): TextButton
 					if not singletons.humanoid_description:is_id_operations_ready() then
 						return
 					end
-					spinner.Visible = true
+					local spinner = event_frames.spinner(asset_button)
+					spinner.ZIndex = 150
+					spinner.AnchorPoint = Vector2.new(0.5, 0.5)
+					spinner.Position = UDim2.fromScale(0.5, 0.5)
+					-- spinner.Visible = true
 					if singletons.humanoid_description:id_equipped(asset_id) then
 						if asset_type == "Asset" then
 							singletons.humanoid_description:remove_id(asset_id)
@@ -56,7 +59,7 @@ return function(arg: arg): TextButton
 						end
 						lune.theme_manager:force_highlight(asset_button, true)
 					end
-					spinner.Visible = false
+					spinner:Destroy()
 				else
 					singletons.event_bus.avatar_item_selected.emit({
 						asset_info = arg.asset,
@@ -65,12 +68,6 @@ return function(arg: arg): TextButton
 			end
 		end,
 	})
-
-	spinner = event_frames.spinner(asset_button)
-	spinner.ZIndex = 150
-	spinner.AnchorPoint = Vector2.new(0.5, 0.5)
-	spinner.Position = UDim2.fromScale(0.5, 0.5)
-	spinner.Visible = false
 
 	local grey_overlay = lune.empty_frame(asset_button)
 	lune.styling.corner(grey_overlay)
