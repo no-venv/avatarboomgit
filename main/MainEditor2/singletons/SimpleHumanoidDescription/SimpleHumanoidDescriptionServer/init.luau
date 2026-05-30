@@ -491,11 +491,13 @@ function SimpleHumanoidDescription:remove_bundle_id(id)
 	if not self.Humanoid or self._id_operations_lock then
 		return false
 	end
+	self:set_id_operation_lock(true)
 	local humanoid = self.Humanoid
 	fix_rig_position.set_rig_position(humanoid)
 	local id_string = tostring(id)
 	local bundle_data_string = humanoid:GetAttribute(id_string) :: string?
 	if not bundle_data_string then
+		self:set_id_operation_lock(false)
 		return false
 	end
 	local saved_bundle_data: BundleInfo = HttpService:JSONDecode(bundle_data_string)
@@ -514,6 +516,7 @@ function SimpleHumanoidDescription:remove_bundle_id(id)
 		if humanoid == self.Humanoid then
 			self.id_removed:Fire(id)
 		end
+		self:set_id_operation_lock(false)
 		return true
 	end
 	if saved_bundle_data.BundleType == "DynamicHead" then
@@ -525,8 +528,8 @@ function SimpleHumanoidDescription:remove_bundle_id(id)
 	end
 	humanoid:ApplyDescriptionAsync(description)
 	humanoid:SetAttribute(id_string, nil)
-	self:set_id_operation_lock(false)
 	fix_rig_position.apply_rig_position(humanoid)
+	self:set_id_operation_lock(false)
 	return true
 end
 
