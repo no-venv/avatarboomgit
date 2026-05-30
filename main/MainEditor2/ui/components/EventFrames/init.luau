@@ -45,7 +45,7 @@ return {
 		spinner.Position = centre
 		spinner.Size = UDim2.new(0, 100, 0, 100)
 		spinner.ImageContent = Content.fromAssetId(4463059046)
-		spinner.ImageTransparency = 0.8
+		spinner.ImageTransparency = 0.4
 		TweenService:Create(spinner, TweenInfo.new(1,Enum.EasingStyle.Linear,Enum.EasingDirection.InOut,-1), {
 			Rotation = 360
 		}):Play()
