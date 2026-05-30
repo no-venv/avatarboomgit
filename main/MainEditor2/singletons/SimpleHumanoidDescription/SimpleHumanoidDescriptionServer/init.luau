@@ -108,7 +108,7 @@ local get_accessory_mesh_id = require("@self/get_accessory_mesh_id")
 local wearing_cache = require("@self/wearing_cache")
 local makeup_description_helper = require("@self/makeup_description_helper")
 local position_accessory_handle = require("@self/position_accessory_handle")
-
+local fix_rig_position = require("@self/fix_rig_position")
 local SimpleHumanoidDescription = {} :: SimpleHumanoidDescription
 SimpleHumanoidDescription.__index = SimpleHumanoidDescription
 local constructor = {}
@@ -312,6 +312,7 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 		return true
 	end
 	if not humanoid_desc_override then
+		fix_rig_position.set_rig_position(humanoid)
 		self:set_id_operation_lock(true)
 	end
 	local description = humanoid_desc_override or humanoid:GetAppliedDescription()
@@ -358,6 +359,7 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 
 	if not humanoid_desc_override and humanoid == self.Humanoid then
 		humanoid:ApplyDescriptionAsync(description)
+		fix_rig_position.apply_rig_position(humanoid)
 		self.id_added:Fire(id)
 	end
 	if not humanoid_desc_override then
@@ -373,6 +375,7 @@ function SimpleHumanoidDescription:batch_add_id(ids)
 	end
 	self:set_id_operation_lock(true)
 	local humanoid = self.Humanoid
+	fix_rig_position.set_rig_position(humanoid)
 	local description = humanoid:GetAppliedDescription()
 	local asset_info = AvatarEditorService:GetBatchItemDetailsAsync(ids, Enum.AvatarItemType.Asset)
 	for _, asset in asset_info do
@@ -385,6 +388,7 @@ function SimpleHumanoidDescription:batch_add_id(ids)
 		self:add_id(asset.Id, to_asset_type, description)
 	end
 	humanoid:ApplyDescriptionAsync(description)
+	fix_rig_position.apply_rig_position(humanoid)
 	self:set_id_operation_lock(false)
 	return true
 end
@@ -393,10 +397,12 @@ function SimpleHumanoidDescription:remove_id(id, humanoid_desc_override)
 	if not self.Humanoid or (self._id_operations_lock and not humanoid_desc_override) then
 		return false
 	end
+	local humanoid = self.Humanoid
 	if not humanoid_desc_override then
 		self:set_id_operation_lock(true)
+		fix_rig_position.set_rig_position(humanoid)
 	end
-	local humanoid = self.Humanoid
+
 	local description = humanoid:GetAppliedDescription()
 	local accessories = description:GetAccessories(true)
 	for index, item in accessories do
@@ -422,6 +428,7 @@ function SimpleHumanoidDescription:remove_id(id, humanoid_desc_override)
 
 	if not humanoid_desc_override then
 		humanoid:ApplyDescriptionAsync(description)
+		fix_rig_position.apply_rig_position(humanoid)
 		if humanoid == self.Humanoid then
 			self.id_removed:Fire(id)
 		end
@@ -436,6 +443,7 @@ function SimpleHumanoidDescription:add_bundle_id(id)
 	end
 	self:set_id_operation_lock(true)
 	local humanoid = self.Humanoid
+	fix_rig_position.set_rig_position(humanoid)
 	local bundle_details = AssetService:GetBundleDetailsAsync(id)
 	local saved_bundle_data: BundleInfo = {
 		BundleType = bundle_details.BundleType,
@@ -466,6 +474,7 @@ function SimpleHumanoidDescription:add_bundle_id(id)
 	end
 
 	humanoid:ApplyDescriptionResetAsync(description)
+	fix_rig_position.apply_rig_position(humanoid)
 	if humanoid == self.Humanoid then
 		self.id_added:Fire(id)
 	end
@@ -483,6 +492,7 @@ function SimpleHumanoidDescription:remove_bundle_id(id)
 		return false
 	end
 	local humanoid = self.Humanoid
+	fix_rig_position.set_rig_position(humanoid)
 	local id_string = tostring(id)
 	local bundle_data_string = humanoid:GetAttribute(id_string) :: string?
 	if not bundle_data_string then
@@ -516,6 +526,7 @@ function SimpleHumanoidDescription:remove_bundle_id(id)
 	humanoid:ApplyDescriptionAsync(description)
 	humanoid:SetAttribute(id_string, nil)
 	self:set_id_operation_lock(false)
+	fix_rig_position.apply_rig_position(humanoid)
 	return true
 end
 
