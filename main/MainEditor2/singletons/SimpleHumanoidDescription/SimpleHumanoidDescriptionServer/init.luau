@@ -331,6 +331,7 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 		local to_asset_type = Enum.AvatarAssetType:FromName(result.AssetType)
 		if not to_asset_type then
 			print(`{result.AssetType} failed with Enum.AvatarAssetType:FromName`)
+			self:set_id_operation_lock(false)
 			return false
 		end
 		AccessoryType = to_asset_type
