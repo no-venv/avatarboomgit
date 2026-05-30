@@ -319,10 +319,18 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 	local accessories = description:GetAccessories(true)
 	local AccessoryType = asset_type :: Enum.AvatarAssetType
 	if not asset_type then
-		local asset_info = AvatarEditorService:GetItemDetailsAsync(id, Enum.AvatarItemType.Asset)
-		local to_asset_type = Enum.AvatarAssetType:FromName(asset_info.AssetType)
+		local ok, result = pcall(function(...)
+			return AvatarEditorService:GetItemDetailsAsync(id, Enum.AvatarItemType.Asset)
+		end)
+		if not ok then
+			self:set_id_operation_lock(false)
+			-- probably propagate an error here, though there has to be a cleaner method than this
+			error(result)
+			-- return false
+		end
+		local to_asset_type = Enum.AvatarAssetType:FromName(result.AssetType)
 		if not to_asset_type then
-			print(`{asset_info.AssetType} failed with Enum.AvatarAssetType:FromName`)
+			print(`{result.AssetType} failed with Enum.AvatarAssetType:FromName`)
 			return false
 		end
 		AccessoryType = to_asset_type
@@ -358,9 +366,15 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 	end
 
 	if not humanoid_desc_override and humanoid == self.Humanoid then
-		humanoid:ApplyDescriptionAsync(description)
-		fix_rig_position.apply_rig_position(humanoid)
-		self.id_added:Fire(id)
+		local ok, result = pcall(function(...)
+			humanoid:ApplyDescriptionAsync(description)
+			fix_rig_position.apply_rig_position(humanoid)
+			self.id_added:Fire(id)
+		end)
+		if not ok then
+			self:set_id_operation_lock(false)
+			error(result)
+		end
 	end
 	if not humanoid_desc_override then
 		self:set_id_operation_lock(false)
@@ -387,9 +401,14 @@ function SimpleHumanoidDescription:batch_add_id(ids)
 		end
 		self:add_id(asset.Id, to_asset_type, description)
 	end
-	humanoid:ApplyDescriptionAsync(description)
-	fix_rig_position.apply_rig_position(humanoid)
+	local ok, result = pcall(function(...)
+		humanoid:ApplyDescriptionAsync(description)
+		fix_rig_position.apply_rig_position(humanoid)
+	end)
 	self:set_id_operation_lock(false)
+	if not ok then
+		error(result)
+	end
 	return true
 end
 
@@ -427,12 +446,17 @@ function SimpleHumanoidDescription:remove_id(id, humanoid_desc_override)
 	makeup_description_helper.remove_makeup(description, id)
 
 	if not humanoid_desc_override then
-		humanoid:ApplyDescriptionAsync(description)
-		fix_rig_position.apply_rig_position(humanoid)
-		if humanoid == self.Humanoid then
-			self.id_removed:Fire(id)
-		end
+		local ok, result = pcall(function(...)
+			humanoid:ApplyDescriptionAsync(description)
+			fix_rig_position.apply_rig_position(humanoid)
+			if humanoid == self.Humanoid then
+				self.id_removed:Fire(id)
+			end
+		end)
 		self:set_id_operation_lock(false)
+		if not ok then
+			error(result)
+		end
 	end
 	return true
 end
@@ -445,19 +469,19 @@ function SimpleHumanoidDescription:add_bundle_id(id)
 	local humanoid = self.Humanoid
 	fix_rig_position.set_rig_position(humanoid)
 	local bundle_details = AssetService:GetBundleDetailsAsync(id)
-	local saved_bundle_data: BundleInfo = {
-		BundleType = bundle_details.BundleType,
-		Items = (function()
-			local ids: { number } = {}
-			for _, item in bundle_details.Items do
-				if item.Type == "UserOutfit" then
-					continue
-				end
-				table.insert(ids, item.Id)
-			end
-			return ids
-		end)(),
-	}
+	-- local saved_bundle_data: BundleInfo = {
+	-- 	BundleType = bundle_details.BundleType,
+	-- 	Items = (function()
+	-- 		local ids: { number } = {}
+	-- 		for _, item in bundle_details.Items do
+	-- 			if item.Type == "UserOutfit" then
+	-- 				continue
+	-- 			end
+	-- 			table.insert(ids, item.Id)
+	-- 		end
+	-- 		return ids
+	-- 	end)(),
+	-- }
 
 	local ids = {}
 	for _, item in bundle_details.Items do
@@ -473,17 +497,22 @@ function SimpleHumanoidDescription:add_bundle_id(id)
 		self:add_id(item.Id, Enum.AvatarAssetType:FromName(item.AssetType), description)
 	end
 
-	humanoid:ApplyDescriptionResetAsync(description)
-	fix_rig_position.apply_rig_position(humanoid)
-	if humanoid == self.Humanoid then
-		self.id_added:Fire(id)
-	end
+	local ok, result = pcall(function(...)
+		humanoid:ApplyDescriptionResetAsync(description)
+		fix_rig_position.apply_rig_position(humanoid)
+		if humanoid == self.Humanoid then
+			self.id_added:Fire(id)
+		end
+	end)
 	-- local save_shoes = saved_bundle_data.BundleType == "Shoes"
 	-- local save_body = saved_bundle_data.BundleType == "BodyParts"
 	-- if save_shoes or save_body then
 	-- 	humanoid:SetAttribute(tostring(id), HttpService:JSONEncode(saved_bundle_data))
 	-- end
 	self:set_id_operation_lock(false)
+	if not ok then
+		error(result)
+	end
 	return true
 end
 
@@ -526,10 +555,15 @@ function SimpleHumanoidDescription:remove_bundle_id(id)
 		humanoid:SetAttribute(`b_asset_id_{item}`, nil)
 		self:remove_id(item, description)
 	end
-	humanoid:ApplyDescriptionAsync(description)
-	humanoid:SetAttribute(id_string, nil)
-	fix_rig_position.apply_rig_position(humanoid)
+	local ok, result = pcall(function(...)
+		humanoid:ApplyDescriptionAsync(description)
+		humanoid:SetAttribute(id_string, nil)
+		fix_rig_position.apply_rig_position(humanoid)
+	end)
 	self:set_id_operation_lock(false)
+	if not ok then
+		error(result)
+	end
 	return true
 end
 
