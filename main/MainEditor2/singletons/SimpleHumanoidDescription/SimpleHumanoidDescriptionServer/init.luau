@@ -337,7 +337,7 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 		AccessoryType = to_asset_type
 	end
 
-	local legacy_success, error = pcall(function(...)
+	local legacy_success, _ = pcall(function(...)
 		local map = asset_type_map[AccessoryType.Name]
 		local property_type = typeof((description :: any)[map])
 		if property_type == "number" then
