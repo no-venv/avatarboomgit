@@ -331,12 +331,13 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 		local to_asset_type = Enum.AvatarAssetType:FromName(result.AssetType)
 		if not to_asset_type then
 			print(`{result.AssetType} failed with Enum.AvatarAssetType:FromName`)
+			self:set_id_operation_lock(false)
 			return false
 		end
 		AccessoryType = to_asset_type
 	end
 
-	local legacy_success, error = pcall(function(...)
+	local legacy_success, _ = pcall(function(...)
 		local map = asset_type_map[AccessoryType.Name]
 		local property_type = typeof((description :: any)[map])
 		if property_type == "number" then
@@ -366,11 +367,11 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 	end
 
 	if not humanoid_desc_override and humanoid == self.Humanoid then
-		local ok, result = pcall(function(...)
+		local ok, result = xpcall(function(...)
 			humanoid:ApplyDescriptionAsync(description)
 			fix_rig_position.apply_rig_position(humanoid)
 			self.id_added:Fire(id)
-		end)
+		end, debug.traceback)
 		if not ok then
 			self:set_id_operation_lock(false)
 			error(result)
@@ -401,10 +402,10 @@ function SimpleHumanoidDescription:batch_add_id(ids)
 		end
 		self:add_id(asset.Id, to_asset_type, description)
 	end
-	local ok, result = pcall(function(...)
+	local ok, result = xpcall(function(...)
 		humanoid:ApplyDescriptionAsync(description)
 		fix_rig_position.apply_rig_position(humanoid)
-	end)
+	end,debug.traceback)
 	self:set_id_operation_lock(false)
 	if not ok then
 		error(result)
@@ -446,13 +447,13 @@ function SimpleHumanoidDescription:remove_id(id, humanoid_desc_override)
 	makeup_description_helper.remove_makeup(description, id)
 
 	if not humanoid_desc_override then
-		local ok, result = pcall(function(...)
+		local ok, result = xpcall(function(...)
 			humanoid:ApplyDescriptionAsync(description)
 			fix_rig_position.apply_rig_position(humanoid)
 			if humanoid == self.Humanoid then
 				self.id_removed:Fire(id)
 			end
-		end)
+		end,debug.traceback)
 		self:set_id_operation_lock(false)
 		if not ok then
 			error(result)
@@ -497,13 +498,13 @@ function SimpleHumanoidDescription:add_bundle_id(id)
 		self:add_id(item.Id, Enum.AvatarAssetType:FromName(item.AssetType), description)
 	end
 
-	local ok, result = pcall(function(...)
+	local ok, result = xpcall(function(...)
 		humanoid:ApplyDescriptionResetAsync(description)
 		fix_rig_position.apply_rig_position(humanoid)
 		if humanoid == self.Humanoid then
 			self.id_added:Fire(id)
 		end
-	end)
+	end,debug.traceback)
 	-- local save_shoes = saved_bundle_data.BundleType == "Shoes"
 	-- local save_body = saved_bundle_data.BundleType == "BodyParts"
 	-- if save_shoes or save_body then
@@ -555,11 +556,11 @@ function SimpleHumanoidDescription:remove_bundle_id(id)
 		humanoid:SetAttribute(`b_asset_id_{item}`, nil)
 		self:remove_id(item, description)
 	end
-	local ok, result = pcall(function(...)
+	local ok, result = xpcall(function(...)
 		humanoid:ApplyDescriptionAsync(description)
 		humanoid:SetAttribute(id_string, nil)
 		fix_rig_position.apply_rig_position(humanoid)
-	end)
+	end,debug.traceback)
 	self:set_id_operation_lock(false)
 	if not ok then
 		error(result)
