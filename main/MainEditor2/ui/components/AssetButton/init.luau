@@ -50,15 +50,17 @@ return function(arg: arg): TextButton
 						else
 							singletons.humanoid_description:remove_bundle_id(asset_id)
 						end
-						lune.theme_manager:force_highlight(asset_button, false)
 					else
 						if asset_type == "Asset" then
 							singletons.humanoid_description:add_id(asset_id)
 						else
 							singletons.humanoid_description:add_bundle_id(asset_id)
 						end
-						lune.theme_manager:force_highlight(asset_button, true)
 					end
+					lune.theme_manager:force_highlight(
+						asset_button,
+						singletons.humanoid_description:id_equipped(asset_id)
+					)
 					spinner:Destroy()
 				else
 					singletons.event_bus.avatar_item_selected.emit({
@@ -106,7 +108,10 @@ return function(arg: arg): TextButton
 		if not ignore_auto_try then
 			humanoid_changed = singletons.humanoid_description.humanoid_changed.Event:Connect(function(...)
 				if auto_try_click.value then
-					lune.theme_manager:force_highlight(asset_button, singletons.humanoid_description:id_equipped(asset_id))
+					lune.theme_manager:force_highlight(
+						asset_button,
+						singletons.humanoid_description:id_equipped(asset_id)
+					)
 				end
 			end)
 		end
