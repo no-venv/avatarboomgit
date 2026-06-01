@@ -21,6 +21,12 @@ type BundleInfo = {
 	BundleType: "BodyParts" | "Shoes" | "Animations" | "DynamicHead",
 	Items: { number },
 }
+
+type Error = {
+	type: string,
+	message: string,
+	retry: (() -> ())?,
+}
 type Struct = {
 	__index: SimpleHumanoidDescription,
 	_id_operations_lock: boolean,
@@ -31,6 +37,7 @@ type Struct = {
 	id_added: BindableEvent,
 	id_removed: BindableEvent,
 	id_operations_ready_event: BindableEvent,
+	on_error: ((error: Error) -> ())?,
 	inited_humanoids: { [Humanoid]: {
 		mutex: boolean,
 		fully_init: boolean,
@@ -46,9 +53,15 @@ type Impl = {
 		id: number,
 		asset_type: Enum.AvatarAssetType?,
 		humanoid_desc_override: HumanoidDescription?
+		-- forceful: boolean?
 	) -> boolean,
 	batch_add_id: (self: SimpleHumanoidDescription, ids: { number }) -> boolean,
-	remove_id: (self: SimpleHumanoidDescription, id: number, humanoid_desc_override: HumanoidDescription?) -> boolean,
+	remove_id: (
+		self: SimpleHumanoidDescription,
+		id: number,
+		humanoid_desc_override: HumanoidDescription?
+		-- forceful: boolean?
+	) -> boolean,
 	add_bundle_id: (self: SimpleHumanoidDescription, id: number) -> boolean,
 	remove_bundle_id: (self: SimpleHumanoidDescription, id: number) -> boolean,
 	set_id_operation_lock: (self: SimpleHumanoidDescription, lock: boolean) -> (),
@@ -91,6 +104,12 @@ type Impl = {
 	set_layered_clothing_order: (self: SimpleHumanoidDescription, id: number, order: number) -> (),
 	get_highest_layered_clothing_count: (self: SimpleHumanoidDescription) -> number,
 	get_layered_clothing_order: (self: SimpleHumanoidDescription) -> { AccessoryDescription },
+	_generate_error_event: (
+		self: SimpleHumanoidDescription,
+		type: string,
+		message: string,
+		method: (() -> ())?
+	) -> (),
 }
 
 export type SimpleHumanoidDescription = Impl & Struct
@@ -325,6 +344,7 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 		if not ok then
 			self:set_id_operation_lock(false)
 			-- probably propagate an error here, though there has to be a cleaner method than this
+			task.wait()
 			error(result)
 			-- return false
 		end
@@ -346,6 +366,7 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 			(description :: any)[map] ..= `,{id}`
 		end
 	end)
+
 	if not legacy_success then
 		if
 			(AccessoryType == Enum.AvatarAssetType.FaceMakeup)
@@ -367,15 +388,24 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 	end
 
 	if not humanoid_desc_override and humanoid == self.Humanoid then
-		local ok, result = xpcall(function(...)
+		local ok, result
+		ok = pcall(function(...)
 			humanoid:ApplyDescriptionAsync(description)
-			fix_rig_position.apply_rig_position(humanoid)
-			self.id_added:Fire(id)
-		end, debug.traceback)
+		end)
 		if not ok then
+			ok, result = xpcall(function(...)
+				-- forcefully reset & apply description
+				humanoid:ApplyDescriptionResetAsync(description)
+			end, debug.traceback)
+		end
+		if not ok then
+			self:_generate_error_event("id_operation", result)
 			self:set_id_operation_lock(false)
+			task.wait()
 			error(result)
 		end
+		fix_rig_position.apply_rig_position(humanoid)
+		self.id_added:Fire(id)
 	end
 	if not humanoid_desc_override then
 		self:set_id_operation_lock(false)
@@ -405,9 +435,10 @@ function SimpleHumanoidDescription:batch_add_id(ids)
 	local ok, result = xpcall(function(...)
 		humanoid:ApplyDescriptionAsync(description)
 		fix_rig_position.apply_rig_position(humanoid)
-	end,debug.traceback)
+	end, debug.traceback)
 	self:set_id_operation_lock(false)
 	if not ok then
+		task.wait()
 		error(result)
 	end
 	return true
@@ -447,16 +478,24 @@ function SimpleHumanoidDescription:remove_id(id, humanoid_desc_override)
 	makeup_description_helper.remove_makeup(description, id)
 
 	if not humanoid_desc_override then
-		local ok, result = xpcall(function(...)
+		local ok, result
+		ok = pcall(function(...)
 			humanoid:ApplyDescriptionAsync(description)
-			fix_rig_position.apply_rig_position(humanoid)
-			if humanoid == self.Humanoid then
-				self.id_removed:Fire(id)
-			end
-		end,debug.traceback)
+		end)
+		if not ok then
+			ok, result = xpcall(function(...)
+				humanoid:ApplyDescriptionResetAsync(description)
+			end, debug.traceback)
+		end
 		self:set_id_operation_lock(false)
 		if not ok then
+			self:_generate_error_event("id_operation", result)
+			task.wait()
 			error(result)
+		end
+		fix_rig_position.apply_rig_position(humanoid)
+		if humanoid == self.Humanoid then
+			self.id_removed:Fire(id)
 		end
 	end
 	return true
@@ -504,7 +543,7 @@ function SimpleHumanoidDescription:add_bundle_id(id)
 		if humanoid == self.Humanoid then
 			self.id_added:Fire(id)
 		end
-	end,debug.traceback)
+	end, debug.traceback)
 	-- local save_shoes = saved_bundle_data.BundleType == "Shoes"
 	-- local save_body = saved_bundle_data.BundleType == "BodyParts"
 	-- if save_shoes or save_body then
@@ -512,6 +551,7 @@ function SimpleHumanoidDescription:add_bundle_id(id)
 	-- end
 	self:set_id_operation_lock(false)
 	if not ok then
+		task.wait()
 		error(result)
 	end
 	return true
@@ -560,7 +600,7 @@ function SimpleHumanoidDescription:remove_bundle_id(id)
 		humanoid:ApplyDescriptionAsync(description)
 		humanoid:SetAttribute(id_string, nil)
 		fix_rig_position.apply_rig_position(humanoid)
-	end,debug.traceback)
+	end, debug.traceback)
 	self:set_id_operation_lock(false)
 	if not ok then
 		error(result)
@@ -1021,6 +1061,16 @@ function SimpleHumanoidDescription:get_highest_layered_clothing_count()
 	return order
 end
 
+function SimpleHumanoidDescription:_generate_error_event(error_type, message, method)
+	if self.on_error then
+		self.on_error({
+			message = message,
+			retry = method,
+			type = error_type,
+		})
+	end
+end
+
 function constructor:new(): SimpleHumanoidDescription
 	local struct = {
 		Humanoid = nil,
@@ -1030,6 +1080,7 @@ function constructor:new(): SimpleHumanoidDescription
 		id_removed = Instance.new("BindableEvent"),
 		id_operations_ready_event = Instance.new("BindableEvent"),
 		_id_operations_lock = false,
+		on_error = nil,
 		inited_humanoids = {},
 	}
 	return setmetatable(struct, SimpleHumanoidDescription)
