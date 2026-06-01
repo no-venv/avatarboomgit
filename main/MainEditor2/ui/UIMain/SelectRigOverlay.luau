@@ -59,7 +59,9 @@ return function(parent: Instance?)
 	container.ZIndex = 1989
 	container.Visible = false
 	event_bus.humanoid_description_error.connect(function(parm)
-		components.error_popup(parm.error)
+		components.error_popup({
+			error = parm.error,
+		})
 	end)
 	humanoid_editor.humanoid_changed.Event:Connect(function(...: any)
 		local init_status = not humanoid_editor:is_init()
