@@ -28,6 +28,7 @@ return function(parent: Instance)
 	require("@self/LayeredItemsViewportOverlay")(inner_container)
 	require("@self/UpdateChecker")()
 	require("@self/SelectRigOverlay")(mainframe)
+	require("@self/HumanoidDescriptionErrorHandler")
 	require("@self/NavigationBar")(mainframe, {
 		{
 			tooltip = "Catalog",

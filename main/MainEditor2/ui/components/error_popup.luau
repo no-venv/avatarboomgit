@@ -1,27 +1,33 @@
 --!strict
+type Arguments = {
+	error: string,
+	options: { string }?,
+	on_option_select: (string) -> ()?,
+}
 local lune = require("./lune_ui")
 local report_bugs_text =
-	`Please report this bug to https://devforum.roblox.com/t/avatarboom-create-avatars-in-roblox-studio/4083842/`
-return function(error: string)
-	local window
+	`== Please report to https://devforum.roblox.com/t/avatarboom-create-avatars-in-roblox-studio/4083842/ ==`
+
+return function(args: Arguments)
 	local container = lune.scrolling_frame(nil, "List", {
 		HorizontalAlignment = Enum.HorizontalAlignment.Center,
 		HorizontalFlex = Enum.UIFlexAlignment.Fill,
+		VerticalFlex = Enum.UIFlexAlignment.SpaceBetween,
 	})
-
-	lune.textlabel(error, container)
 	local link = lune.textbox("placeholder", container)
+	link.Size = UDim2.fromScale(1, 1)
 	link.ClearTextOnFocus = false
-	link.Text = report_bugs_text
+	link.TextEditable = false
+	link.Text = `{report_bugs_text}\n\n{args.error}`
 	link.AutomaticSize = Enum.AutomaticSize.Y
 
-	lune.textbutton("Okay", container, function(...)
-		window:Destroy()
-	end)
-	window = lune.window.base({
+	lune.window.option({
 		size = Vector2.new(0.8, 0.6),
+		prompt_text = "",
+		custom_view = container,
+		on_prompt_result = args.on_option_select or function(result) end,
 		title = "An error has occurred",
-		view = container,
+		options = args.options or { "Okay" },
 		important = true,
 	})
 end

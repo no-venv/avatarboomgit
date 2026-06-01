@@ -93,9 +93,6 @@ return function(
 		end
 
 		local function id_changed_event(id: number)
-			if id ~= asset_type.Id then
-				return
-			end
 			set_add_remove_id_state()
 		end
 		local humanoid_changed = humanoid_editor.humanoid_changed.Event:Connect(set_add_remove_id_state)
