@@ -57,10 +57,6 @@ return function(arg: arg): TextButton
 							singletons.humanoid_description:add_bundle_id(asset_id)
 						end
 					end
-					lune.theme_manager:force_highlight(
-						asset_button,
-						singletons.humanoid_description:id_equipped(asset_id)
-					)
 					spinner:Destroy()
 				else
 					singletons.event_bus.avatar_item_selected.emit({
@@ -87,33 +83,47 @@ return function(arg: arg): TextButton
 	end
 
 	if not on_click then
+		local current_button_state = false
+
+		local function change_button_state()
+			if not auto_try_click.value then
+				return
+			end
+			local state = singletons.humanoid_description:id_equipped(asset_id)
+			if state == current_button_state then
+				return
+			end
+			current_button_state = state
+			lune.theme_manager:force_highlight(asset_button, state)
+		end
+
 		local on_setting_changed
 		if not ignore_auto_try then
 			on_setting_changed = auto_try_click.changed.connect(function(parm)
 				if not parm.value then
+					current_button_state = false
 					lune.theme_manager:force_highlight(asset_button, false)
 				else
-					lune.theme_manager:force_highlight(
-						asset_button,
-						singletons.humanoid_description:id_equipped(asset_id)
-					)
+					change_button_state()
 				end
 			end)
 			if auto_try_click.value then
-				lune.theme_manager:force_highlight(asset_button, singletons.humanoid_description:id_equipped(asset_id))
+				change_button_state()
 			end
 		end
 
 		local humanoid_changed
+		local id_added_event
+		local id_remove_event
+
 		if not ignore_auto_try then
 			humanoid_changed = singletons.humanoid_description.humanoid_changed.Event:Connect(function(...)
 				if auto_try_click.value then
-					lune.theme_manager:force_highlight(
-						asset_button,
-						singletons.humanoid_description:id_equipped(asset_id)
-					)
+					change_button_state()
 				end
 			end)
+			id_added_event = singletons.humanoid_description.id_added.Event:Connect(change_button_state)
+			id_remove_event = singletons.humanoid_description.id_removed.Event:Connect(change_button_state)
 		end
 
 		local able_to_use_button = singletons.humanoid_description.id_operations_ready_event.Event:Connect(
@@ -131,6 +141,12 @@ return function(arg: arg): TextButton
 			end
 			if humanoid_changed then
 				humanoid_changed:Disconnect()
+			end
+			if id_added_event then
+				id_added_event:Disconnect()
+			end
+			if id_remove_event then
+				id_remove_event:Disconnect()
 			end
 			able_to_use_button:Disconnect()
 		end)
