@@ -128,6 +128,8 @@ local wearing_cache = require("@self/wearing_cache")
 local makeup_description_helper = require("@self/makeup_description_helper")
 local position_accessory_handle = require("@self/position_accessory_handle")
 local fix_rig_position = require("@self/fix_rig_position")
+local copy_accessory_mat = require("@self/copy_accessory_mat")
+
 local SimpleHumanoidDescription = {} :: SimpleHumanoidDescription
 SimpleHumanoidDescription.__index = SimpleHumanoidDescription
 local constructor = {}
@@ -240,15 +242,7 @@ function SimpleHumanoidDescription:apply_fix()
 			for _, old_accessory in old_accessories do
 				local old_a_mesh_id = get_accessory_mesh_id(old_accessory)
 				if old_a_mesh_id == new_a_mesh_id then
-					local new_a_handle = new_accessory:FindFirstChild("Handle")
-					if new_a_handle then
-						new_a_handle:Destroy()
-					end
-					local old_a_handle = old_accessory:FindFirstChild("Handle")
-					if old_a_handle then
-						old_a_handle.Parent = new_accessory
-					end
-					-- old_accessory["Handle"].Parent = new_accessory
+					copy_accessory_mat(old_accessory, new_accessory)
 					break
 				end
 			end
