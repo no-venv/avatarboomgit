@@ -37,7 +37,7 @@ makeup_description_helper.get_makeup = function(description)
 	local makeup = {}
 	for _, child in children do
 		if child:IsA("MakeupDescription") then
-			table.insert(makeup,child)
+			table.insert(makeup, child)
 		end
 	end
 	return makeup
@@ -56,6 +56,14 @@ makeup_description_helper.makeup_equipped = function(description, id)
 	local makeup = description:FindFirstChild(tostring(id))
 	if makeup then
 		return true
+	end
+	-- probably brute-force check the asset ids
+	for _, makeup in description:GetChildren() do
+		if makeup:IsA("MakeupDescription") then
+			if makeup.AssetId == id then
+				return true
+			end
+		end
 	end
 	return false
 end

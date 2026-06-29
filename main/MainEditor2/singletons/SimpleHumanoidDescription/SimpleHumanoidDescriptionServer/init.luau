@@ -62,6 +62,7 @@ type Impl = {
 		humanoid_desc_override: HumanoidDescription?
 		-- forceful: boolean?
 	) -> boolean,
+	remove_duplicates: (self: SimpleHumanoidDescription) -> (),
 	add_bundle_id: (self: SimpleHumanoidDescription, id: number) -> boolean,
 	remove_bundle_id: (self: SimpleHumanoidDescription, id: number) -> boolean,
 	set_id_operation_lock: (self: SimpleHumanoidDescription, lock: boolean) -> (),
@@ -204,6 +205,7 @@ function SimpleHumanoidDescription:apply_fix()
 		fully_init = false,
 	}
 	local ok = pcall(function()
+		self:remove_duplicates()
 		local hum_desc = humanoid:GetAppliedDescription()
 		-- this usually is a model
 		local humanoid_parent = humanoid.Parent :: Model
@@ -328,6 +330,7 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 		fix_rig_position.set_rig_position(humanoid)
 		self:set_id_operation_lock(true)
 	end
+	self:remove_duplicates()
 	local description = humanoid_desc_override or humanoid:GetAppliedDescription()
 	local accessories = description:GetAccessories(true)
 	local AccessoryType = asset_type :: Enum.AvatarAssetType
@@ -339,6 +342,7 @@ function SimpleHumanoidDescription:add_id(id, asset_type, humanoid_desc_override
 			self:set_id_operation_lock(false)
 			-- probably propagate an error here, though there has to be a cleaner method than this
 			task.wait()
+			self:_generate_error_event("id_operation_fetch_asset_type", result :: string)
 			error(result)
 			-- return false
 		end
@@ -447,7 +451,7 @@ function SimpleHumanoidDescription:remove_id(id, humanoid_desc_override)
 		self:set_id_operation_lock(true)
 		fix_rig_position.set_rig_position(humanoid)
 	end
-
+	self:remove_duplicates()
 	local description = humanoid:GetAppliedDescription()
 	local accessories = description:GetAccessories(true)
 	for index, item in accessories do
@@ -493,6 +497,33 @@ function SimpleHumanoidDescription:remove_id(id, humanoid_desc_override)
 		end
 	end
 	return true
+end
+
+function SimpleHumanoidDescription:remove_duplicates()
+	if not self.Humanoid then
+		return
+	end
+	local humanoid = self.Humanoid
+	local description = humanoid:FindFirstChild("HumanoidDescription") :: HumanoidDescription?
+	if not description then
+		return
+	end
+	local id: { [number]: { AccessoryDescription | MakeupDescription } } = {}
+	for _, accessory in description:GetChildren() do
+		if accessory:IsA("MakeupDescription") or accessory:IsA("AccessoryDescription") then
+			if not id[accessory.AssetId] then
+				id[accessory.AssetId] = {}
+			end
+			table.insert(id[accessory.AssetId], accessory)
+		end
+	end
+	for _, accessory_list in id do
+		if #accessory_list > 1 then
+			for i = 2, #accessory_list do
+				accessory_list[i]:Destroy()
+			end
+		end
+	end
 end
 
 function SimpleHumanoidDescription:add_bundle_id(id)
