@@ -40,12 +40,12 @@ return function(parent: Instance?)
 		ratio_const.AspectRatio = 8.32971800434
 		ratio_const.Parent = avatar_boom_logo
 		ui_lib.textlabel("<b>Select a Rig or import one to use avatarBOOM!</b>", title_container)
-		if #game:GetService("Players"):GetPlayers() > 0 then
-			ui_lib.textlabel(
-				"\n\n<b>avatarBoom has detected Team Create.\n\nAt May 21, Roblox has pushed an update that breaks the plugin with Team Create enabled.\n\nYou can still use Team Create with AvatarBoom to check if it works. Otherwise disable Team Create for the plugin to work correctly.\n\n I'm SO sorry for the inconvenience ugh 💔</b>",
-				title_container
-			)
-		end
+		-- if #game:GetService("Players"):GetPlayers() > 0 then
+		-- 	ui_lib.textlabel(
+		-- 		"\n\n<b>avatarBoom has detected Team Create.\n\nAt May 21, Roblox has pushed an update that breaks the plugin with Team Create enabled.\n\nYou can still use Team Create with AvatarBoom to check if it works. Otherwise disable Team Create for the plugin to work correctly.\n\n I'm SO sorry for the inconvenience ugh 💔</b>",
+		-- 		title_container
+		-- 	)
+		-- end
 	end
 	-- text.Size = UDim2.new(1,0,0,0)
 	-- text.AutomaticSize = Enum.AutomaticSize.Y
@@ -59,6 +59,9 @@ return function(parent: Instance?)
 	container.ZIndex = 1989
 	container.Visible = false
 	event_bus.humanoid_description_error.connect(function(parm)
+		if parm.error == "Rig switched during loading" then
+			return
+		end
 		components.error_popup({
 			error = parm.error,
 		})
